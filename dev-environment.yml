@@ -1,0 +1,16 @@
+name: picrust-dev
+channels:
+- r
+- defaults
+dependencies:
+- h5py
+- numpy=1.13
+- python=2.7.13
+- r-ape
+- r-base
+- pip:
+  - biom-format>=2.1.4,< 2.2.0
+  - cogent==1.5.3
+  - future==0.16
+  - pytest
+  - pytest-cov
