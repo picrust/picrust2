@@ -1,2 +1,0 @@
-touch some_file.txt; rm some_file.txt
-echo foo > /dev/null
