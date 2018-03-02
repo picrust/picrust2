@@ -1,4 +1,4 @@
-name: picrust-dev
+name: picrust2-dev
 channels:
 - r
 - defaults
