@@ -4,24 +4,14 @@ from setuptools import setup
 from glob import glob
 
 
-__author__ = "Greg Caporaso"
+__author__ = "Gavin Douglas and Greg Caporaso"
 __copyright__ = "Copyright 2011-2013, The PICRUSt Project"
-__credits__ = ["Greg Caporaso", "Daniel McDonald", "Jose Clemente"]
+__credits__ = ["Gavin Douglas", "Greg Caporaso", "Daniel McDonald", "Jose Clemente"]
 __license__ = "GPL"
 __version__ = "2-alpha.1"
-__maintainer__ = "Greg Caporaso"
-__email__ = "gregcaporaso@gmail.com"
+__maintainer__ = "Gavin Douglas"
+__email__ = "gavin.douglas@dal.ca"
 __status__ = "Development"
-
-
-try:
-    import numpy
-except ImportError:
-    raise ImportError("numpy cannot be found. Can't continue. Please install "
-                      "the numpy package (see www.numpy.org)")
-else:
-    numpy  # avoid unused variable error
-
 
 long_description = ("PICRUSt: Phylogenetic Investigation of Communities by "
                     "Reconstruction of Unobserved States\n\n"
@@ -41,15 +31,14 @@ setup(name='PICRUSt',
       author_email=__email__,
       maintainer=__maintainer__,
       maintainer_email=__email__,
-      url='http://picrust.github.com',
+      url='https://github.com/picrust/picrust2/wiki',
       packages=['picrust'],
       scripts=glob('scripts/*py'),
       install_requires=['numpy >= 1.5.1',
                         'cogent == 1.5.3',
+			'h5py == 2.7.1',
                         'biom-format >= 2.1.4, < 2.2.0',
                         'future == 0.16'],
-      package_data={'picrust':
-                    ['data/*gz',
-                     'support_files/jar/Count.jar',
-                     'support_files/R/ace.R']},
+      package_data={'precalculated/*',
+                    'picrust/support_files/R/*.R']},
       long_description=long_description)
