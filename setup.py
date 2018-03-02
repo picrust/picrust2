@@ -39,6 +39,9 @@ setup(name='PICRUSt',
 			'h5py == 2.7.1',
                         'biom-format >= 2.1.4, < 2.2.0',
                         'future == 0.16'],
-      package_data={'precalculated/*',
-                    'picrust/support_files/R/*.R']},
+      package_data={'precalculated':
+		    ['prokaryotic/*',
+                     'eukaryotic/*'],
+                    'picrust':
+                    ['support_files/R/*.R']},
       long_description=long_description)
