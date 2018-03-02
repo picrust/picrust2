@@ -11,6 +11,9 @@ $ git clone git@github.com:<your-username>/picrust2.git
 $ cd picrust2/
 ```
 
+Next, install the required dependencies listed [here](https://github.com/picrust/picrust2/wiki/Installation#pre-requisites).
+
+
 Then, set up a development environment using [`conda`](https://conda.io/miniconda.html):
 
 ```
