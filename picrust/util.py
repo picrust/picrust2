@@ -337,7 +337,7 @@ def system_call(cmd, shell=True):
     return stdout, stderr, return_value
 
 
-def system_call_check(cmd, print_out=False):
+def system_call_check(cmd, print_out=False, stdout=None, stderr=None):
     """Run system command and throw and error if return is not 0. Input command
     can be a list containing the command or a string."""
 
@@ -352,7 +352,7 @@ def system_call_check(cmd, print_out=False):
     if type(cmd) is str:
         cmd = cmd.split()
 
-    return_value = call(cmd)
+    return_value = call(cmd, stdout=stdout, stderr=stderr)
 
     # Exit with error if command did not finish successfully.
     if return_value != 0:
