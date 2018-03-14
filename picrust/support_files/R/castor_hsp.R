@@ -185,12 +185,18 @@ predicted_values <- predicted_values[, c("tips", colnames(trait_values_ordered))
 
 # Calculate NSTI per tip and add to output as last column if option set.
 if(calc_nsti) {
-  tip_range <- 1:num_tip
-  predicted_values$nsti <- as.numeric(unlist(mclapply(tip_range, 
+  predicted_values$nsti <- NA
+  
+  # Calculate NSTIs for tips with unknown trait values.
+  unknown_tip_range <- which(predicted_values$tips %in% unknown_tips)
+  predicted_values[unknown_tip_range, "nsti"] <- as.numeric(unlist(mclapply(unknown_tip_range, 
                                                       function(x) { find_nearest_tips(full_tree, 
-                                                                    target_tips=tip_range[-x],
+                                                                    target_tips=unknown_tip_range[-x],
                                                                     check_input=check_input_set)$nearest_distance_per_tip[x]},
                                                        mc.cores = num_cores)))
+  # Set known tips to have NSTI of 0.
+  predicted_values[-unknown_tip_range, "nsti"] <- 0
+  
 }
 
 # Write out predicted values.
