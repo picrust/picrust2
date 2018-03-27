@@ -173,6 +173,10 @@ if (hsp_method == "pic" | hsp_method == "scp" | hsp_method == "subtree_average")
     
     ci_values$tips <- full_tree$tip.label
     ci_values <- ci_values[, c("tips", orig_ci_colnames)]
+    
+    # Subset to previously unknown tips only.
+    ci_values <- ci_values[which(ci_values$tips %in% unknown_tips),]
+    
     write.table(ci_values, file=ci_outfile, sep="\t", quote=FALSE, row.names=FALSE)
     
    }
@@ -183,23 +187,25 @@ predicted_values <- data.frame(predicted_values, check.names = FALSE)
 predicted_values$tips <- full_tree$tip.label
 predicted_values <- predicted_values[, c("tips", colnames(trait_values_ordered))]
 
+unknown_tip_range <- which(predicted_values$tips %in% unknown_tips)
+
 # Calculate NSTI per tip and add to output as last column if option set.
 if(calc_nsti) {
-  predicted_values$nsti <- NA
+  predicted_values$metadata_NSTI <- NA
   
-  # Calculate NSTIs for tips with unknown trait values.
+  # Calculate NSTIs for tips with previously unknown trait values.
   all_tip_range <- 1:length(full_tree$tip.label)
-  unknown_tip_range <- which(predicted_values$tips %in% unknown_tips)
+  
   known_tip_range <- which(! predicted_values$tips %in% unknown_tips)
 
-  predicted_values[unknown_tip_range, "nsti"] <- find_nearest_tips(
+  predicted_values[unknown_tip_range, "metadata_NSTI"] <- find_nearest_tips(
                                                               full_tree,
                                                               target_tips=known_tip_range,
                                                               check_input=check_input_set)$nearest_distance_per_tip[unknown_tip_range]
-
-  # Set known tips to have NSTI of 0.
-  predicted_values[known_tip_range, "nsti"] <- 0
 }
+
+# Subset to previously unknown tips only.
+predicted_values <- predicted_values[unknown_tip_range,]
 
 # Write out predicted values.
 write.table(predicted_values, file=predict_outfile, row.names=FALSE, quote=FALSE, sep="\t")
