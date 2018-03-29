@@ -2,3 +2,6 @@ PICRUSt.egg-info/
 .cache/
 *.pyc
 tests/__pycache__/
+precalculated/prokaryotic/img_centroid_16S_aligned.fna
+precalculated/prokaryotic/img_centroid_16S_aligned.tre
+precalculated/prokaryotic/*_counts_mean_round_var.txt
