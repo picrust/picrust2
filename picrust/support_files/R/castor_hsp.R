@@ -21,6 +21,13 @@ check_input_set <- as.logical(Args[6])
 num_cores <- Args[7]
 predict_outfile <- Args[8]
 ci_outfile <- Args[9]
+seed_setting <- Args[10]
+
+# Set random seed if integer specified.
+if(seed_setting != "None") {
+  RNGkind("L'Ecuyer-CMRG")
+  set.seed(as.integer(seed_setting))
+}
 
 # Function to get CIs for certain HSP methods.
 ci_95_states2values <- function(state_probs, number_of_tips) {

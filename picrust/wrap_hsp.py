@@ -2,8 +2,6 @@
 
 """ Application controller for HSP functions within the R package 'castor'.
 
-File created on 15 Jan 2017.
-
 """
 from __future__ import division
 from os import remove
@@ -13,14 +11,9 @@ from picrust.util import get_picrust_project_dir
 from os.path import join
 
 __author__ = "Gavin Douglas"
-__copyright__ = "Copyright 2017, The PICRUSt Project"
-__credits__ = ["Gavin Douglas", "Morgan Langille", "Greg Caporaso"]
+__copyright__ = "Copyright 2018, The PICRUSt Project"
 __license__ = "GPL"
 __version__ = "2-alpha.2"
-__maintainer__ = "Gavin Douglas"
-__email__ = "gavinmdouglas@gmail.com"
-__status__ = "Development"
-
 
 class Castor_hsp(CommandLineApplication):
     """ Application controller for HSP functions within 
@@ -119,6 +112,7 @@ def castor_hsp_wrapper(tree_path,
                        calc_ci=False,
                        check_input=False,
                        num_cores=1,
+                       ran_seed=None,
                        HALT_EXEC=False):
                        
     '''Runs the Castor_hsp application controller given path of tree and 
@@ -158,7 +152,8 @@ def castor_hsp_wrapper(tree_path,
                           check_input_setting,
                           str(num_cores),
                           tmp_output_count_path,
-                          tmp_output_ci_path])
+                          tmp_output_ci_path,
+                          str(ran_seed)])
 
     # Run castor_hsp here
     result = castor_hsp(data=as_string)
