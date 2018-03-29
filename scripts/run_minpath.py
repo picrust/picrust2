@@ -8,72 +8,58 @@ __credits__ = ["Gavin Douglas", "Morgan Langille"]
 __license__ = "GPL"
 __version__ = "2-alpha.3"
 
-from cogent.util.option_parsing import parse_command_line_parameters, make_option
+import argparse
 from biom.table import Table
 from biom import load_table
 import tempfile
 from picrust.util import system_call_check, make_output_dir
 from picrust.run_minpath import pathway_counts, minpath_wrapper
 from joblib import Parallel, delayed
-from pprint import pprint
 
-script_info = {}
+parser = argparse.ArgumentParser(
 
-script_info['script_description'] = "Runs MinPath on a table of E.C. numbers"
+    description="Runs MinPath on a table of E.C. numbers",
 
-# Define command-line interface
-script_info['output_description'] = "Output is a tab-delimited table of " +\
-                                   "predicted pathway abundances"
+    formatter_class=argparse.RawDescriptionHelpFormatter)
 
-script_info['required_options'] = [
+parser.add_argument('-i', '--input', metavar='PATH', required=True, type=str,
+                    help='Input BIOM table of E.C. number abundances')
 
-  make_option('-i', '--input', type="existing_filepath",
-              help='the input biom table of gene family abundances'),
+parser.add_argument('-m', '--map', metavar='PATH', required=True, type=str,
+                    help='MinPath mapfile')
 
-  make_option('-m', '--map', type="existing_filepath",
-              help='path to MinPath map'),
+parser.add_argument('-o', '--output', metavar='PATH', required=True, type=str,
+                    help='Output file containing pathway abundances')
 
-  make_option('-o', '--output', type="new_filepath",
+parser.add_argument('--keep_tmp', default=False, action="store_true",
+                    help='If specified, keep temporary folder')
 
-              help='the output filepath for pathway abundances')
-]
+parser.add_argument('-t', '--threads', default=1, type=int,
+                    help='Number of threads')
 
-script_info['optional_options'] = [
+parser.add_argument('--tmp_dir', metavar='PATH', type=str,
+                    help='Temporary directory for running MinPath')
 
-  make_option('--keep_tmp', default=False, action="store_true",
-              help='if specified, keep temporary folder ' +
-                   '[default: %default]'),
-
-  make_option('-t', '--threads', default=1, type="int",
-              help='Number of threads [default: %default]'),
-
-  make_option('--tmp_dir', type="new_filepath",
-              help='temporary directory for running MinPath'),
-
-  make_option('--print_cmds', default=False, action="store_true",
-              help='if specified, print out wrapped commands to screen ' +
-                   '[default: %default]')
-]
-
-script_info['version'] = __version__
+parser.add_argument('--print_cmds', default=False, action="store_true",
+                    help='If specified, print out wrapped commands to screen')
 
 
 def main():
 
-    option_parser, opts, args = parse_command_line_parameters(**script_info)
+    args = parser.parse_args()
 
     # Create temporary folder for intermediate files.
-    if opts.tmp_dir:
-        tmp_dir = opts.tmp_dir
+    if args.tmp_dir:
+        tmp_dir = args.tmp_dir
     else:
         tmp_dir = "minpath_tmp_" + next(tempfile._get_candidate_names())
 
     make_output_dir(tmp_dir)
 
-    if opts.print_cmds:
+    if args.print_cmds:
       print("Creating tmp directory: " + tmp_dir)
 
-    biom_in = load_table(opts.input)
+    biom_in = load_table(args.input)
 
     # Remove all empty rows and columns.
     biom_in.remove_empty(axis='whole', inplace=True)
@@ -96,9 +82,9 @@ def main():
 
     functions = list(functions_map.values())
 
-    sample_path_abun_raw = Parallel(n_jobs=opts.threads)(delayed(
+    sample_path_abun_raw = Parallel(n_jobs=args.threads)(delayed(
                                 minpath_wrapper)(sample_id, biom_in,
-                                opts.map, tmp_dir, functions, opts.print_cmds)
+                                args.map, tmp_dir, functions, args.print_cmds)
                                 for sample_id in samples)
 
     # Figure out what all unique pathway names are.
@@ -114,10 +100,8 @@ def main():
     for i, sample_id in enumerate(samples):
       sample_path_abun[sample_id] = sample_path_abun_raw[i]
 
-    pprint(sample_path_abun)
-
     # Write output file of pathway abundances.
-    outfile = open(opts.output, "w")
+    outfile = open(args.output, "w")
 
     # Write header-line.
     outfile.write("\t".join(["pathway"] + list(samples)) + "\n")
@@ -133,8 +117,8 @@ def main():
     outfile.close()
 
     # Remove intermediate files unless "--keep_tmp" option specified.
-    if not opts.keep_tmp:
-        system_call_check("rm -r " + tmp_dir, print_out=opts.print_cmds)
+    if not args.keep_tmp:
+        system_call_check("rm -r " + tmp_dir, print_out=args.print_cmds)
 
 if __name__ == "__main__":
     main()

@@ -12,7 +12,6 @@ from collections import defaultdict
 from math import e
 from copy import copy
 from random import choice
-from cogent.util.option_parsing import parse_command_line_parameters, make_option
 from numpy.ma import masked_object
 from numpy.ma import array as masked_array
 from numpy import apply_along_axis,array,around,mean,maximum as numpy_max, minimum as numpy_min,\

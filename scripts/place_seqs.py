@@ -8,74 +8,59 @@ __credits__ = ["Gavin Douglas", "Morgan Langille"]
 __license__ = "GPL"
 __version__ = "2-alpha.3"
 
-from cogent.util.option_parsing import parse_command_line_parameters, make_option
+import argparse
 import tempfile
 from picrust.util import system_call_check, make_output_dir, read_fasta, read_phylip, write_fasta, write_phylip
 
-script_info = {}
-script_info['brief_description'] = "Will place study seqs in phylogeny with " +\
-                                   "reference sequences."
+parser = argparse.ArgumentParser(
 
-script_info['script_description'] = "Wrapper to prep tree before HSP steps. " +\
-                                    "Requires tree of reference sequences, " +\
-                                    "FASTA MSA of reference seqs, and " +\
-                                    "unaligned FASTA of study sequences."
+    description="Wrapper to prep tree before HSP steps. Requires tree of " +
+                "reference sequences, FASTA MSA of reference seqs, and " +
+                "unaligned FASTA of study sequences.",
 
-# Define command-line interface.
-script_info['output_description'] = "Output is a tree of the reference and " +\
-                                    "study sequences"
-script_info['required_options'] = [
+    formatter_class=argparse.RawDescriptionHelpFormatter)
 
-  make_option('-r', '--ref_msa', type="existing_filepath",
-              help='FASTA of aligned reference sequences'),
 
-  make_option('-s', '--study_fasta', type="existing_filepath",
-              help='FASTA of unaligned study sequences'),
+parser.add_argument('-r', '--ref_msa', metavar='PATH', required=True, type=str,
+                    help='FASTA of aligned reference sequences')
 
-  make_option('-t', '--tree', type="existing_filepath",
-              help='Input tree based on aligned reference sequences.'),
+parser.add_argument('-s', '--study_fasta', metavar='PATH', required=True,
+                    type=str, help='FASTA of unaligned study sequences')
 
-  make_option('-o', '--out_tree', type="new_filepath",
-              help='Name of final output tree')
+parser.add_argument('-t', '--tree', metavar='PATH', required=True,
+                    type=str,
+                    help='Input tree based on aligned reference sequences.')
 
-]
+parser.add_argument('-o', '--out_tree', metavar='PATH', required=True,
+                    type=str, help='Name of final output tree')
 
-script_info['optional_options'] = [
+parser.add_argument('--keep_tmp', default=False, action='store_true',
+                    help='If specified, keep temporary folder')
 
-  make_option('--keep_tmp', default=False, action="store_true",
-              help='if specified, keep temporary folder ' +
-                   '[default: %default]'),
+parser.add_argument('--threads', type=int, default=1,
+                    help='Number of threads to use when possible')
 
-  make_option('--threads', type="int", default=1,
-              help='Number of threads to use when possible. ' +
-                   '[default: %default]'),
+parser.add_argument('--papara_output', metavar='PATH', type=str, default=None,
+                    help='Path to PaPaRa output in Phylip format (will skip ' +
+                         'PaPaRa step)')
 
-  make_option('--papara_output', type="existing_filepath", default=None,
-              help='Path to papara output in Phylip format ' +
-                   '(will skip papara step)'),
+parser.add_argument('--tmp_dir', metavar='PATH', type=str, default=None,
+                    help='Temporary folder for intermediate files')
 
-  make_option('--tmp_dir', type="new_filepath", default=None,
-              help='Temporary folder for intermediate files.'),
+parser.add_argument('--chunk_size', type=int, default=5000,
+                    help='Number of query seqs to read in at once for epa-ng')
 
-  make_option('--chunk_size', type="int", default=5000,
-              help='Number of query seqs to read in at once for epa-ng. ' +
-                   '[default: %default]'),
-
-  make_option('--print_cmds', default=False, action="store_true",
-              help='if specified, print out wrapped commands to screen ' +
-                   '[default: %default]')
-]
-
-script_info['version'] = __version__
+parser.add_argument('--print_cmds', default=False, action='store_true',
+                    help='If specified, print out wrapped commands to screen')
 
 
 def main():
 
-    option_parser, opts, args = parse_command_line_parameters(**script_info)
+    args = parser.parse_args()
 
     # Create temporary folder for intermediate files.
-    if opts.tmp_dir:
-      tmp_dir = opts.tmp_dir
+    if args.tmp_dir:
+      tmp_dir = args.tmp_dir
     else:
       tmp_dir = "place_seqs_tmp_" + next(tempfile._get_candidate_names())
 
@@ -97,32 +82,32 @@ def main():
     epa_out_dir = tmp_dir + "/epa_out"
 
     # Read in ref seqs FASTA.
-    ref_msa = read_fasta(opts.ref_msa)
+    ref_msa = read_fasta(args.ref_msa)
 
     # Either read in papara output or run it.
-    if opts.papara_output:
+    if args.papara_output:
       # Read in papara output if already done.
-      papara_out = read_phylip(opts.papara_output, check_input=True)
+      papara_out = read_phylip(args.papara_output, check_input=True)
 
     else:
       # Convert ref sequences from MSA FASTA to phylip.
       write_phylip(ref_msa, ref_phylip_out)
 
       # Run papara to align query seqs to ref sequences.
-      system_call_check("papara -t " + opts.tree + " -s " + ref_phylip_out +
-                        " -q " + opts.study_fasta + " -j " + str(opts.threads) +
-                        " -n " + papara_suffix, print_out=opts.print_cmds)
+      system_call_check("papara -t " + args.tree + " -s " + ref_phylip_out +
+                        " -q " + args.study_fasta + " -j " + str(args.threads) +
+                        " -n " + papara_suffix, print_out=args.print_cmds)
 
       # Read in papara phylip output.
       papara_out = read_phylip(papara_filename, check_input=True)
 
       # Move papara Phylip file, quality, and log to tmp folder.
       system_call_check("mv " + papara_filename + " " + tmp_dir,
-                        print_out=opts.print_cmds)
+                        print_out=args.print_cmds)
       system_call_check("mv papara_log." + papara_suffix + " " + tmp_dir,
-                        print_out=opts.print_cmds)
+                        print_out=args.print_cmds)
       system_call_check("mv papara_quality." + papara_suffix + " " + tmp_dir,
-                        print_out=opts.print_cmds)
+                        print_out=args.print_cmds)
 
     # Split papara phylip output into FASTA MSA files of study sequences and
     # reference sequences separately.
@@ -139,18 +124,18 @@ def main():
     # Run EPA (output needs to be to a directory, which will be created).
     make_output_dir(epa_out_dir)
 
-    system_call_check("epa-ng --tree " + opts.tree + " --ref-msa " +
+    system_call_check("epa-ng --tree " + args.tree + " --ref-msa " +
                       ref_fasta_aligned + " --query " + study_fasta_aligned +
-                      " --chunk-size " + str(opts.chunk_size) + " -T " +
-                      str(opts.threads) + " -w " + epa_out_dir,
-                      print_out=opts.print_cmds)
+                      " --chunk-size " + str(args.chunk_size) + " -T " +
+                      str(args.threads) + " -w " + epa_out_dir,
+                      print_out=args.print_cmds)
 
     system_call_check("guppy tog " + epa_out_dir + "/epa_result.jplace" +
-                      " -o " + opts.out_tree, print_out=opts.print_cmds)
+                      " -o " + args.out_tree, print_out=args.print_cmds)
 
     # Remove intermediate files unless "--keep_tmp" option specified.
-    if not opts.keep_tmp:
-        system_call_check("rm -r " + tmp_dir, print_out=opts.print_cmds)
+    if not args.keep_tmp:
+        system_call_check("rm -r " + tmp_dir, print_out=args.print_cmds)
 
 
 if __name__ == "__main__":

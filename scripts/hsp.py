@@ -115,7 +115,7 @@ def main():
     hsp_table.writeToFile(args.output_trait_table, sep='\t')
 
     # Output the CI file as well if option set.
-    if (ci_setting):
+    if ci_setting:
         make_output_dir_for_file(args.ci_out)
         ci_table.writeToFile(args.ci_out, sep='\t')
 

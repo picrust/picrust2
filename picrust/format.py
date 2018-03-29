@@ -10,8 +10,6 @@ __version__ = "2-alpha.3"
 
 from os.path import splitext
 from cogent import LoadTree
-from cogent.util.option_parsing import parse_command_line_parameters,\
-    make_option
 
 def nexus_lines_from_tree(tree):
     """Return NEXUS formatted lines from a PyCogent PhyloNode tree"""

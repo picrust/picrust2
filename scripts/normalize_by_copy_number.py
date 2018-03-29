@@ -4,11 +4,11 @@ from __future__ import division
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2018, The PICRUSt Project"
-__credits__ = ["Gavin Douglas", "Morgan Langille"]
+__credits__ = ["Greg Caporaso", "Morgan Langille"]
 __license__ = "GPL"
 __version__ = "2-alpha.3"
 
-from cogent.util.option_parsing import parse_command_line_parameters, make_option
+import argparse
 from biom import load_table, Table
 from picrust.predict_metagenomes import transfer_observation_metadata
 from os import path
@@ -16,75 +16,70 @@ from os.path import join
 from picrust.util import get_picrust_project_dir, convert_precalc_to_biom,make_output_dir_for_file, write_biom_table
 import gzip
 
-script_info = {}
-script_info['brief_description'] = "Normalize an OTU table by marker gene copy number"
-script_info['script_description'] = ""
-script_info['script_usage'] = [
-("","Normalize the OTU abundances for a given OTU table picked against the newest version of Greengenes:","%prog -i closed_picked_otus.biom -o normalized_otus.biom"),
-("","Change the version of Greengenes used for OTU picking:","%prog -g 18may2012 -i closed_picked_otus.biom -o normalized_otus.biom")
-]
-script_info['output_description']= "A normalized OTU table"
-script_info['required_options'] = [
- make_option('-i','--input_otu_fp',type="existing_filepath",help='the input otu table filepath in biom format'),
- make_option('-o','--output_otu_fp',type="new_filepath",help='the output otu table filepath in biom format'),
-]
-gg_version_choices=['13_5','18may2012']
-script_info['optional_options'] = [
-    make_option('-g','--gg_version',default=gg_version_choices[0],type="choice",\
-                    choices=gg_version_choices,\
-                    help='Version of GreenGenes that was used for OTU picking. Valid choices are: '+\
-                    ', '.join(gg_version_choices)+\
-                    ' [default: %default]'),
+parser = argparse.ArgumentParser(
 
-    make_option('-c','--input_count_fp',default=None,type="existing_filepath",\
-                    help='Precalculated input marker gene copy number predictions on per otu basis in biom format (can be gzipped).Note: using this option overrides --gg_version. [default: %default]'),
-    make_option('--metadata_identifer',
-             default='CopyNumber',
-             help='identifier for copy number entry as observation metadata [default: %default]'),
+    description="Normalize an OTU table by marker gene copy number",
 
-    make_option('--load_precalc_file_in_biom',default=False,action="store_true",\
-                    help='Instead of loading the precalculated file in tab-delimited format (with otu ids as row ids and traits as columns) load the data in biom format (with otu as SampleIds and traits as ObservationIds) [default: %default]'),
+    formatter_class=argparse.RawDescriptionHelpFormatter)
 
-]
-script_info['version'] = __version__
+parser.add_argument('-i', '--input', metavar='PATH', required=True, type=str,
+                    help='The input study table in biom format')
 
+parser.add_argument('-o', '--output', metavar='PATH', required=True, type=str,
+                    help='The output normalized table in biom format')
+
+parser.add_argument('-c', '--input_count', metavar='PATH', required=True,
+                    type=str,
+                    help='Table of predicted marker gene copy numbers for ' +
+                         'study sequences (can be gzipped)')
+
+parser.add_argument('--metadata_identifer', default='CopyNumber',
+                    help='Identifier for copy number entry as observation ' +
+                         'metadata')
+
+parser.add_argument('--load_precalc_file_in_biom', default=False,
+                    action="store_true",
+                    help='Instead of loading the precalculated file in ' +
+                         'tab-delimited format (with sequence ids as row ' +
+                         'ids and traits as columns) load the data in BIOM ' +
+                         'format (with sequences as SampleIds and traits as ' +
+                         'ObservationIds)')
+
+parser.add_argument('--verbose', default=False, action="store_true",
+                    help='Details will be printed to screen while program ' +
+                         'runs')
 
 def main():
-    option_parser, opts, args =\
-       parse_command_line_parameters(**script_info)
 
-    otu_table = load_table(opts.input_otu_fp)
+    args = parser.parse_args()
+
+    otu_table = load_table(args.input_otu_fp)
 
     ids_to_load = otu_table.ids(axis='observation')
 
-    if(opts.input_count_fp is None):
-        #precalc file has specific name (e.g. 16S_13_5_precalculated.tab.gz)
-        precalc_file_name='_'.join(['16S',opts.gg_version,'precalculated.tab.gz'])
-        input_count_table=join(get_picrust_project_dir(),'picrust','data',precalc_file_name)
-    else:
-        input_count_table=opts.input_count_fp
+    input_count_table = args.input_count_fp
 
-    if opts.verbose:
+    if args.verbose:
         print "Loading trait table: ", input_count_table
 
-    ext=path.splitext(input_count_table)[1]
+    ext = path.splitext(input_count_table)[1]
 
     if (ext == '.gz'):
         count_table_fh = gzip.open(input_count_table,'rb')
     else:
         count_table_fh = open(input_count_table,'U')
 
-    if opts.load_precalc_file_in_biom:
+    if args.load_precalc_file_in_biom:
         count_table = load_table(count_table_fh)
     else:
         count_table = convert_precalc_to_biom(count_table_fh, ids_to_load)
 
     #Need to only keep data relevant to our otu list
-    ids=[]
+    ids = []
     for x in otu_table.iter(axis='observation'):
         ids.append(str(x[1]))
 
-    ob_id=count_table.ids(axis='observation')[0]
+    ob_id = count_table.ids(axis='observation')[0]
 
     filtered_otus=[]
     filtered_values=[]
@@ -108,19 +103,19 @@ def main():
         if value < 1:
             raise ValueError, "Copy numbers must be greater than or equal to 1."
 
-        copy_numbers_filtered[x]={opts.metadata_identifer:value}
+        copy_numbers_filtered[x]={args.metadata_identifer:value}
 
     filtered_otu_table.add_metadata(copy_numbers_filtered, axis='observation')
 
     def metadata_norm(v, i, md):
-        return v / float(md[opts.metadata_identifer])
+        return v / float(md[args.metadata_identifer])
     normalized_table = filtered_otu_table.transform(metadata_norm, axis='observation')
 
     #move Observation Metadata from original to filtered OTU table
     normalized_table = transfer_observation_metadata(otu_table, normalized_table, 'observation')
 
-    make_output_dir_for_file(opts.output_otu_fp)
-    write_biom_table(normalized_table, opts.output_otu_fp)
+    make_output_dir_for_file(args.output_otu_fp)
+    write_biom_table(normalized_table, args.output_otu_fp)
 
 
 if __name__ == "__main__":
