@@ -6,75 +6,69 @@ __credits__ = ["Gavin Douglas", "Morgan Langille"]
 __license__ = "GPL"
 __version__ = "2-alpha.3"
 
-from cogent.util.option_parsing import parse_command_line_parameters, make_option
+import argparse
 from picrust.wrap_hsp import castor_hsp_loocv_wrapper
 
-script_info = {}
-script_info['brief_description'] = "Leave-one-genome out validation of HSP"
+parser = argparse.ArgumentParser(
 
-script_info['script_description'] = "Given a set of tip names in tree " +\
-                                   "will run HSP when leaving that tip out." +\
-                                   "Expected and predicted values will be " +\
-                                   "output along with the Spearman rho " +\
-                                   "between the expected and observed and " +\
-                                   "the NSTI value for that tip. Currently " +\
-                                   "only HSP with maximum parsimony is enabled"
+    description="Given a set of tip names in tree will run HSP when leaving " +
+                "that tip out. Expected and predicted values will be output " +
+                "along with the Spearman rho between the expected and " +
+                "observed and the NSTI value for that tip. Currently " +
+                "only HSP with maximum parsimony is enabled",
 
-script_info['required_options'] = [
+    formatter_class=argparse.RawDescriptionHelpFormatter)
 
-  make_option('-i', '--observed_trait_table', type="existing_filepath",
-              help='the input trait table describing directly observed ' +
-                   'traits (e.g. sequenced genomes) in tab-delimited format'),
+parser.add_argument('-i', '--observed_trait_table', metavar='PATH',
+                    required=True, type=str,
+                    help='The input trait table describing directly ' +
+                         'observed traits (e.g. sequenced genomes) in ' +
+                         'tab-delimited format')
 
-  make_option('-t', '--tree', type="existing_filepath",
-              help='the full reference tree, in newick format'),
+parser.add_argument('-t', '--tree', metavar='PATH', required=True, type=str,
+                    help='The full reference tree, in newick format')
 
-  make_option('-n', '--names', type="existing_filepath",
-              help='File with tip names to leave out - one per line')
-]
+parser.add_argument('-n', '--names', metavar="PATH", required=True, type=str,
+                    help='File with tip names to leave out - one per line')
 
-script_info['optional_options'] = [
+parser.add_argument('-o', '--output_trait_table', metavar='PATH', type=str,
+                    default='predicted_traits.tsv',
+                    help='The output filepath for trait predictions')
 
-  make_option('--exp_out', type="new_filepath",
-              default='expected_traits.tsv',
-              help='the output filepath for expected trait values ' +
-                   '[default: %default]'),
+parser.add_argument('--exp_out', metavar="PATH", default='expected_traits.tsv',
+                    help='The output filepath for expected trait values')
 
-  make_option('--pred_out', type="new_filepath",
-              default='expected_traits.tsv',
-              help='the output filepath for predicted trait values ' +
-                   '[default: %default]'),
+parser.add_argument('--pred_out', metavar="PATH",
+                    default='expected_traits.tsv',
+                    help='The output filepath for predicted trait values')
 
-  make_option('-m', '--metrics_out', type="new_filepath",
-              default='rho_nsti_out.tsv',
-              help='the output filepath for Rho and NSTI values per left out genome ' +
-                   '[default: %default]'),
+parser.add_argument('-m', '--metrics_out', metavar="PATH",
+                    default='rho_nsti_out.tsv',
+                    help='The output filepath for Rho and NSTI values per ' +
+                         'left out genome')
 
-  make_option('-p', '--processes', default=1, type="int",
-              help='Number of processes to run in parallel.' +
-                   '[default: %default]'),
+parser.add_argument('-p', '--processes', default=1, type=int,
+                    help='Number of processes to run in parallel')
 
-  make_option('--debug', default=False, action="store_true",
-              help='Flag to specify run in debugging mode. ' +
-                   '[default: %default]')
-]
+parser.add_argument('--debug', default=False, action='store_true',
+                    help='Run in debugging mode')
 
-script_info['version'] = __version__
-
+parser.add_argument('-v', '--version', default=False, action='version',
+                    version="%(prog)s " + __version__)
 
 def main():
 
-    option_parser, opts, args = parse_command_line_parameters(**script_info)
+    args = parser.parse_args()
 
-    castor_hsp_loocv_wrapper(tree_path=opts.tree,
-                             trait_table_path=opts.observed_trait_table,
-                             tips_path=opts.names,
+    castor_hsp_loocv_wrapper(tree_path=args.tree,
+                             trait_table_path=args.observed_trait_table,
+                             tips_path=args.names,
                              hsp_method="mp",
-                             expected_out_path=opts.exp_out,
-                             predicted_out_path=opts.pred_out,
-                             metrics_out_path=opts.metrics_out,
-                             num_cores=opts.processes,
-                             HALT_EXEC=opts.debug)
+                             expected_out_path=args.exp_out,
+                             predicted_out_path=args.pred_out,
+                             metrics_out_path=args.metrics_out,
+                             num_cores=args.processes,
+                             HALT_EXEC=args.debug)
 
 if __name__ == "__main__":
     main()

@@ -1,10 +1,7 @@
 #!/usr/bin/env python
 
 __author__ = "Gavin Douglas"
-__copyright__ = "Copyright 2018, The PICRUSt Project"
-__credits__ = ["Gavin Douglas", "Morgan Langille"]
-__license__ = "GPL"
-__version__ = "2-alpha.3"
+__version__ = "2-alpha.2"
 
 import argparse
 from picrust.wrap_hsp import castor_hsp_wrapper
@@ -78,11 +75,11 @@ parser.add_argument('--check', default=False, action='store_true',
                     help='Check input trait table before HSP')
 
 parser.add_argument('-p', '--processes', default=1, type=int,
-                    help='Number of processes to run in parallel'),
+                    help='Number of processes to run in parallel')
 
 parser.add_argument('--seed', default=None, type=int,
                     help='Seed to make output reproducible ' +
-                         '(necessary for mp and emp_prob methods'),
+                         '(necessary for mp and emp_prob methods)')
 
 parser.add_argument('--debug', default=False, action='store_true',
                     help='Run in debugging mode')

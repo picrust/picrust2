@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+from __future__ import division
+
 """ Application controller for HSP functions within the R package 'castor'.
 
 """
@@ -9,7 +11,6 @@ __copyright__ = "Copyright 2018, The PICRUSt Project"
 __license__ = "GPL"
 __version__ = "2-alpha.3"
 
-from __future__ import division
 from os import remove
 from cogent.app.util import CommandLineApplication, get_tmp_filename
 from cogent import LoadTable
