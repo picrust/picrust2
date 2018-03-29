@@ -7,7 +7,7 @@
 __author__ = "Gavin Douglas"
 __copyright__ = "Copyright 2018, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2-alpha.2"
+__version__ = "2-alpha.3"
 
 from __future__ import division
 from os import remove

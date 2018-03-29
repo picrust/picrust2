@@ -14,7 +14,7 @@ __credits__ = ["Morgan Langille", "Jesse Zaneveld", "Greg Caporaso",
                "Jose Clemente", "Rob Knight", "Rob Beiko",
                "Curtis Huttenhower"]
 __license__ = "GPL"
-__version__ = "2-alpha.2"
+__version__ = "2-alpha.3"
 
 try:
     from cogent import __version__ as pycogent_lib_version
