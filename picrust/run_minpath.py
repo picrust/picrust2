@@ -9,10 +9,6 @@ __copyright__ = "Copyright 2018, The PICRUSt Project"
 __credits__ = ["Gavin Douglas", "Morgan Langille"]
 __license__ = "GPL"
 __version__ = "2-alpha.2"
-__maintainer__ = "Gavin Douglas"
-__email__ = "gavinmdouglas@gmail.com"
-__status__ = "Development"
-
 
 # Class that contains pathway abundances for each sample.
 class pathway_counts():

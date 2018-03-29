@@ -1,15 +1,12 @@
 #!/usr/bin/env python
-# File created on 15 Jul 2011
+
 from __future__ import division
 
 __author__ = "Jesse Zaneveld"
-__copyright__ = "Copyright 2015, The PICRUSt Project"
+__copyright__ = "Copyright 2018, The PICRUSt Project"
 __credits__ = ["Jesse Zaneveld"]
 __license__ = "GPL"
 __version__ = "2-alpha.2"
-__maintainer__ = "Jesse Zaneveld"
-__email__ = "zaneveld@gmail.com"
-__status__ = "Development"
 
 from os.path import splitext
 from cogent import LoadTree

@@ -1,15 +1,12 @@
 #!/usr/bin/env python
-# File created on 22 Feb 2012
+
 from __future__ import division
 
 __author__ = "Greg Caporaso"
-__copyright__ = "Copyright 2015, The PICRUSt Project"
+__copyright__ = "Copyright 2018, The PICRUSt Project"
 __credits__ = ["Greg Caporaso", "Jesse Zaneveld", "Morgan Langille"]
 __license__ = "GPL"
 __version__ = "2-alpha.2"
-__maintainer__ = "Greg Caporaso"
-__email__ = "gregcaporaso@gmail.com"
-__status__ = "Development"
 
 from numpy import abs,compress, dot, array, around, asarray,empty,zeros, sum as numpy_sum,sqrt,apply_along_axis
 from biom.table import Table

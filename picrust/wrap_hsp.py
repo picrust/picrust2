@@ -3,17 +3,18 @@
 """ Application controller for HSP functions within the R package 'castor'.
 
 """
+
+__author__ = "Gavin Douglas"
+__copyright__ = "Copyright 2018, The PICRUSt Project"
+__license__ = "GPL"
+__version__ = "2-alpha.2"
+
 from __future__ import division
 from os import remove
 from cogent.app.util import CommandLineApplication, get_tmp_filename
 from cogent import LoadTable
 from picrust.util import get_picrust_project_dir
 from os.path import join
-
-__author__ = "Gavin Douglas"
-__copyright__ = "Copyright 2018, The PICRUSt Project"
-__license__ = "GPL"
-__version__ = "2-alpha.2"
 
 class Castor_hsp(CommandLineApplication):
     """ Application controller for HSP functions within 

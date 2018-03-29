@@ -2,16 +2,11 @@
 # File created on 23 Nov 2011
 from __future__ import division
 
-
 __author__ = "Greg Caporaso"
-__copyright__ = "Copyright 2015, The PICRUSt Project"
+__copyright__ = "Copyright 2018, The PICRUSt Project"
 __credits__ = ["Greg Caporaso", "Morgan Langille", "Daniel McDonald"]
 __license__ = "GPL"
 __version__ = "2-alpha.2"
-__maintainer__ = "Greg Caporaso"
-__email__ = "gregcaporaso@gmail.com"
-__status__ = "Development"
-
 
 from biom.parse import parse_biom_table
 from cogent.parse.tree import DndParser

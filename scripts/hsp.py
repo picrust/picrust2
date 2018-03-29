@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 
 __author__ = "Gavin Douglas"
+__copyright__ = "Copyright 2018, The PICRUSt Project"
+__credits__ = ["Gavin Douglas", "Morgan Langille"]
+__license__ = "GPL"
 __version__ = "2-alpha.2"
 
 import argparse

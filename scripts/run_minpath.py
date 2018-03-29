@@ -3,14 +3,10 @@
 from __future__ import division
 
 __author__ = "Gavin Douglas"
-__copyright__ = "Copyright 2011-2017, The PICRUSt Project"
+__copyright__ = "Copyright 2018, The PICRUSt Project"
 __credits__ = ["Gavin Douglas", "Morgan Langille"]
 __license__ = "GPL"
 __version__ = "2-alpha.2"
-__maintainer__ = "Gavin Douglas"
-__email__ = "gavinmdouglas@gmail.com"
-__status__ = "Development"
-
 
 from cogent.util.option_parsing import parse_command_line_parameters, make_option
 from biom.table import Table

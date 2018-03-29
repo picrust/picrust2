@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# File created on Jan 26 2012
+
 from __future__ import division
 
 __author__ = "Jesse RR Zaneveld"
@@ -7,9 +7,6 @@ __copyright__ = "Copyright 2015, The PICRUSt Project"
 __credits__ = ["Jesse Zaneveld", "Morgan Langille"]
 __license__ = "GPL"
 __version__ = "2-alpha.2"
-__maintainer__ = "Jesse RR Zaneveld"
-__email__ = "zaneveld@gmail.com"
-__status__ = "Development"
 
 from collections import defaultdict
 from math import e

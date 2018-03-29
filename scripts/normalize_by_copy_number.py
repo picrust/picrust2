@@ -1,16 +1,12 @@
 #!/usr/bin/env python
-# File created on 22 Feb 2012
+
 from __future__ import division
 
 __author__ = "Greg Caporaso"
-__copyright__ = "Copyright 2011-2013, The PICRUSt Project"
-__credits__ = ["Greg Caporaso","Morgan Langille"]
+__copyright__ = "Copyright 2018, The PICRUSt Project"
+__credits__ = ["Gavin Douglas", "Morgan Langille"]
 __license__ = "GPL"
 __version__ = "2-alpha.2"
-__maintainer__ = "Greg Caporaso"
-__email__ = "gregcaporaso@gmail.com"
-__status__ = "Development"
-
 
 from cogent.util.option_parsing import parse_command_line_parameters, make_option
 from biom import load_table, Table

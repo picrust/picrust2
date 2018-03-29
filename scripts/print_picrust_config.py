@@ -4,19 +4,17 @@
 
 For more details, see http://picrust.github.com
 """
+
 from sys import platform, version as python_version, executable
 
 __author__ = "The PICRUSt Development Team"
-__copyright__ = "Copyright 2015, PICRUSt Project"
+__copyright__ = "Copyright 2018, PICRUSt Project"
 __credits__ = ["Morgan Langille", "Jesse Zaneveld", "Greg Caporaso",
                "Daniel McDonald", "Dan Knights", "Joshua Reyes",
                "Jose Clemente", "Rob Knight", "Rob Beiko",
                "Curtis Huttenhower"]
 __license__ = "GPL"
-__url__ = "http://picrust.github.com"
 __version__ = "2-alpha.2"
-__maintainer__ = "Morgan Langille"
-__email__ = "morgan.g.i.langille@gmail.com"
 
 try:
     from cogent import __version__ as pycogent_lib_version
