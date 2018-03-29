@@ -1,0 +1,11 @@
+tips	16S_rRNA_Count
+study_seq8	4
+study_seq4	4
+study_seq2	4
+study_seq5	1
+study_seq6	1
+study_seq9	1
+study_seq3	1
+study_seq10	1
+study_seq7	1
+study_seq1	1
