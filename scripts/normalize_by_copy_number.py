@@ -6,7 +6,7 @@ __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2018, The PICRUSt Project"
 __credits__ = ["Greg Caporaso", "Morgan Langille"]
 __license__ = "GPL"
-__version__ = "2-alpha.3"
+__version__ = "2-alpha.4"
 
 import argparse
 from biom import load_table, Table

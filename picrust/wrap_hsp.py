@@ -9,7 +9,7 @@ from __future__ import division
 __author__ = "Gavin Douglas"
 __copyright__ = "Copyright 2018, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2-alpha.3"
+__version__ = "2-alpha.4"
 
 from os import remove
 from cogent.app.util import CommandLineApplication, get_tmp_filename

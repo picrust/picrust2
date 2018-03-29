@@ -8,4 +8,4 @@ __credits__ = ["Gavin Douglas", "Morgan Langille", "Jesse Zaneveld", "Greg Capor
                "Curtis Huttenhower"]
 __license__ = "GPL"
 __url__ = "https://github.com/picrust/picrust2"
-__version__ = "2-alpha.3"
+__version__ = "2-alpha.4"

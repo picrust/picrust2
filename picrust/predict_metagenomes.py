@@ -6,7 +6,7 @@ __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2018, The PICRUSt Project"
 __credits__ = ["Greg Caporaso", "Jesse Zaneveld", "Morgan Langille"]
 __license__ = "GPL"
-__version__ = "2-alpha.3"
+__version__ = "2-alpha.4"
 
 from numpy import abs,compress, dot, array, around, asarray,empty,zeros, sum as numpy_sum,sqrt,apply_along_axis
 from biom.table import Table
