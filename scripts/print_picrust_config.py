@@ -3,7 +3,7 @@
 from sys import platform, version as python_version, executable
 
 __license__ = "GPL"
-__version__ = "2-alpha.4"
+__version__ = "2-alpha.5"
 
 try:
     from cogent import __version__ as pycogent_lib_version

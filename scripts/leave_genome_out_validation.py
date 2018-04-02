@@ -4,7 +4,7 @@ __author__ = "Gavin Douglas"
 __copyright__ = "Copyright 2018, The PICRUSt Project"
 __credits__ = ["Gavin Douglas", "Morgan Langille"]
 __license__ = "GPL"
-__version__ = "2-alpha.4"
+__version__ = "2-alpha.5"
 
 import argparse
 from picrust.wrap_hsp import castor_hsp_loocv_wrapper

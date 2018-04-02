@@ -3,7 +3,7 @@
 __author__ = "Gavin Douglas"
 __copyright__ = "Copyright 2018, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2-alpha.4"
+__version__ = "2-alpha.5"
 
 import sys, os, unittest
 from picrust.wrap_hsp import castor_hsp_wrapper, castor_hsp_loocv_wrapper

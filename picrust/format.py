@@ -6,7 +6,7 @@ __author__ = "Jesse Zaneveld"
 __copyright__ = "Copyright 2018, The PICRUSt Project"
 __credits__ = ["Jesse Zaneveld"]
 __license__ = "GPL"
-__version__ = "2-alpha.4"
+__version__ = "2-alpha.5"
 
 from os.path import splitext
 from cogent import LoadTree
