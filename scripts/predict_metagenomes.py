@@ -176,9 +176,9 @@ def main():
     args = parser.parse_args()
 
     if args.verbose:
-        print "Loading OTU table: ",args.input_otu_table
+        print "Loading OTU table: ",args.input
 
-    otu_table = load_table(args.input_otu_table)
+    otu_table = load_table(args.input)
     ids_to_load = otu_table.ids(axis='observation').tolist()
 
     # Determine whether user wants predictions round to nearest whole
@@ -192,15 +192,9 @@ def main():
         print "Done loading OTU table containing %i samples and %i OTUs." \
           %(len(otu_table.ids()),len(otu_table.ids(axis='observation')))
 
-    #Hardcoded loaction of the precalculated datasets for PICRUSt,
-    #relative to the project directory
-    precalc_data_dir=join(get_picrust_project_dir(),'picrust','data')
-
     # Load a table of gene counts by OTUs.
     #This can be either user-specified or precalculated
-    genome_table_fp = determine_data_table_fp(precalc_data_dir,\
-      args.type_of_prediction,args.gg_version,\
-      user_specified_table=args.input_count_table,verbose=args.verbose)
+    genome_table_fp = args.input_count
 
     if args.verbose:
         print "Loading gene count data from file: %s" %genome_table_fp
@@ -259,7 +253,7 @@ def main():
         variance_table=variance_table.sort_order(genome_table.ids(axis='observation'), axis='observation')
         variance_table=variance_table.sort_order(genome_table.ids(), axis='sample')
 
-    make_output_dir_for_file(args.output_metagenome_table)
+    make_output_dir_for_file(args.output)
 
     if args.accuracy_metrics:
         # Calculate accuracy metrics
@@ -308,7 +302,7 @@ def main():
         predicted_metagenomes = predicted_metagenomes.norm(axis='sample', inplace=False)
 
 
-    write_metagenome_to_file(predicted_metagenomes,args.output_metagenome_table,\
+    write_metagenome_to_file(predicted_metagenomes,args.output,\
         args.format_tab_delimited,"metagenome prediction",verbose=args.verbose)
 
     # if args.with_confidence:

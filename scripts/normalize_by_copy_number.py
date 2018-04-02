@@ -53,11 +53,11 @@ def main():
 
     args = parser.parse_args()
 
-    otu_table = load_table(args.input_otu_fp)
+    otu_table = load_table(args.input)
 
     ids_to_load = otu_table.ids(axis='observation')
 
-    input_count_table = args.input_count_fp
+    input_count_table = args.input_count
 
     if args.verbose:
         print "Loading trait table: ", input_count_table
@@ -114,8 +114,8 @@ def main():
     #move Observation Metadata from original to filtered OTU table
     normalized_table = transfer_observation_metadata(otu_table, normalized_table, 'observation')
 
-    make_output_dir_for_file(args.output_otu_fp)
-    write_biom_table(normalized_table, args.output_otu_fp)
+    make_output_dir_for_file(args.output)
+    write_biom_table(normalized_table, args.output)
 
 
 if __name__ == "__main__":
