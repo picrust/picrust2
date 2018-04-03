@@ -90,7 +90,6 @@ def main():
     # Figure out what all unique pathway names are.
     all_pathways = []
     for sample_d in sample_path_abun_raw:
-      print(sample_d)
       all_pathways = list(set(all_pathways + list(sample_d.keys())))
     all_pathways = set(all_pathways)
 

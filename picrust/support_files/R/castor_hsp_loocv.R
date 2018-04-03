@@ -74,7 +74,7 @@ for(tip_name in tips_to_test) {
    rho_out <- NA 
   }
   
-  nsti_out <- find_nearest_tips(full_tree, target_tips=tips_to_test[-tip_index])$nearest_distance_per_tip[tip_index]
+  nsti_out <- find_nearest_tips(full_tree, target_tips=full_tree$tip.label[-tip_index])$nearest_distance_per_tip[tip_index]
   
   metrics_out[tip_name,] <- c(rmse_out, rho_out, nsti_out)
   
