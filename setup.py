@@ -4,14 +4,11 @@ from setuptools import setup
 from glob import glob
 
 
-__author__ = "Gavin Douglas and Greg Caporaso"
-__copyright__ = "Copyright 2011-2013, The PICRUSt Project"
-__credits__ = ["Gavin Douglas", "Greg Caporaso", "Daniel McDonald", "Jose Clemente"]
+__copyright__ = "Copyright 2018, The PICRUSt Project"
 __license__ = "GPL"
 __version__ = "2-alpha.5"
 __maintainer__ = "Gavin Douglas"
 __email__ = "gavin.douglas@dal.ca"
-__status__ = "Development"
 
 long_description = ("PICRUSt: Phylogenetic Investigation of Communities by "
                     "Reconstruction of Unobserved States\n\n"
