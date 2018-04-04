@@ -38,18 +38,6 @@ ci_95_states2values <- function(state_probs, number_of_tips) {
 }
 
 
-# Function to identify traits that have only 1 state across tips (for pre-processing mk_model input).
-identify_single_state <- function(state_vec) {
-  state_vec_noNA <- na.exclude(state_vec)
-  state_vec_noNA_l <- length(state_vec_noNA)
-  
-  if(length(which(state_vec_noNA == 1)) == state_vec_noNA_l) {
-    return(TRUE)
-  } else {
-    return(FALSE)
-  }
-}
-
 # Order the trait table to match the tree tip labels. Set all tips without a value to be NA.
 unknown_tips <- full_tree$tip.label[which(! full_tree$tip.label %in% rownames(trait_values))]
 
@@ -96,42 +84,12 @@ if (hsp_method == "pic" | hsp_method == "scp" | hsp_method == "subtree_average")
 
   predicted_values <- mclapply(predict_out, function(x) { x$states[1:num_tip] }, mc.cores = num_cores)
   
-} else if(hsp_method == "mk_model" | hsp_method == "emp_prob" | hsp_method == "mp") {
+} else if(hsp_method == "emp_prob" | hsp_method == "mp") {
 
   # Add 1 to all input counts because because traits states need to start at 1.
   trait_states_mapped <- trait_values_ordered + 1
 
-  if(hsp_method == "mk_model") {
-    
-    # mk_model throws an error if there is only 1 known state (e.g. if the trait isn't found in any tips).
-    # To get around this can just set all predictions to be this known state for these traits.
-    single_state_traits <- which(mclapply(trait_states_mapped, identify_single_state, mc.cores=num_cores) == TRUE)
-    
-    if(length(single_state_traits) > 0) {
-      trait_states_mapped_variable <- trait_states_mapped[-single_state_traits]
-    } else {
-      trait_states_mapped_variable <- trait_states_mapped
-    }
-    
-    if(length(trait_states_mapped_variable) == 0) {
-      stop("Stopping - all input traits have the same state value, which won't work with a Markov model.")
-    }
-    
-    hsp_out_models <- mclapply(trait_states_mapped_variable,
-                             hsp_mk_model,
-                             tree = full_tree,
-                             rate_model = "SUEDE",
-                             check_input = check_input_set,
-                             mc.cores = num_cores)
-    
-    # If applicable add the invariable traits into the hsp_mk_model output
-    if(length(single_state_traits) > 0) {
-      for(single_state_trait in names(single_state_traits)) {
-        hsp_out_models[[single_state_trait]] <- list(likelihoods = matrix(rep(1, num_tip), nrow=num_tip, ncol=1), success = TRUE)
-      }
-    }
-    
-  } else if (hsp_method == "emp_prob") {
+  if (hsp_method == "emp_prob") {
 
     hsp_out_models <- mclapply(trait_states_mapped,
                               hsp_empirical_probabilities,

@@ -17,14 +17,12 @@ in_tree1 = test_dir_path + "/" + "test_data/hsp/tree.tre"
 
 hsp_mp_pred = test_dir_path + "/" + "test_data/hsp/hsp_output/mp_pred_out.tsv"
 hsp_emp_prob_pred = test_dir_path + "/" + "test_data/hsp/hsp_output/emp_prob_pred_out.tsv"
-hsp_mk_model_pred = test_dir_path + "/" + "test_data/hsp/hsp_output/mk_model_pred_out.tsv"
 hsp_pic_pred = test_dir_path + "/" + "test_data/hsp/hsp_output/pic_pred_out.tsv"
 hsp_scp_pred = test_dir_path + "/" + "test_data/hsp/hsp_output/scp_pred_out.tsv"
 hsp_subtree_average_pred = test_dir_path + "/" + "test_data/hsp/hsp_output/subtree_average_pred_out.tsv"
 
 hsp_mp_pred_in = LoadTable(hsp_mp_pred, header=True, sep='\t')
 hsp_emp_prob_pred_in = LoadTable(hsp_emp_prob_pred, header=True, sep='\t')
-hsp_mk_model_pred_in = LoadTable(hsp_mk_model_pred, header=True, sep='\t')
 hsp_pic_pred_in = LoadTable(hsp_pic_pred, header=True, sep='\t')
 hsp_scp_pred_in = LoadTable(hsp_scp_pred, header=True, sep='\t')
 hsp_subtree_average_pred_in = LoadTable(hsp_subtree_average_pred, header=True, sep='\t')
@@ -53,16 +51,6 @@ class castor_hsp_wrapper_tests(unittest.TestCase):
                                                  ran_seed=10)
 
         self.assertEqual(predict_out, hsp_emp_prob_pred_in)
-
-
-    def test_mk_model_simple(self):
-
-        predict_out, ci_out = castor_hsp_wrapper(tree_path=in_tree1,
-                                                 trait_table_path=in_traits1,
-                                                 hsp_method="mk_model",
-                                                 ran_seed=10)
-
-        self.assertEqual(predict_out, hsp_mk_model_pred_in)
 
 
     def test_pic_simple(self):

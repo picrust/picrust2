@@ -7,7 +7,7 @@ import argparse
 from picrust.wrap_hsp import castor_hsp_wrapper
 from picrust.util import make_output_dir_for_file
 
-HSP_METHODS = ['emp_prob', 'mk_model', 'mp', 'pic', 'scp', 'subtree_average']
+HSP_METHODS = ['mp', 'emp_prob', 'pic', 'scp', 'subtree_average']
 
 parser = argparse.ArgumentParser(
 
@@ -51,15 +51,13 @@ parser.add_argument('--ci_out', metavar='PATH', type=str,
 parser.add_argument('-m', '--hsp_method', default='mp',
                     choices=HSP_METHODS,
                     help='HSP method to use.' +
+                    '"mp": predict discrete traits using max parsimony. ' +
                     '"emp_prob": predict discrete traits based on empirical ' +
-                    'state probabilities across tips. "mk_model": predict ' +
-                    'discrete traits based on fixed-rates continuous time ' +
-                    'Markov model. "mp": predict discrete traits using max ' +
-                    'parsimony. "subtree_average": predict continuous traits ' +
-                    'using subtree averaging. "pic": predict continuous ' +
-                    'traits with phylogentic independent contrast. "scp": ' +
-                    'reconstruct continuous traits using squared-change ' +
-                    'parsimony')
+                    'state probabilities across tips. "subtree_average": ' +
+                    'predict continuous traits using subtree averaging. ' +
+                    '"pic": predict continuous traits with phylogentic ' +
+                    'independent contrast. "scp": reconstruct continuous ' +
+                    'traits using squared-change parsimony')
 
 parser.add_argument('-n', '--calculate_NSTI', default=False,
                     action='store_true',
