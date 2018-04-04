@@ -6,7 +6,7 @@ from glob import glob
 
 __copyright__ = "Copyright 2018, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2-alpha.5"
+__version__ = "2-alpha.6"
 __maintainer__ = "Gavin Douglas"
 __email__ = "gavin.douglas@dal.ca"
 

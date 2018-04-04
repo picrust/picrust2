@@ -6,7 +6,7 @@ __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2018, The PICRUSt Project"
 __credits__ = ["Greg Caporaso","Jesse Zaneveld"]
 __license__ = "GPL"
-__version__ = "2-alpha.5"
+__version__ = "2-alpha.6"
 
 from numpy import array
 from cogent.util.unit_test import TestCase, main

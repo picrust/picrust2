@@ -6,7 +6,7 @@ __author__ = "Jesse RR Zaneveld"
 __copyright__ = "Copyright 2015, The PICRUSt Project"
 __credits__ = ["Jesse Zaneveld", "Morgan Langille"]
 __license__ = "GPL"
-__version__ = "2-alpha.5"
+__version__ = "2-alpha.6"
 
 from collections import defaultdict
 from math import e

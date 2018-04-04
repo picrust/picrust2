@@ -6,7 +6,7 @@ __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2018, The PICRUSt Project"
 __credits__ = ["Greg Caporaso", "Morgan Langille", "Daniel McDonald"]
 __license__ = "GPL"
-__version__ = "2-alpha.5"
+__version__ = "2-alpha.6"
 
 from biom.parse import parse_biom_table
 from cogent.parse.tree import DndParser
