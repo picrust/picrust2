@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 __author__ = "Gavin Douglas"
-__version__ = "2-alpha.2"
+__version__ = "2-alpha.6"
 
 import argparse
 from picrust.wrap_hsp import castor_hsp_wrapper
