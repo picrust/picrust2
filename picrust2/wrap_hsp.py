@@ -14,15 +14,15 @@ __version__ = "2-alpha.6"
 from os import remove
 from cogent.app.util import CommandLineApplication, get_tmp_filename
 from cogent import LoadTable
-from picrust.util import get_picrust_project_dir
+from picrust2.util import get_picrust_project_dir
 from os.path import join
 
 class Castor_hsp(CommandLineApplication):
     """ Application controller for HSP functions within 
     the 'castor' R package."""
 
-    castor_hsp_script_fp = join(get_picrust_project_dir(), 'picrust', 
-        'support_files', 'R', 'castor_hsp.R')
+    castor_hsp_script_fp = join(get_picrust_project_dir(), 'picrust2', 
+        'Rscripts', 'castor_hsp.R')
 
     _command = castor_hsp_script_fp
     _input_handler = '_input_as_string'
@@ -66,8 +66,8 @@ class Castor_hsp_LOOCV(CommandLineApplication):
     """ Application controller for HSP functions within 
     the 'castor' R package when leaving genomes out."""
 
-    castor_loocv_hsp_script_fp = join(get_picrust_project_dir(), 'picrust', 
-        'support_files', 'R', 'castor_hsp_loocv.R')
+    castor_loocv_hsp_script_fp = join(get_picrust_project_dir(), 'picrust2', 
+        'Rscripts', 'castor_hsp_loocv.R')
 
     _command = castor_loocv_hsp_script_fp
     _input_handler = '_input_as_string'

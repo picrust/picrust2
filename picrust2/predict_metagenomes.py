@@ -11,7 +11,7 @@ __version__ = "2-alpha.6"
 from numpy import abs,compress, dot, array, around, asarray,empty,zeros, sum as numpy_sum,sqrt,apply_along_axis
 from biom.table import Table
 from biom.parse import parse_biom_table, get_axis_indices, direct_slice_data, direct_parse_key
-from picrust.predict_traits import variance_of_weighted_mean,calc_confidence_interval_95
+from picrust2.predict_traits import variance_of_weighted_mean,calc_confidence_interval_95
 
 def get_overlapping_ids(otu_table,genome_table,genome_table_ids="sample",\
   otu_table_ids="observation"):

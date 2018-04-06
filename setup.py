@@ -20,7 +20,7 @@ long_description = ("PICRUSt: Phylogenetic Investigation of Communities by "
                     "Huttenhower, C. Nature Biotechnology, 1-10. 8 2013.")
 
 
-setup(name='PICRUSt',
+setup(name='PICRUSt2',
       version=__version__,
       description=('PICRUSt: Phylogenetic Investigation of Communities by '
                    'Reconstruction of Unobserved States'),
@@ -29,7 +29,7 @@ setup(name='PICRUSt',
       maintainer=__maintainer__,
       maintainer_email=__email__,
       url='https://github.com/picrust/picrust2/wiki',
-      packages=['picrust'],
+      packages=['picrust2'],
       scripts=glob('scripts/*py'),
       install_requires=['numpy >= 1.5.1',
                         'cogent == 1.5.3',
@@ -39,6 +39,6 @@ setup(name='PICRUSt',
       package_data={'precalculated':
 		    ['prokaryotic/*',
                      'eukaryotic/*'],
-                    'picrust':
-                    ['support_files/R/*.R']},
+                    'picrust2':
+                    ['Rscripts/*.R']},
       long_description=long_description)

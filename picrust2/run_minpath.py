@@ -2,7 +2,7 @@
 
 from __future__ import division
 from collections import defaultdict
-from picrust.util import system_call_check
+from picrust2.util import system_call_check
 
 __author__ = "Gavin Douglas"
 __copyright__ = "Copyright 2018, The PICRUSt Project"
