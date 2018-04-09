@@ -4,7 +4,7 @@ __license__ = "GPL"
 __version__ = "2-alpha.6"
 
 import argparse
-from picrust.wrap_hsp import castor_hsp_loocv_wrapper
+from picrust2.wrap_hsp import castor_hsp_loocv_wrapper
 
 parser = argparse.ArgumentParser(
 

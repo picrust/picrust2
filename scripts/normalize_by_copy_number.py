@@ -10,10 +10,10 @@ __version__ = "2-alpha.6"
 
 import argparse
 from biom import load_table, Table
-from picrust.predict_metagenomes import transfer_observation_metadata
+from picrust2.predict_metagenomes import transfer_observation_metadata
 from os import path
 from os.path import join
-from picrust.util import get_picrust_project_dir, convert_precalc_to_biom,make_output_dir_for_file, write_biom_table
+from picrust2.util import get_picrust_project_dir, convert_precalc_to_biom,make_output_dir_for_file, write_biom_table
 import gzip
 
 parser = argparse.ArgumentParser(

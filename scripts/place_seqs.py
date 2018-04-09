@@ -7,7 +7,7 @@ __version__ = "2-alpha.6"
 
 import argparse
 import tempfile
-from picrust.util import system_call_check, make_output_dir, read_fasta, read_phylip, write_fasta, write_phylip
+from picrust2.util import system_call_check, make_output_dir, read_fasta, read_phylip, write_fasta, write_phylip
 
 parser = argparse.ArgumentParser(
 

@@ -4,8 +4,8 @@ __license__ = "GPL"
 __version__ = "2-alpha.6"
 
 import argparse
-from picrust.wrap_hsp import castor_hsp_wrapper
-from picrust.util import make_output_dir_for_file
+from picrust2.wrap_hsp import castor_hsp_wrapper
+from picrust2.util import make_output_dir_for_file
 
 HSP_METHODS = ['mp', 'emp_prob', 'pic', 'scp', 'subtree_average']
 

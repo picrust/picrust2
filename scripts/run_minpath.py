@@ -9,8 +9,8 @@ import argparse
 from biom.table import Table
 from biom import load_table
 import tempfile
-from picrust.util import system_call_check, make_output_dir
-from picrust.run_minpath import pathway_counts, minpath_wrapper
+from picrust2.util import system_call_check, make_output_dir
+from picrust2.run_minpath import pathway_counts, minpath_wrapper
 from joblib import Parallel, delayed
 
 parser = argparse.ArgumentParser(

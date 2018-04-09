@@ -4,7 +4,7 @@ __license__ = "GPL"
 __version__ = "2-alpha.6"
 
 import argparse
-from picrust.util import system_call_check
+from picrust2.util import system_call_check
 
 parser = argparse.ArgumentParser(
 

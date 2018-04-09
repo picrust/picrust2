@@ -11,12 +11,12 @@ __version__ = "2-alpha.6"
 
 import argparse
 from biom import load_table
-from picrust.predict_metagenomes import predict_metagenomes,predict_metagenome_variances,\
+from picrust2.predict_metagenomes import predict_metagenomes,predict_metagenome_variances,\
   calc_nsti,load_subset_from_biom_str
-from picrust.util import make_output_dir_for_file,write_biom_table, convert_precalc_to_biom
+from picrust2.util import make_output_dir_for_file,write_biom_table, convert_precalc_to_biom
 from os import path
 from os.path import split,join,splitext
-from picrust.util import get_picrust_project_dir, scale_metagenomes, \
+from picrust2.util import get_picrust_project_dir, scale_metagenomes, \
     picrust_formatter
 import gzip
 import re
