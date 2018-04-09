@@ -6,8 +6,9 @@ __license__ = "GPL"
 __version__ = "2-alpha.6"
 
 import sys, os, unittest
+import pandas as pd
 from picrust2.wrap_hsp import castor_hsp_wrapper, castor_hsp_loocv_wrapper
-from cogent import LoadTable
+from picrust2.util import generate_temp_filename
 
 # Path to test directory.
 test_dir_path = os.path.dirname(sys.argv[0])
@@ -25,11 +26,11 @@ hsp_pic_pred = test_dir_path + "/" + "test_data/hsp/hsp_output/pic_pred_out.tsv"
 hsp_scp_pred = test_dir_path + "/" + "test_data/hsp/hsp_output/scp_pred_out.tsv"
 hsp_subtree_average_pred = test_dir_path + "/" + "test_data/hsp/hsp_output/subtree_average_pred_out.tsv"
 
-hsp_mp_pred_in = LoadTable(hsp_mp_pred, header=True, sep='\t')
-hsp_emp_prob_pred_in = LoadTable(hsp_emp_prob_pred, header=True, sep='\t')
-hsp_pic_pred_in = LoadTable(hsp_pic_pred, header=True, sep='\t')
-hsp_scp_pred_in = LoadTable(hsp_scp_pred, header=True, sep='\t')
-hsp_subtree_average_pred_in = LoadTable(hsp_subtree_average_pred, header=True, sep='\t')
+hsp_mp_pred_in = pd.read_table(filepath_or_buffer=hsp_mp_pred, sep="\t", index_col="tips")
+hsp_emp_prob_pred_in = pd.read_table(filepath_or_buffer=hsp_emp_prob_pred, sep="\t", index_col="tips")
+hsp_pic_pred_in = pd.read_table(filepath_or_buffer=hsp_pic_pred, sep="\t", index_col="tips")
+hsp_scp_pred_in = pd.read_table(filepath_or_buffer=hsp_scp_pred, sep="\t", index_col="tips")
+hsp_subtree_average_pred_in = pd.read_table(filepath_or_buffer=hsp_subtree_average_pred, sep="\t", index_col="tips")
 
 
 class castor_hsp_wrapper_tests(unittest.TestCase):
@@ -39,24 +40,32 @@ class castor_hsp_wrapper_tests(unittest.TestCase):
     # expected values in "test_data/hsp"
     def test_mp_simple(self):
 
+        rds_path = generate_temp_filename()
+
         predict_out, ci_out = castor_hsp_wrapper(tree_path=in_tree1,
                                                  trait_table_path=in_traits1,
                                                  hsp_method="mp",
                                                  ran_seed=10,
-                                                 rds_outfile=test_dir_path + "/test_data/temp_test/mp_test_output.rds")
+                                                 rds_outfile=rds_path)
 
-        self.assertEqual(predict_out, hsp_mp_pred_in)
+        os.remove(rds_path)
+
+        pd.testing.assert_frame_equal(predict_out, hsp_mp_pred_in)
 
 
     def test_emp_prob_simple(self):
+
+        rds_path = generate_temp_filename()
 
         predict_out, ci_out = castor_hsp_wrapper(tree_path=in_tree1,
                                                  trait_table_path=in_traits1,
                                                  hsp_method="emp_prob",
                                                  ran_seed=10,
-                                                 rds_outfile=test_dir_path + "/test_data/temp_test/emp_test_output.rds")
+                                                 rds_outfile=rds_path)
 
-        self.assertEqual(predict_out, hsp_emp_prob_pred_in)
+        os.remove(rds_path)
+
+        pd.testing.assert_frame_equal(predict_out, hsp_emp_prob_pred_in)
 
 
     def test_pic_simple(self):
@@ -66,7 +75,7 @@ class castor_hsp_wrapper_tests(unittest.TestCase):
                                                  hsp_method="pic",
                                                  ran_seed=10)
 
-        self.assertEqual(predict_out, hsp_pic_pred_in)
+        pd.testing.assert_frame_equal(predict_out, hsp_pic_pred_in)
 
 
     def test_scp_simple(self):
@@ -76,7 +85,7 @@ class castor_hsp_wrapper_tests(unittest.TestCase):
                                                  hsp_method="scp",
                                                  ran_seed=10)
 
-        self.assertEqual(predict_out, hsp_scp_pred_in)
+        pd.testing.assert_frame_equal(predict_out, hsp_scp_pred_in)
 
 
     def test_subtree_average_simple(self):
@@ -86,7 +95,7 @@ class castor_hsp_wrapper_tests(unittest.TestCase):
                                                  hsp_method="subtree_average",
                                                  ran_seed=10)
 
-        self.assertEqual(predict_out, hsp_subtree_average_pred_in)
+        pd.testing.assert_frame_equal(predict_out, hsp_subtree_average_pred_in)
 
 
     # With mp method:

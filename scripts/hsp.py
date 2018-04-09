@@ -97,7 +97,7 @@ def main():
     args = parser.parse_args()
 
     # Methods for discrete trait prediction with CI enabled.
-    discrete_set = set(['emp_prob', 'mk_model', 'mp'])
+    discrete_set = set(['emp_prob', 'mp'])
 
     if args.confidence and args.hsp_method in discrete_set:
         ci_setting = True
@@ -117,12 +117,13 @@ def main():
 
     # Output the table to file.
     make_output_dir_for_file(args.output_trait_table)
-    hsp_table.writeToFile(args.output_trait_table, sep='\t')
+    hsp_table.to_csv(path_or_buf=args.output_trait_table, index_label="tips",
+                     sep="\t")
 
     # Output the CI file as well if option set.
     if ci_setting:
         make_output_dir_for_file(args.ci_out)
-        ci_table.writeToFile(args.ci_out, sep='\t')
+        ci_table.to_csv(path_or_buf=args.ci_out, index_label="tips", sep="\t")
 
 
 if __name__ == "__main__":

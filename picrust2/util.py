@@ -11,7 +11,6 @@ __version__ = "2-alpha.6"
 from biom import parse_table, Table
 from biom.table import vlen_list_of_str_formatter
 from biom.util import biom_open, HAVE_H5PY
-from cogent.core.tree import PhyloNode, TreeError
 from contextlib import contextmanager
 from json import dumps
 from numpy import array, asarray, atleast_1d
@@ -19,6 +18,7 @@ from os import fsync, makedirs, remove, rename
 from os.path import abspath, dirname, isdir, join, split
 import StringIO
 from subprocess import PIPE, Popen, call
+import tempfile
 
 
 def make_sample_transformer(scaling_factors):
@@ -496,95 +496,6 @@ def make_output_dir(dirpath, strict=False):
     return dirpath
 
 
-class PicrustNode(PhyloNode):
-    def multifurcating(self, num, eps=None, constructor=None):
-        """Return a new tree with every node having num or few children
-
-        num : the number of children a node can have max
-        eps : default branch length to set if self or constructor is of
-            PhyloNode type
-        constructor : a TreeNode or subclass constructor. If None, uses self
-        """
-        if num < 2:
-            raise TreeError, "Minimum number of children must be >= 2"
-
-        if eps is None:
-            eps = 0.0
-
-        if constructor is None:
-            constructor = self.__class__
-
-        if hasattr(constructor, 'Length'):
-            set_branchlength = True
-        else:
-            set_branchlength = False
-
-        new_tree = self.copy()
-
-        for n in new_tree.preorder(include_self=True):
-            while len(n.Children) > num:
-                new_node = constructor(Children=n.Children[-num:])
-
-                if set_branchlength:
-                    new_node.Length = eps
-
-                n.append(new_node)
-
-        return new_tree
-
-    def bifurcating(self, eps=None, constructor=None):
-        """Wrap multifurcating with a num of 2"""
-        return self.multifurcating(2, eps, constructor)
-
-    def nameUnnamedNodes(self):
-        """sets the Data property of unnamed nodes to an arbitrary value
-
-        Internal nodes are often unnamed and so this function assigns a
-        value for referencing.
-        Note*: This method is faster then pycogent nameUnnamedNodes()
-        because it uses a dict instead of an array. Also, we traverse
-        only over internal nodes (and not including tips)
-        """
-
-        #make a list of the names that are already in the tree
-        names_in_use = {}
-        for node in self.iterNontips(include_self=True):
-            if node.Name:
-                names_in_use[node.Name]=1
-
-        #assign unique names to the Data property of nodes where Data = None
-        name_index = 1
-        for node in self.iterNontips(include_self=True):
-            #if (not node.Name) or re.match('edge',node.Name):
-            if not node.Name:
-                new_name = 'node' + str(name_index)
-                #choose a new name if name is already in tree
-                while new_name in names_in_use:
-                    name_index += 1
-                    new_name = 'node' + str(name_index)
-                node.Name = new_name
-                names_in_use[node.Name]=1
-                name_index += 1
-
-    def getSubTree(self,names):
-        """return a new subtree with just the tips in names
-
-        assumes names is a set
-        assumes all names in names are present as tips in tree
-        """
-        tcopy = self.deepcopy()
-
-        while len(tcopy.tips()) != len(names):
-            # for each tip, remove it if we do not want to keep it
-            for n in tcopy.tips():
-                if n.Name not in names:
-                    n.Parent.removeNode(n)
-
-            # reduce single-child nodes
-            tcopy.prune()
-
-        return tcopy
-
 def list_of_list_of_str_formatter(grp, header, md, compression):
     """Serialize [[str]] into a BIOM hdf5 compatible form
 
@@ -625,27 +536,15 @@ def picrust_formatter(*args):
     return vlen_list_of_str_formatter(*list_of_list_of_str_formatter(*args))
 
 
-@contextmanager
-def atomic_write(file):
-    """
-    Yields an open temporary file and renames to ``file`` on exit
+def generate_temp_filename(temp_dir=None, prefix="", suffix=""):
+    '''Function to generate path to temporary filenames (does not create the)
+    files). The input arguments can be used to customize the temporary
+    filename. If no temporary directory is specified then the default temprary
+    directory will be used.'''
 
-    This context manager aims to make it more convenient to write to a file
-    only when the write operation has completed (e.g. downloading a file from
-    the internet).
+    # If temp_dir not set then get default directory.
+    if not temp_dir:
+        temp_dir = tempfile._get_default_tempdir()
 
-    The yielded file will be open in 'wb' mode.
-    """
-    dir_name, basename = split(file)
-    tmp_path = join(dir_name, '~{}'.format(basename))
-
-    try:
-        with open(tmp_path, 'wb') as f:
-            yield f
-            f.flush()
-            fsync(f.fileno())
-    except:
-        remove(tmp_path)
-        raise
-    else:
-        rename(tmp_path, file)
+    return(temp_dir + "/" + prefix + next(tempfile._get_candidate_names()) +\
+           suffix)
