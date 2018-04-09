@@ -1,4 +1,4 @@
-PICRUSt.egg-info/
+PICRUSt2.egg-info/
 .cache/
 *.pyc
 tests/__pycache__/
