@@ -4,12 +4,13 @@ channels:
 - defaults
 dependencies:
 - h5py
+- joblib
 - numpy=1.13
-- python=2.7.13
-- r-ape
+- python=3.6.5
 - r-base
+- r-ape
+- rpy2
 - pip:
-  - biom-format>=2.1.4,< 2.2.0
-  - future==0.16
+  - biom-format
   - pytest
   - pytest-cov

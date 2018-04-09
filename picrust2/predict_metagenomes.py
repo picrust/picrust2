@@ -11,7 +11,6 @@ __version__ = "2-alpha.6"
 from numpy import abs,compress, dot, array, around, asarray,empty,zeros, sum as numpy_sum,sqrt,apply_along_axis
 from biom.table import Table
 from biom.parse import parse_biom_table, get_axis_indices, direct_slice_data, direct_parse_key
-from picrust2.predict_traits import variance_of_weighted_mean,calc_confidence_interval_95
 
 def get_overlapping_ids(otu_table,genome_table,genome_table_ids="sample",\
   otu_table_ids="observation"):
@@ -30,8 +29,8 @@ def get_overlapping_ids(otu_table,genome_table,genome_table_ids="sample",\
                             set(genome_table.ids(axis=genome_table_ids)))
 
     if len(overlapping_otus) < 1:
-        raise ValueError,\
-         "No common OTUs between the otu table and the genome table, so can't predict metagenome."
+        raise ValueError(\
+         "No common OTUs between the otu table and the genome table, so can't predict metagenome.")
     return overlapping_otus
 
 
@@ -169,7 +168,7 @@ def predict_metagenome_variances(otu_table, genome_table, gene_variances,
     metagenome_data = None
     metagenome_variance_data = None
     if verbose:
-        print "Calculating the variance of the estimated metagenome for %i OTUs." %len(overlapping_otus)
+        print("Calculating the variance of the estimated metagenome for %i OTUs." %len(overlapping_otus))
     for otu_id in overlapping_otus:
         otu_across_samples = otu_table.data(otu_id, axis='observation')
         otu_across_genes = genome_table.data(otu_id)
@@ -195,14 +194,14 @@ def predict_metagenome_variances(otu_table, genome_table, gene_variances,
         data_result = around(data_result)
 
     if verbose:
-        print "Calculating metagenomic confidence intervals from variance."
+        print ("Calculating metagenomic confidence intervals from variance.")
 
     lower_95_CI,upper_95_CI=calc_confidence_interval_95(data_result,variance_result,\
       round_CI=whole_round,min_val=0.0,max_val=None)
 
 
     if verbose:
-        print "Generating BIOM output tables for the prediction, variance, upper confidence interval and lower confidence interval."
+        print ("Generating BIOM output tables for the prediction, variance, upper confidence interval and lower confidence interval.")
 
     #Wrap results into BIOM Tables
     result_data_table=\
@@ -269,7 +268,7 @@ def transfer_metadata(donor_table,recipient_table,\
             raise ValueError("Donor and recipient metadata types passed to transfer_metadata must be either 'observation' or 'sample'")
 
     if verbose:
-        print "Transferring donor_table.%s to recipient_table.%s" %(donor_metadata_type,recipient_metadata_type)
+        print("Transferring donor_table.%s to recipient_table.%s" %(donor_metadata_type,recipient_metadata_type))
 
     if donor_metadata_type == "observation":
         transfer_fn = transfer_observation_metadata
@@ -289,7 +288,7 @@ def transfer_observation_metadata(donor_table,recipient_table,\
             raise ValueError("Recipient metadata type passed to transfer_metadata must be either 'observation' or 'sample'")
 
     if verbose:
-        print "Transferring donor_table.%s to recipient_table.%s" %(donor_metadata_type,recipient_metadata_type)
+        print("Transferring donor_table.%s to recipient_table.%s" %(donor_metadata_type,recipient_metadata_type))
 
     donor_metadata = donor_table.metadata(axis=donor_metadata_type)
 
@@ -320,7 +319,7 @@ def transfer_sample_metadata(donor_table,recipient_table,\
             raise ValueError("Recipient metadata type passed to transfer_metadata must be either 'observation' or 'sample'")
 
     if verbose:
-        print "Transferring donor_table.%s to recipient_table.%s" %(donor_metadata_type,recipient_metadata_type)
+        print("Transferring donor_table.%s to recipient_table.%s" %(donor_metadata_type,recipient_metadata_type))
 
     donor_metadata = donor_table.metadata(axis=donor_metadata_type)
 

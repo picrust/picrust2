@@ -13,7 +13,7 @@ from biom import load_table, Table
 from picrust2.predict_metagenomes import transfer_observation_metadata
 from os import path
 from os.path import join
-from picrust2.util import get_picrust_project_dir, convert_precalc_to_biom,make_output_dir_for_file, write_biom_table
+from picrust2.util import get_picrust_project_dir, make_output_dir_for_file, write_biom_table
 import gzip
 
 parser = argparse.ArgumentParser(
@@ -60,7 +60,7 @@ def main():
     input_count_table = args.input_count
 
     if args.verbose:
-        print "Loading trait table: ", input_count_table
+        print("Loading trait table: " + input_count_table)
 
     ext = path.splitext(input_count_table)[1]
 
@@ -71,8 +71,6 @@ def main():
 
     if args.load_precalc_file_in_biom:
         count_table = load_table(count_table_fh)
-    else:
-        count_table = convert_precalc_to_biom(count_table_fh, ids_to_load)
 
     #Need to only keep data relevant to our otu list
     ids = []
@@ -98,10 +96,9 @@ def main():
             value = int(round(float(value)))
 
         except ValueError:
-            raise ValueError,\
-                  "Invalid type passed as copy number for OTU ID %s. Must be int-able." % (value)
+            raise ValueError("Invalid type passed as copy number for OTU ID %s. Must be int-able." % (value))
         if value < 1:
-            raise ValueError, "Copy numbers must be greater than or equal to 1."
+            raise ValueError("Copy numbers must be greater than or equal to 1.")
 
         copy_numbers_filtered[x]={args.metadata_identifer:value}
 

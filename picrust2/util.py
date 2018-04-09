@@ -16,7 +16,6 @@ from json import dumps
 from numpy import array, asarray, atleast_1d
 from os import fsync, makedirs, remove, rename
 from os.path import abspath, dirname, isdir, join, split
-import StringIO
 from subprocess import PIPE, Popen, call
 import tempfile
 
@@ -35,77 +34,6 @@ def scale_metagenomes(metagenome_table,scaling_factors):
     transform_sample_f = make_sample_transformer(scaling_factors)
     new_metagenome_table = metagenome_table.transform(transform_sample_f)
     return new_metagenome_table
-
-
-def convert_precalc_to_biom(precalc_in, ids_to_load=None,transpose=True,md_prefix='metadata_'):
-    """Loads PICRUSTs tab-delimited version of the precalc file and outputs a BIOM object"""
-
-    #if given a string convert to a filehandle
-    if type(precalc_in) ==str or type(precalc_in) == unicode:
-        fh = StringIO.StringIO(precalc_in)
-    else:
-        fh=precalc_in
-
-    #first line has to be header
-    header_ids=fh.readline().strip().split('\t')
-
-    col_meta_locs={}
-    for idx,col_id in enumerate(header_ids):
-        if col_id.startswith(md_prefix):
-            col_meta_locs[col_id[len(md_prefix):]]=idx
-
-    end_of_data=len(header_ids)-len(col_meta_locs)
-    trait_ids = header_ids[1:end_of_data]
-
-    col_meta=[]
-    row_meta=[{} for i in trait_ids]
-
-    if ids_to_load is not None and len(ids_to_load) > 0:
-        ids_to_load=set(ids_to_load)
-        load_all_ids=False
-    else:
-        load_all_ids=True
-
-    matching=[]
-    otu_ids=[]
-    for line in fh:
-        fields = line.strip().split('\t')
-        row_id=fields[0]
-        if(row_id.startswith(md_prefix)):
-            #handle metadata
-
-            #determine type of metadata (this may not be perfect)
-            metadata_type=determine_metadata_type(line)
-            for idx,trait_name in enumerate(trait_ids):
-                row_meta[idx][row_id[len(md_prefix):]]=parse_metadata_field(fields[idx+1],metadata_type)
-
-        elif load_all_ids or (row_id in set(ids_to_load)):
-            otu_ids.append(row_id)
-            matching.append(map(float,fields[1:end_of_data]))
-
-            #add metadata
-            col_meta_dict={}
-            for meta_name in col_meta_locs:
-                col_meta_dict[meta_name]=fields[col_meta_locs[meta_name]]
-            col_meta.append(col_meta_dict)
-
-            if not load_all_ids:
-                ids_to_load.remove(row_id)
-
-    if not otu_ids:
-        raise ValueError,"No OTUs match identifiers in precalculated file. PICRUSt requires an OTU table reference/closed picked against GreenGenes.\nExample of the first 5 OTU ids from your table: {0}".format(', '.join(list(ids_to_load)[:5]))
-
-    if ids_to_load:
-       raise ValueError,"One or more OTU ids were not found in the precalculated file!\nAre you using the correct --gg_version?\nExample of (the {0}) unknown OTU ids: {1}".format(len(ids_to_load),', '.join(list(ids_to_load)[:5]))
-
-    #note that we transpose the data before making biom obj
-    matching = asarray(matching)
-    if transpose:
-        return Table(matching.T, trait_ids, otu_ids, row_meta, col_meta,
-                     type='Gene table')
-    else:
-        return Table(matching, otu_ids, trait_ids, col_meta, row_meta,
-                     type='Gene table')
 
 
 def convert_biom_to_precalc(biom_table):
@@ -489,7 +417,7 @@ def make_output_dir(dirpath, strict=False):
         return dirpath
     try:
         makedirs(dirpath)
-    except IOError,e:
+    except IOError as e:
         err_str = "Could not create directory '%s'. Are permissions set correctly? Got error: '%s'" %e
         raise IOError(err_str)
 

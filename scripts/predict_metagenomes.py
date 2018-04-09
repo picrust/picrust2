@@ -11,9 +11,9 @@ __version__ = "2-alpha.6"
 
 import argparse
 from biom import load_table
-from picrust2.predict_metagenomes import predict_metagenomes,predict_metagenome_variances,\
+from picrust2.predict_metagenomes import predict_metagenomes, predict_metagenome_variances,\
   calc_nsti,load_subset_from_biom_str
-from picrust2.util import make_output_dir_for_file,write_biom_table, convert_precalc_to_biom
+from picrust2.util import make_output_dir_for_file, write_biom_table
 from os import path
 from os.path import split,join,splitext
 from picrust2.util import get_picrust_project_dir, scale_metagenomes, \
@@ -119,7 +119,7 @@ def determine_data_table_fp(precalc_data_dir,type_of_prediction,gg_version,\
         input_count_table=user_specified_table
 
     if verbose:
-        print "Selected data table for loading: ", input_count_table
+        print("Selected data table for loading: " + input_count_table)
     return input_count_table
 
 
@@ -155,18 +155,18 @@ def load_data_table(data_table_fp,\
             #to relevant OTUs
 
             if verbose:
-                print "Loading traits for %i organisms from the trait table" %len(ids_to_load)
+                print("Loading traits for %i organisms from the trait table" %len(ids_to_load))
 
             genome_table = load_subset_from_biom_str(genome_table_fh.read(),ids_to_load,axis='samples')
         else:
             if verbose:
-                print "Loading *full* count table because --suppress_subset_loading was passed. This may result in high memory usage"
+                print("Loading *full* count table because --suppress_subset_loading was passed. This may result in high memory usage")
             genome_table = load_table(data_table_fp)
     else:
         genome_table = convert_precalc_to_biom(genome_table_fh,ids_to_load,transpose=transpose)
 
     if verbose:
-        print "Done loading trait table containing %i functions for %i organisms." %(len(genome_table.ids(axis='observation')),len(genome_table.ids()))
+        print("Done loading trait table containing %i functions for %i organisms." %(len(genome_table.ids(axis='observation')),len(genome_table.ids())))
 
     return genome_table
 
@@ -176,7 +176,7 @@ def main():
     args = parser.parse_args()
 
     if args.verbose:
-        print "Loading OTU table: ",args.input
+        print("Loading OTU table: " + args.input)
 
     otu_table = load_table(args.input)
     ids_to_load = otu_table.ids(axis='observation').tolist()
@@ -189,15 +189,15 @@ def main():
         round_flag = True
 
     if args.verbose:
-        print "Done loading OTU table containing %i samples and %i OTUs." \
-          %(len(otu_table.ids()),len(otu_table.ids(axis='observation')))
+        print("Done loading OTU table containing %i samples and %i OTUs." \
+          %(len(otu_table.ids()),len(otu_table.ids(axis='observation'))))
 
     # Load a table of gene counts by OTUs.
     #This can be either user-specified or precalculated
     genome_table_fp = args.input_count
 
     if args.verbose:
-        print "Loading gene count data from file: %s" %genome_table_fp
+        print("Loading gene count data from file: %s" %genome_table_fp)
 
     genome_table= load_data_table(genome_table_fp,\
       load_data_table_in_biom=args.load_precalc_file_in_biom,\
@@ -205,8 +205,8 @@ def main():
       ids_to_load=ids_to_load,verbose=args.verbose,transpose=True)
 
     if args.verbose:
-        print "Loaded %i genes across %i OTUs from gene count table" \
-          %(len(genome_table.ids(axis='observation')),len(genome_table.ids()))
+        print("Loaded %i genes across %i OTUs from gene count table" \
+          %(len(genome_table.ids(axis='observation')),len(genome_table.ids())))
 
     # if args.with_confidence:
     #     if args.input_variance_table:
@@ -218,8 +218,8 @@ def main():
     #           user_specified_table=args.input_count_table)
 
         if args.verbose:
-            print "Loading variance information from table: %s" \
-            %variance_table_fp
+            print("Loading variance information from table: %s" \
+            %variance_table_fp)
 
         variance_table= load_data_table(variance_table_fp,\
           load_data_table_in_biom=args.load_precalc_file_in_biom,\
@@ -227,26 +227,26 @@ def main():
           ids_to_load=ids_to_load,transpose=True)
 
         if args.verbose:
-            print "Loaded %i genes across %i OTUs from variance table" \
-              %(len(variance_table.ids(axis='observation')),len(variance_table.ids()))
+            print("Loaded %i genes across %i OTUs from variance table" \
+              %(len(variance_table.ids(axis='observation')),len(variance_table.ids())))
         #Raise an error if the genome table and variance table differ
         #in the genomes they contain.
         #better to find out now than have something obscure happen latter on
         if args.verbose:
-            print "Checking that genome table and variance table are consistent"
+            print("Checking that genome table and variance table are consistent")
         try:
             assert set(variance_table.ids(axis='observation')) == set(genome_table.ids(axis='observation'))
-        except AssertionError,e:
+        except AssertionError as e:
             for var_id in variance_table.ids(axis='observation'):
                 if var_id not in genome_table.ids(axis='observation'):
-                    print "Variance table ObsId %s not in genome_table ObsIds" %var_id
+                    print("Variance table ObsId %s not in genome_table ObsIds" %var_id)
             raise AssertionError("Variance table and genome table contain different gene ids")
         try:
             assert set(variance_table.ids()) == set(genome_table.ids())
-        except AssertionError,e:
+        except AssertionError as e:
             for var_id in variance_table.ids():
                 if var_id not in genome_table.ids():
-                    print "Variance table SampleId %s not in genome_table SampleIds" %var_id
+                    print("Variance table SampleId %s not in genome_table SampleIds" %var_id)
             raise AssertionError("Variance table and genome table contain different OTU ids")
 
         #sort the ObservationIds and SampleIds to be in the same order
@@ -262,7 +262,7 @@ def main():
         nstis = list(weighted_nsti[1])
         samples_and_nstis = zip(samples,nstis)
         if args.verbose:
-            print "Writing NSTI information to file:", args.accuracy_metrics
+            print ("Writing NSTI information to file:" +  args.accuracy_metrics)
         accuracy_output_fh = open(args.accuracy_metrics,'w')
         accuracy_output_fh.write("#Sample\tMetric\tValue\n")
         for sample,nsti in samples_and_nstis:
@@ -283,13 +283,13 @@ def main():
     #If we don't need confidence intervals, we can do a faster pure numpy prediction
 
     if args.verbose:
-        print "Predicting the metagenome..."
+        print("Predicting the metagenome...")
     predicted_metagenomes = predict_metagenomes(otu_table,genome_table,whole_round=round_flag)
 
     if args.normalize_by_otu:
         #normalize (e.g. divide) the abundances by the sum of the OTUs per sample
         if args.verbose:
-            print "Normalizing functional abundances by sum of OTUs per sample"
+            print("Normalizing functional abundances by sum of OTUs per sample")
         inverse_otu_sums = [1/x for x in otu_table.sum(axis='sample')]
         scaling_factors = dict(zip(otu_table.ids(),inverse_otu_sums))
         predicted_metagenomes = scale_metagenomes(predicted_metagenomes,scaling_factors)
@@ -298,7 +298,7 @@ def main():
         #normalize (e.g. divide) the abundances by the sum of the functions per sample
         #Sum of functional abundances per sample will equal 1 (e.g. relative abundance).
         if args.verbose:
-            print "Normalizing functional abundances by sum of functions per sample"
+            print("Normalizing functional abundances by sum of functions per sample")
         predicted_metagenomes = predicted_metagenomes.norm(axis='sample', inplace=False)
 
 
@@ -341,8 +341,8 @@ def write_metagenome_to_file(predicted_metagenome,output_fp,\
     """
 
     if verbose:
-        print "Writing %s results to output file: %s"\
-          %(verbose_filetype_message,output_fp)
+        print("Writing %s results to output file: %s"\
+          %(verbose_filetype_message,output_fp))
 
     make_output_dir_for_file(output_fp)
     if tab_delimited:

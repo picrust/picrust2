@@ -40,10 +40,10 @@ def print_picrust_config():
      ("Python executable",executable)]
 
     max_len =  max([len(e[0]) for e in system_info])
-    print "\nSystem information"
-    print  "=================="
+    print("\nSystem information")
+    print("==================")
     for v in system_info:
-        print "%*s:\t%s" % (max_len,v[0],v[1])
+        print("%*s:\t%s" % (max_len,v[0],v[1]))
 
     version_info = [
      ("NumPy version", numpy_lib_version),
@@ -53,11 +53,11 @@ def print_picrust_config():
 
     max_len =  max([len(e[0]) for e in version_info])
 
-    print "\nDependency versions"
-    print  "==================="
+    print("\nDependency versions")
+    print ("===================")
     for v in version_info:
-        print "%*s:\t%s" % (max_len,v[0],v[1])
-    print ""
+        print("%*s:\t%s" % (max_len,v[0],v[1]))
+    print("")
 
 def main():
 
