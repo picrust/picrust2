@@ -2,7 +2,7 @@
 
 from __future__ import division
 
-__author__ = "Gavin Douglas"
+__license__ = "GPL"
 __version__ = "2-alpha.6"
 
 import rpy2.robjects as robjects
