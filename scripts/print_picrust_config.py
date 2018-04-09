@@ -6,11 +6,6 @@ __license__ = "GPL"
 __version__ = "2-alpha.6"
 
 try:
-    from cogent import __version__ as pycogent_lib_version
-except ImportError:
-    pycogent_lib_version = "ERROR: Can't find the PyCogent library code - is it installed and in your $PYTHONPATH?"
-
-try:
     from numpy import __version__ as numpy_lib_version
 except ImportError:
     numpy_lib_version = "ERROR: Not installed - this is required! (This will also cause the BIOM library to not be importable.)"
@@ -21,7 +16,7 @@ except ImportError:
     biom_lib_version = "ERROR: Can't find the BIOM library code (or numpy) - is it installed and in your $PYTHONPATH?"
 
 try:
-    from picrust import __version__ as picrust_lib_version
+    from picrust2 import __version__ as picrust_lib_version
 except ImportError:
     picrust_lib_version = "ERROR: Can't find the PICRUSt library code - is it installed and in your $PYTHONPATH?"
 
@@ -53,7 +48,6 @@ def print_picrust_config():
     version_info = [
      ("NumPy version", numpy_lib_version),
      ("biom-format version", biom_lib_version),
-     ("PyCogent version", pycogent_lib_version),
      ("PICRUSt version", picrust_lib_version),
      ("PICRUSt script version", get_script_version()),]
 
@@ -66,7 +60,8 @@ def print_picrust_config():
     print ""
 
 def main():
-    option_parser, opts, args = parse_command_line_parameters(**script_info)
+
+    args = parser.parse_args()
 
     print_picrust_config()
 
