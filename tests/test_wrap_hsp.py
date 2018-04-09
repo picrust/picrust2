@@ -6,11 +6,15 @@ __license__ = "GPL"
 __version__ = "2-alpha.6"
 
 import sys, os, unittest
-from picrust.wrap_hsp import castor_hsp_wrapper, castor_hsp_loocv_wrapper
+from picrust2.wrap_hsp import castor_hsp_wrapper, castor_hsp_loocv_wrapper
 from cogent import LoadTable
 
 # Path to test directory.
 test_dir_path = os.path.dirname(sys.argv[0])
+
+# Set path to "." if the above command returned nothing.
+if not test_dir_path:
+	test_dir_path = "."
 
 in_traits1 = test_dir_path + "/" + "test_data/hsp/known_traits.tsv"
 in_tree1 = test_dir_path + "/" + "test_data/hsp/tree.tre"
@@ -38,7 +42,8 @@ class castor_hsp_wrapper_tests(unittest.TestCase):
         predict_out, ci_out = castor_hsp_wrapper(tree_path=in_tree1,
                                                  trait_table_path=in_traits1,
                                                  hsp_method="mp",
-                                                 ran_seed=10)
+                                                 ran_seed=10,
+                                                 rds_outfile=test_dir_path + "/test_data/temp_test/mp_test_output.rds")
 
         self.assertEqual(predict_out, hsp_mp_pred_in)
 
@@ -48,7 +53,8 @@ class castor_hsp_wrapper_tests(unittest.TestCase):
         predict_out, ci_out = castor_hsp_wrapper(tree_path=in_tree1,
                                                  trait_table_path=in_traits1,
                                                  hsp_method="emp_prob",
-                                                 ran_seed=10)
+                                                 ran_seed=10,
+                                                 rds_outfile=test_dir_path + "/test_data/temp_test/emp_test_output.rds")
 
         self.assertEqual(predict_out, hsp_emp_prob_pred_in)
 

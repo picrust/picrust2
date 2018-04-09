@@ -43,6 +43,12 @@ parser.add_argument('-o', '--output_trait_table', metavar='PATH', type=str,
                     default='predicted_traits.tsv',
                     help='The output filepath for trait predictions')
 
+parser.add_argument('-r', '--rds_outfile', metavar='PATH', type=str,
+                    default='trait_state_probs.rds',
+                    help='The output filepath for the R object ' +
+                         'containing predicted trait state ' +
+                         'probabilities')
+
 parser.add_argument('--ci_out', metavar='PATH', type=str,
                     default='predicted_traits_ci.tsv',
                     help='The output filepath for confidence intervals ' +
@@ -105,6 +111,7 @@ def main():
                                              calc_ci=ci_setting,
                                              check_input=args.check,
                                              num_cores=args.processes,
+                                             rds_outfile=args.rds_outfile,
                                              ran_seed=args.seed,
                                              HALT_EXEC=args.debug)
 

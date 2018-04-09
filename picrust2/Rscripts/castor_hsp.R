@@ -21,7 +21,8 @@ check_input_set <- as.logical(Args[6])
 num_cores <- Args[7]
 predict_outfile <- Args[8]
 ci_outfile <- Args[9]
-seed_setting <- Args[10]
+rds_outfile <- Args[10]
+seed_setting <- Args[11]
 
 # Set random seed if integer specified.
 if(seed_setting != "None") {
@@ -35,6 +36,16 @@ ci_95_states2values <- function(state_probs, number_of_tips) {
   ci_5 <- apply(state_prob_cumsum, 1, function(x) { min(which(x >= 0.05)) - 1 })
   ci_95 <- apply(state_prob_cumsum, 1, function(x) { min(which(x >= 0.95)) - 1 } )
   return(c(ci_5, ci_95))
+}
+
+
+# Function to get HSP state probabilities for study (i.e. "unknown" tips only).
+get_sorted_prob <- function(in_likelihood, study_tips_i, tree_tips, study_tips) {
+  tmp_lik <- in_likelihood[unknown_tips_index, , drop=FALSE]
+  
+  rownames(tmp_lik) <- tree_tips[study_tips_i]
+  
+  return(tmp_lik[study_tips, ,drop=FALSE])
 }
 
 
@@ -114,17 +125,34 @@ if (hsp_method == "pic" | hsp_method == "scp" | hsp_method == "subtree_average")
                                function(x) { max.col(x$likelihoods[1:num_tip,]) - 1 },
                                mc.cores = num_cores)
 
+  # Get subset of likelihood matrices for previously unknown tips only and output RDS file.
+  unknown_tips_index <- which(full_tree$tip.label %in% unknown_tips)
+  
+  num_unknown <- length(unknown_tips)
+  
+  hsp_out_models_unknown_lik <- mclapply(names(hsp_out_models), 
+                                         function(x) { get_sorted_prob(hsp_out_models[[x]]$likelihoods,
+                                                                       study_tips_i=unknown_tips_index, 
+                                                                       tree_tips=full_tree$tip.label, 
+                                                                       study_tips=unknown_tips)},
+                                                                       mc.cores = num_cores)
+  names(hsp_out_models_unknown_lik) <- names(hsp_out_models)
+  
+  saveRDS(object = hsp_out_models_unknown_lik, file = rds_outfile)
+  
   # If calc_ci set then figure out what the assigned trait would be at the 95% CI and output resulting matrix.
+
   if(calc_ci) {
-    ci_values <- data.frame(mclapply(names(hsp_out_models), 
-                                     function(x) { ci_95_states2values(hsp_out_models[[x]]$likelihoods, num_tip) },
+    
+    ci_values <- data.frame(mclapply(hsp_out_models_unknown_lik,
+                                     function(x) { ci_95_states2values(x) },
                                      mc.cores = num_cores),
                             check.names = FALSE)
     
     colnames(ci_values) <- names(hsp_out_models)
     
-    ci_values_ci_5 <- ci_values[1:num_tip, , drop=FALSE]
-    ci_values_ci_95 <- ci_values[(num_tip+1):(num_tip*2), , drop=FALSE]
+    ci_values_ci_5 <- ci_values[1:num_unknown, , drop=FALSE]
+    ci_values_ci_95 <- ci_values[(num_unknown+1):(num_unknown*2), , drop=FALSE]
     
     colnames(ci_values_ci_5) <- paste(colnames(ci_values_ci_5), "5", sep="_")
     colnames(ci_values_ci_95) <- paste(colnames(ci_values_ci_95), "95", sep="_")
@@ -136,15 +164,12 @@ if (hsp_method == "pic" | hsp_method == "scp" | hsp_method == "subtree_average")
     
     orig_ci_colnames <- colnames(ci_values)
     
-    ci_values$tips <- full_tree$tip.label
+    ci_values$tips <- unknown_tips
     ci_values <- ci_values[, c("tips", orig_ci_colnames)]
     
-    # Subset to previously unknown tips only.
-    ci_values <- ci_values[which(ci_values$tips %in% unknown_tips),]
-    
     write.table(ci_values, file=ci_outfile, sep="\t", quote=FALSE, row.names=FALSE)
-    
-   }
+  }
+
 }
 
 # Add tips as first column of predicted_values.
