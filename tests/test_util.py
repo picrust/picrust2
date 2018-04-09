@@ -13,7 +13,7 @@ from cogent.parse.tree import DndParser
 from cogent.util.unit_test import main, TestCase
 import os
 from os.path import abspath, dirname, exists
-from picrust.util import (
+from picrust2.util import (
     atomic_write,
     biom_meta_to_string,
     convert_biom_to_precalc,

@@ -12,7 +12,7 @@ from numpy import array
 from cogent.util.unit_test import TestCase, main
 from biom.parse import parse_biom_table, get_axis_indices,\
   direct_slice_data
-from picrust.predict_metagenomes import predict_metagenomes,\
+from picrust2.predict_metagenomes import predict_metagenomes,\
   calc_nsti,get_overlapping_ids,\
   extract_otu_and_genome_data,transfer_sample_metadata,\
   transfer_observation_metadata,transfer_metadata,\
