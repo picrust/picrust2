@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-__author__ = "Gavin Douglas"
+__license__ = "GPL"
 __version__ = "2-alpha.6"
 
 import argparse
