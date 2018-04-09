@@ -10,7 +10,6 @@ dependencies:
 - r-base
 - pip:
   - biom-format>=2.1.4,< 2.2.0
-  - cogent==1.5.3
   - future==0.16
   - pytest
   - pytest-cov
