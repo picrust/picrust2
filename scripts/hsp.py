@@ -5,9 +5,27 @@ __version__ = "2-alpha.6"
 
 import argparse
 from picrust2.wrap_hsp import castor_hsp_wrapper
-from picrust2.util import make_output_dir_for_file
+from picrust2.util import make_output_dir_for_file, get_picrust_project_dir
 
 HSP_METHODS = ['mp', 'emp_prob', 'pic', 'scp', 'subtree_average']
+
+TRAIT_OPTIONS = ['16S', 'COG', 'EC', 'KO', 'PFAM', 'TIGRFAM']
+
+# Inititalize default trait table files.
+project_dir = get_picrust_project_dir()
+
+default_tables = {"16S" : project_dir + \
+                  "/precalculated/prokaryotic/16S_counts_mean_round_var.txt",
+                  "COG" : project_dir + \
+                  "/precalculated/prokaryotic/cog_counts_mean_round_var.txt",
+                  "EC" : project_dir + \
+                  "/precalculated/prokaryotic/ec_counts_mean_round_var.txt",
+                  "KO" : project_dir + \
+                  "/precalculated/prokaryotic/ko_counts_mean_round_var.txt",
+                  "PFAM" : project_dir + \
+                  "/precalculated/prokaryotic/pfam_counts_mean_round_var.txt",
+                  "TIGRFAM": project_dir + \
+                  "/precalculated/prokaryotic/tfam_counts_mean_round_var.txt"}
 
 parser = argparse.ArgumentParser(
 
@@ -25,34 +43,28 @@ parser = argparse.ArgumentParser(
     epilog='''
 
 Usage example:
-hsp.py -i precalculated/prokaryotic/ec_counts_mean_round_var.txt -t study.tre
+hsp.py -t study.tre -i 16S -o 16S_predicted_traits
 
 ''', formatter_class=argparse.RawDescriptionHelpFormatter)
-
-parser.add_argument('-i', '--observed_trait_table', metavar='PATH',
-                    required=True, type=str,
-                    help='The input trait table describing directly ' +
-                         'observed traits (e.g. sequenced genomes) in ' +
-                         'tab-delimited format')
 
 parser.add_argument('-t', '--tree', metavar='PATH', required=True, type=str,
                     help='The full reference tree, in newick format')
 
+parser.add_argument('-o', '--output_prefix', metavar='PATH', type=str,
+                    required=True,
+                    help='Prefix for output filenames (RDS, predicted count ' +
+                         'table and optionally a table of CIs)')
 
-parser.add_argument('-o', '--output_trait_table', metavar='PATH', type=str,
-                    default='predicted_traits.tsv',
-                    help='The output filepath for trait predictions')
+parser.add_argument('-i', '--in_trait', type=str.upper, choices=TRAIT_OPTIONS,
+                    help='Specifies which default trait table should be ' +
+                          'used. Use the --observed_trait_table option ' +
+                          'to input a non-default trait table.')
 
-parser.add_argument('-r', '--rds_outfile', metavar='PATH', type=str,
-                    default='trait_state_probs.rds',
-                    help='The output filepath for the R object ' +
-                         'containing predicted trait state ' +
-                         'probabilities')
-
-parser.add_argument('--ci_out', metavar='PATH', type=str,
-                    default='predicted_traits_ci.tsv',
-                    help='The output filepath for confidence intervals ' +
-                         'trait predictions (if -c option set)')
+parser.add_argument('--observed_trait_table', metavar='PATH', type=str,
+                    help='The input trait table describing directly ' +
+                         'observed traits (e.g. sequenced genomes) in ' +
+                         'tab-delimited format. Necessary if you want to ' +
+                         'use a custom table.')
 
 parser.add_argument('-m', '--hsp_method', default='mp',
                     choices=HSP_METHODS,
@@ -96,6 +108,18 @@ def main():
 
     args = parser.parse_args()
 
+    # Determine which input trait table was specified. If neither a default 
+    # or custom table was specified then throw an error.
+    if args.in_trait:
+        trait_table = default_tables[args.in_trait]
+    elif args.observed_trait_table:
+        trait_table = args.observed_trait_table
+    else:
+        raise RuntimeError(
+            "A default input trait table needs to be specified with the " +
+            "--in_trait option, or alternatively a custom table can be " +
+            "specified with the --observed_trait_table option")
+
     # Methods for discrete trait prediction with CI enabled.
     discrete_set = set(['emp_prob', 'mp'])
 
@@ -104,26 +128,30 @@ def main():
     else:
         ci_setting = False
 
+    rds_outfile = args.output_prefix + ".rds"
+    count_outfile = args.output_prefix + ".tsv"
+    ci_outfile = args.output_prefix + "_ci.tsv"
+
     hsp_table, ci_table = castor_hsp_wrapper(tree_path=args.tree,
-                                             trait_table_path=args.observed_trait_table,
+                                             trait_table_path=trait_table,
                                              hsp_method=args.hsp_method,
                                              calc_nsti=args.calculate_NSTI,
                                              calc_ci=ci_setting,
                                              check_input=args.check,
                                              num_cores=args.processes,
-                                             rds_outfile=args.rds_outfile,
+                                             rds_outfile=rds_outfile,
                                              ran_seed=args.seed,
                                              HALT_EXEC=args.debug)
 
     # Output the table to file.
-    make_output_dir_for_file(args.output_trait_table)
-    hsp_table.to_csv(path_or_buf=args.output_trait_table, index_label="tips",
+    make_output_dir_for_file(count_outfile)
+    hsp_table.to_csv(path_or_buf=count_outfile, index_label="tips",
                      sep="\t")
 
     # Output the CI file as well if option set.
     if ci_setting:
-        make_output_dir_for_file(args.ci_out)
-        ci_table.to_csv(path_or_buf=args.ci_out, index_label="tips", sep="\t")
+        make_output_dir_for_file(ci_outfile)
+        ci_table.to_csv(path_or_buf=ci_outfile, index_label="tips", sep="\t")
 
 
 if __name__ == "__main__":

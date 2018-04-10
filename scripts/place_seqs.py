@@ -1,31 +1,39 @@
 #!/usr/bin/env python
 
-from __future__ import division
-
 __license__ = "GPL"
 __version__ = "2-alpha.6"
 
 import argparse
 import tempfile
-from picrust2.util import system_call_check, make_output_dir, read_fasta, read_phylip, write_fasta, write_phylip
+from picrust2.util import (system_call_check, make_output_dir, read_fasta,
+                           read_phylip, write_fasta, write_phylip,
+                           get_picrust_project_dir)
+
+project_dir = get_picrust_project_dir()
+
+default_fasta = project_dir + \
+                "/precalculated/prokaryotic/img_centroid_16S_aligned.fna"
+default_tree = project_dir + \
+               "/precalculated/prokaryotic/img_centroid_16S_aligned.tree"
 
 parser = argparse.ArgumentParser(
 
-    description="Wrapper to prep tree before HSP steps. Requires tree of " +
-                "reference sequences, FASTA MSA of reference seqs, and " +
-                "unaligned FASTA of study sequences.",
+    description="Wrapper to prep tree before HSP steps. Requires unaligned " +
+                "FASTA of study sequences. Users can specify a non-default " +
+                "reference fasta and treefile if needed.",
 
     formatter_class=argparse.RawDescriptionHelpFormatter)
 
 
-parser.add_argument('-r', '--ref_msa', metavar='PATH', required=True, type=str,
-                    help='FASTA of aligned reference sequences')
-
 parser.add_argument('-s', '--study_fasta', metavar='PATH', required=True,
                     type=str, help='FASTA of unaligned study sequences')
 
-parser.add_argument('-t', '--tree', metavar='PATH', required=True,
-                    type=str,
+parser.add_argument('-r', '--ref_msa', metavar='PATH', type=str,
+                    default=default_fasta,
+                    help='FASTA of aligned reference sequences')
+
+parser.add_argument('-t', '--tree', metavar='PATH', type=str,
+                    default=default_tree,
                     help='Input tree based on aligned reference sequences.')
 
 parser.add_argument('-o', '--out_tree', metavar='PATH', required=True,

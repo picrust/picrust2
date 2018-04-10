@@ -8,14 +8,10 @@ __version__ = "2-alpha.6"
 import sys, os, unittest
 import pandas as pd
 from picrust2.wrap_hsp import castor_hsp_wrapper, castor_hsp_loocv_wrapper
-from picrust2.util import generate_temp_filename
+from picrust2.util import generate_temp_filename, get_picrust_project_dir
 
 # Path to test directory.
-test_dir_path = os.path.dirname(sys.argv[0])
-
-# Set path to "." if the above command returned nothing.
-if not test_dir_path:
-	test_dir_path = "."
+test_dir_path = get_picrust_project_dir() + "/tests"
 
 in_traits1 = test_dir_path + "/" + "test_data/hsp/known_traits.tsv"
 in_tree1 = test_dir_path + "/" + "test_data/hsp/tree.tre"
