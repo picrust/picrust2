@@ -31,9 +31,4 @@ setup(name='PICRUSt2',
 			'h5py',
                         'joblib',
                         'biom-format'],
-      package_data={'precalculated':
-		    ['prokaryotic/*',
-                     'eukaryotic/*'],
-                    'picrust2':
-                    ['Rscripts/*.R']},
       long_description=long_description)
