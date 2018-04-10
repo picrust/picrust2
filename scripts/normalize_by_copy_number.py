@@ -2,9 +2,6 @@
 
 from __future__ import division
 
-__author__ = "Greg Caporaso"
-__copyright__ = "Copyright 2018, The PICRUSt Project"
-__credits__ = ["Greg Caporaso", "Morgan Langille"]
 __license__ = "GPL"
 __version__ = "2-alpha.6"
 
@@ -62,15 +59,7 @@ def main():
     if args.verbose:
         print("Loading trait table: " + input_count_table)
 
-    ext = path.splitext(input_count_table)[1]
-
-    if (ext == '.gz'):
-        count_table_fh = gzip.open(input_count_table,'rb')
-    else:
-        count_table_fh = open(input_count_table,'U')
-
-    if args.load_precalc_file_in_biom:
-        count_table = load_table(count_table_fh)
+    count_table = load_table(input_count_table).transpose()
 
     #Need to only keep data relevant to our otu list
     ids = []
@@ -107,7 +96,7 @@ def main():
     def metadata_norm(v, i, md):
         return v / float(md[args.metadata_identifer])
     normalized_table = filtered_otu_table.transform(metadata_norm, axis='observation')
-
+ 
     #move Observation Metadata from original to filtered OTU table
     normalized_table = transfer_observation_metadata(otu_table, normalized_table, 'observation')
 
