@@ -33,24 +33,38 @@ if(seed_setting != "None") {
 # Function to get CIs for certain HSP methods.
 ci_95_states2values <- function(state_probs, number_of_tips) {
   state_prob_cumsum <- t(apply(state_probs[1:number_of_tips, , drop=FALSE], 1, cumsum))
-  ci_5 <- apply(state_prob_cumsum, 1, function(x) { min(which(x >= 0.05)) - 1 })
-  ci_95 <- apply(state_prob_cumsum, 1, function(x) { min(which(x >= 0.95)) - 1 } )
+  ci_5 <- apply(state_prob_cumsum, 1, function(x) { colnames(x)[min(which(x >= 0.05))] })
+  ci_95 <- apply(state_prob_cumsum, 1, function(x) { colnames(x)[min(which(x >= 0.95))] })
   return(c(ci_5, ci_95))
 }
 
 
 # Function to get HSP state probabilities for study (i.e. "unknown" tips only).
+# Adds rownames of sequences and colnames of counts. 
+# Also remove columns that are all zeros (no probability of that state).
 get_sorted_prob <- function(in_likelihood, study_tips_i, tree_tips, study_tips) {
-  tmp_lik <- in_likelihood[unknown_tips_index, , drop=FALSE]
   
+  # Subet to study sequences only and set as rownames.
+  tmp_lik <- in_likelihood[study_tips_i, , drop=FALSE]
   rownames(tmp_lik) <- tree_tips[study_tips_i]
   
-  return(tmp_lik[study_tips, ,drop=FALSE])
+  # Set column names to be 0 to max num of counts.
+  colnames(tmp_lik) <- c(0:(ncol(tmp_lik)-1))
+  
+  # Remove columns that are 0 across all sequences.
+  col2remove <- which(colSums(tmp_lik) == 0)
+  if(length(col2remove) > 0) {
+    tmp_lik <- tmp_lik[, -col2remove, drop=FALSE]
+  }
+
+  return(tmp_lik[study_tips, , drop=FALSE])
+
 }
 
 
 # Order the trait table to match the tree tip labels. Set all tips without a value to be NA.
 unknown_tips <- full_tree$tip.label[which(! full_tree$tip.label %in% rownames(trait_values))]
+unknown_tips_index <- which(full_tree$tip.label %in% unknown_tips)
 
 unknown_df <- as.data.frame(matrix(NA,
                                   nrow=length(unknown_tips),
@@ -93,7 +107,7 @@ if (hsp_method == "pic" | hsp_method == "scp" | hsp_method == "subtree_average")
                             mc.cores = num_cores)
   }
 
-  predicted_values <- mclapply(predict_out, function(x) { x$states[1:num_tip] }, mc.cores = num_cores)
+  predicted_values <- mclapply(predict_out, function(x) { x$states[unknown_tips_index] }, mc.cores = num_cores)
   
 } else if(hsp_method == "emp_prob" | hsp_method == "mp") {
 
@@ -119,15 +133,8 @@ if (hsp_method == "pic" | hsp_method == "scp" | hsp_method == "subtree_average")
                                mc.cores = num_cores)
 
   }
-  
-  # Get state with highest probability in each case and subtract 1 to get value.
-  predicted_values <- mclapply(hsp_out_models,
-                               function(x) { max.col(x$likelihoods[1:num_tip,]) - 1 },
-                               mc.cores = num_cores)
 
   # Get subset of likelihood matrices for previously unknown tips only and output RDS file.
-  unknown_tips_index <- which(full_tree$tip.label %in% unknown_tips)
-  
   num_unknown <- length(unknown_tips)
   
   hsp_out_models_unknown_lik <- mclapply(names(hsp_out_models), 
@@ -136,7 +143,13 @@ if (hsp_method == "pic" | hsp_method == "scp" | hsp_method == "subtree_average")
                                                                        tree_tips=full_tree$tip.label, 
                                                                        study_tips=unknown_tips)},
                                                                        mc.cores = num_cores)
+  
   names(hsp_out_models_unknown_lik) <- names(hsp_out_models)
+  
+  # Get state with highest probability in each case.
+  predicted_values <- mclapply(hsp_out_models_unknown_lik,
+                               function(x) { colnames(x)[max.col(x)] },
+                               mc.cores = num_cores)
   
   saveRDS(object = hsp_out_models_unknown_lik, file = rds_outfile)
   
@@ -174,10 +187,8 @@ if (hsp_method == "pic" | hsp_method == "scp" | hsp_method == "subtree_average")
 
 # Add tips as first column of predicted_values.
 predicted_values <- data.frame(predicted_values, check.names = FALSE)
-predicted_values$tips <- full_tree$tip.label
+predicted_values$tips <- full_tree$tip.label[unknown_tips_index]
 predicted_values <- predicted_values[, c("tips", colnames(trait_values_ordered))]
-
-unknown_tip_range <- which(predicted_values$tips %in% unknown_tips)
 
 # Calculate NSTI per tip and add to output as last column if option set.
 if(calc_nsti) {
@@ -186,16 +197,12 @@ if(calc_nsti) {
   # Calculate NSTIs for tips with previously unknown trait values.
   all_tip_range <- 1:length(full_tree$tip.label)
   
-  known_tip_range <- which(! predicted_values$tips %in% unknown_tips)
+  known_tip_range <- which(! full_tree$tips %in% unknown_tips)
 
-  predicted_values[unknown_tip_range, "metadata_NSTI"] <- find_nearest_tips(
-                                                              full_tree,
-                                                              target_tips=known_tip_range,
-                                                              check_input=check_input_set)$nearest_distance_per_tip[unknown_tip_range]
+  predicted_values[, "metadata_NSTI"] <- find_nearest_tips(full_tree,
+                                                           target_tips=known_tip_range,
+                                                           check_input=check_input_set)$nearest_distance_per_tip[unknown_tips_index]
 }
-
-# Subset to previously unknown tips only.
-predicted_values <- predicted_values[unknown_tip_range,]
 
 # Write out predicted values.
 write.table(predicted_values, file=predict_outfile, row.names=FALSE, quote=FALSE, sep="\t")
