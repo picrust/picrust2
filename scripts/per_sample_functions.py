@@ -3,13 +3,14 @@
 from __future__ import division
 
 __license__ = "GPL"
-__version__ = "2-alpha.6"
+__version__ = "2-alpha.7"
 
 import argparse
 import biom
+import pandas as pd
+import numpy as np
 from rpy2.robjects import pandas2ri
 from joblib import Parallel, delayed
-import pandas as pd
 from picrust2.per_sample_functions import(read_in_rds,
                                           norm_by_marker_copies,
                                           process_func_count_prob)
@@ -34,12 +35,12 @@ parser.add_argument('-m', '--marker', metavar='PATH', required=True, type=str,
                          'copies per study sequence, which is used to ' +
                          'normalize table of sequence counts')
 
-parser.add_argument('--exp_outfile', default='exp_out_test.tsv', 
+parser.add_argument('--exp_outfile', default='exp_predict_out.tsv', 
                     metavar='PATH', type=str,
                     help='Output file for predicted function abundances ' +
                          'per sample')
 
-parser.add_argument('--ci_outfile', default='ci_out_test.tsv', 
+parser.add_argument('--ci_outfile', default='ci_predict_out.tsv', 
                     metavar='PATH', type=str,
                     help='Output file for confidence intervals of predicted ' +
                          'function abundances per sample')
@@ -70,16 +71,15 @@ def main():
     func_names = predict_func_probs.names
 
     # Read in study sequences in HDF5 BIOM format.
-    with biom.util.biom_open(args.input) as input_file:
-        input_biom = biom.Table.from_hdf5(input_file)
+    input_biom = biom.load_table(args.input)
 
     # Convert biom table to pandas dataframe.
     # (Based on James Morton's blog post here:
     # http://mortonjt.blogspot.ca/2016/07/behind-scenes-with-biom-tables.html)
     study_seq_counts = pd.DataFrame(np.array(
-                                        input_biom.matrix_data.todense()).T,
-                             index=input_biom.ids(axis='sample'),
-                             columns=input_biom.ids(axis='observation'))
+                                        input_biom.matrix_data.todense()),
+                             index=input_biom.ids(axis='observation'),
+                             columns=input_biom.ids(axis='sample'))
 
     exp_marker_copy = pd.read_table(filepath_or_buffer=args.marker,
                                     sep="\t",
@@ -90,12 +90,21 @@ def main():
                                              args.output_norm,
                                              args.norm_outfile)
 
-    metagenome_out = Parallel(n_jobs=args.threads)(delayed(
-                              process_func_count_prob)(
-                              predict_func_probs[i],
-                              func_names[i],
-                              study_seq_counts)
-                              for i in range(len(predict_func_probs)))
+    if args.threads > 1:
+        metagenome_out = Parallel(n_jobs=args.threads)(delayed(
+                                  process_func_count_prob)(
+                                  predict_func_probs[i],
+                                  func_names[i],
+                                  study_seq_counts)
+                                  for i in range(len(predict_func_probs)))
+
+    else:
+        metagenome_out = []
+        tmp = [335]
+        for i in tmp:
+            metagenome_out += [process_func_count_prob(predict_func_probs[i],
+                                                       func_names[i],
+                                                       study_seq_counts)]
 
     # Convert returned list of dictionaries to dataframe.
     metagenome_out_df = pd.DataFrame.from_dict(metagenome_out)

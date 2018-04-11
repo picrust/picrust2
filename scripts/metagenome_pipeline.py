@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 __license__ = "GPL"
-__version__ = "2-alpha.6"
+__version__ = "2-alpha.7"
 
 import argparse
 from picrust2.util import system_call_check

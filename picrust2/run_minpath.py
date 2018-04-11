@@ -5,7 +5,7 @@ from collections import defaultdict
 from picrust2.util import system_call_check
 
 __license__ = "GPL"
-__version__ = "2-alpha.6"
+__version__ = "2-alpha.7"
 
 # Class that contains pathway abundances for each sample.
 class pathway_counts():

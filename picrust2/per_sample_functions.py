@@ -3,7 +3,7 @@
 from __future__ import division
 
 __license__ = "GPL"
-__version__ = "2-alpha.6"
+__version__ = "2-alpha.7"
 
 import rpy2.robjects as robjects
 from rpy2.robjects import pandas2ri
@@ -52,14 +52,25 @@ def all_possible_counts(probs_in, abun_in, poss_counts):
     # Loop through all sequences.
     for seqname in probs_in.index.values:
 
+        print(seqname)
+        print(poss_counts)
+        print("\n\n\n")
+
         # Identify non-zero indices.
         nonzero_seq_col = list(probs_in.loc[seqname, ] > 0)
 
         # Subset to non-zero indices for count and prob rows.
+        print("nonzero vals:")
+        print(abun_in.loc[seqname, nonzero_seq_col])
+        print(abun_in.columns.values[nonzero_seq_col])
+
         seq_poss_counts = abun_in.loc[seqname, nonzero_seq_col] *\
                           abun_in.columns.values[nonzero_seq_col]
 
         seq_count_probs = probs_in.loc[seqname, nonzero_seq_col]
+
+        print("possible:")
+        print(seq_poss_counts)
 
         # Add these seq counts to possible counts.
         new_poss_count = []
@@ -137,22 +148,19 @@ def sample_func_prob_dist(func_probs, seq_counts, sample_id):
 def norm_by_marker_copies(input_seq_counts,
                           input_marker_num,
                           output_normfile=False,
-                          norm_filename="norm_seq_counts.tsv"):
+                          norm_filename="norm_seq_counts.tsv",
+                          round_norm=True):
 
     '''Divides sequence counts (which correspond to amplicon sequence
     variants) by the predicted marker gene copies for each sequence. Will write
     out the normalized table if option specified.'''
-
-    # Check that all rownames match between the two input dataframes.
-    if sorted(input_seq_counts.index) != sorted(input_marker_num.index):
-        raise ValueError("Sequence names do not match between input " +
-                         "sequence abundances and marker gene copy number " +
-                         "table. These names are: ",
-                         list(input_seq_counts.index.values),
-                         list(input_marker_num.index.values))
-
-    input_seq_counts = input_seq_counts.div(input_marker_num.loc[:, "16S_rRNA_Count"],
+    input_seq_counts = input_seq_counts.div(input_marker_num.loc[
+                                                input_seq_counts.index.values,
+                                                "16S_rRNA_Count"],
                                             axis="index")
+
+    if round_norm:
+        input_seq_counts = input_seq_counts.round(decimals=0)
 
     # Output normalized table if specified.
     if output_normfile:
@@ -187,14 +195,17 @@ def expectation_and_ci_val(poss_counts, count_probs, rounded=True):
     return([exp_count, lower_ci, upper_ci])
 
 
-def process_func_count_prob(predict_func_probs_raw,
-                            func,
-                            study_seq_counts):
+def process_func_count_prob(predict_func_probs_raw, func, study_seq_counts):
+
+    '''Determines expected function count and confidence intervals per sample
+    and returns dictionary of these values'''
 
     func_probs = pandas2ri.ri2py_dataframe(predict_func_probs_raw)
 
     func_rownames = pandas2ri.ri2py(predict_func_probs_raw.rownames)
 
+    # Set index and column names to be same as in original R matrix.
+    func_probs.columns = [int(i) for i in predict_func_probs_raw.colnames] 
     func_probs.set_index(func_rownames, inplace=True)
 
     func_by_sample = {}
@@ -205,13 +216,17 @@ def process_func_count_prob(predict_func_probs_raw,
                                                          study_seq_counts,
                                                          sample_id)
 
+        print(sample_id + " got prob dist")
+
         func_by_sample_out = expectation_and_ci_val(poss_counts, count_probs)
+
+        print(sample_id + " got exp and ci vals")
 
         func_by_sample[sample_id] = func_by_sample_out[0]
         func_by_sample[sample_id + "_ci5"] = func_by_sample_out[1]
         func_by_sample[sample_id + "_ci95"] = func_by_sample_out[2]
 
     # Add func name to dictionary so this can later be index labels in df.
-    func_by_sample["function"] = func 
+    func_by_sample["function"] = func
 
     return(func_by_sample)
