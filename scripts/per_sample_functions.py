@@ -100,8 +100,7 @@ def main():
 
     else:
         metagenome_out = []
-        tmp = [0, 237]
-        for i in tmp: #range(len(predict_func_probs)):
+        for i in range(len(predict_func_probs)):
             metagenome_out += [process_func_count_prob(predict_func_probs[i],
                                                        func_names[i],
                                                        study_seq_counts)]
