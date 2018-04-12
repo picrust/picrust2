@@ -33,7 +33,7 @@ def sample_func_prob_dist(func_probs, seq_counts, sample_id):
     func_probs = func_probs.reindex(func_abun.index)
 
     # Identify rows that are > 0 in columns besides the first.    
-    non_zero_rows = list(func_abun.iloc[:, 1:-1].sum(axis=1) > 0)
+    non_zero_rows = list(func_abun.iloc[:, 1:].sum(axis=1) > 0)
 
     # If there are no rows that match this description then return 0.
     if sum(non_zero_rows) == 0:
@@ -62,14 +62,11 @@ def sample_func_prob_dist(func_probs, seq_counts, sample_id):
     if sum(ambig_rows) == 0:
         return(np.array([starting_count]), np.array([1]))
 
-    return(convolve_mult_prob_dist(func_probs,
-                                   func_abun * func_abun.columns.values))
+    # Multiply func abundance by column values (and add starting counts from 
+    # unambiguous rows)
+    func_abun = (func_abun * func_abun.columns.values) + starting_count
 
-    ##### Original method:
-    # # Otherwise subset to ambiguous rows and get all possible counts.
-    # return(all_possible_counts(probs_in=func_probs.iloc[ambig_rows, :],
-    #                            abun_in=func_abun.iloc[ambig_rows, :],
-    #                            poss_counts=possible_counts))
+    return(convolve_mult_prob_dist(func_probs, func_abun))
 
 
 def norm_by_marker_copies(input_seq_counts,
@@ -105,6 +102,10 @@ def expectation_and_ci_val(poss_counts, count_probs, rounded=True):
     # If only 1 possible count given then return it as all 3 values.
     if len(poss_counts) == 1:
         return([poss_counts[0], poss_counts[0], poss_counts[0]])
+
+    print(poss_counts)
+    print(count_probs)
+    print("---------------\n\n\n\n\n")
 
     # Get expected value.
     exp_count = sum(poss_counts*count_probs)
