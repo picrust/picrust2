@@ -3,7 +3,7 @@
 from sys import platform, version as python_version, executable
 
 __license__ = "GPL"
-__version__ = "2-alpha.7"
+__version__ = "2-alpha.8"
 
 try:
     from numpy import __version__ as numpy_lib_version

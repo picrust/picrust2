@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 __license__ = "GPL"
-__version__ = "2-alpha.7"
+__version__ = "2-alpha.8"
 
 import argparse
 import tempfile

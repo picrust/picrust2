@@ -11,7 +11,7 @@ from picrust2.util import (system_call_check, get_picrust_project_dir,
                            make_tmp_directory)
 
 __license__ = "GPL"
-__version__ = "2-alpha.7"
+__version__ = "2-alpha.8"
 
 
 def run_minpath_pipeline(inputfile,
