@@ -2,7 +2,8 @@
 
 from __future__ import division
 from collections import defaultdict
-from picrust2.util import system_call_check
+from picrust2.util import system_call_check, get_picrust_project_dir
+from os import path
 
 __license__ = "GPL"
 __version__ = "2-alpha.7"
