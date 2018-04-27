@@ -67,18 +67,6 @@ def main():
     # Initialize set of all pathways.
     all_pathways = set()
 
-    functions_map = {}
-
-    for func in functions:
-      functions_map[func] = func.replace('EC:', '')
-
-    biom_in.update_ids(functions_map,
-                       axis='observation',
-                       strict=True,
-                       inplace=True)
-
-    functions = list(functions_map.values())
-
     sample_path_abun_raw = Parallel(n_jobs=args.threads)(delayed(
                                 minpath_wrapper)(sample_id, biom_in,
                                 args.map, tmp_dir, functions, args.print_cmds)
