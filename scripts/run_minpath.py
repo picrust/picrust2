@@ -41,16 +41,16 @@ def main():
 
     args = parser.parse_args()
 
-    metacyc_predictions = run_minpath_pipeline(input=args.input,
+    metacyc_predictions = run_minpath_pipeline(inputfile=args.input,
                                                mapfile=args.map,
                                                keep_tmp=args.keep_tmp,
                                                threads=args.threads,
                                                tmp_dir=args.tmp_dir,
                                                print_cmds=args.print_cmds)
 
-
     metacyc_predictions.to_csv(path_or_buf=args.output,
-                               sep="\t")
+                               sep="\t",
+                               index_label="pathway")
 
 
 if __name__ == "__main__":
