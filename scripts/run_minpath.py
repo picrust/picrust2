@@ -6,12 +6,8 @@ __license__ = "GPL"
 __version__ = "2-alpha.7"
 
 import argparse
-from biom.table import Table
-from biom import load_table
-import tempfile
-from picrust2.util import system_call_check, make_output_dir
-from picrust2.run_minpath import pathway_counts, minpath_wrapper
-from joblib import Parallel, delayed
+from picrust2.run_minpath import run_minpath_pipeline
+import pandas as pd
 
 parser = argparse.ArgumentParser(
 
@@ -45,64 +41,17 @@ def main():
 
     args = parser.parse_args()
 
-    # Create temporary folder for intermediate files.
-    if args.tmp_dir:
-        tmp_dir = args.tmp_dir
-    else:
-        tmp_dir = "minpath_tmp_" + next(tempfile._get_candidate_names())
+    metacyc_predictions = run_minpath_pipeline(input=args.input,
+                                               mapfile=args.map,
+                                               keep_tmp=args.keep_tmp,
+                                               threads=args.threads,
+                                               tmp_dir=args.tmp_dir,
+                                               print_cmds=args.print_cmds)
 
-    make_output_dir(tmp_dir)
 
-    if args.print_cmds:
-      print("Creating tmp directory: " + tmp_dir)
+    metacyc_predictions.to_csv(path_or_buf=args.output,
+                               sep="\t")
 
-    biom_in = load_table(args.input)
-
-    # Remove all empty rows and columns.
-    biom_in.remove_empty(axis='whole', inplace=True)
-
-    samples = biom_in.ids()
-    functions = biom_in.ids(axis="observation")
-
-    # Initialize set of all pathways.
-    all_pathways = set()
-
-    sample_path_abun_raw = Parallel(n_jobs=args.threads)(delayed(
-                                minpath_wrapper)(sample_id, biom_in,
-                                args.map, tmp_dir, functions, args.print_cmds)
-                                for sample_id in samples)
-
-    # Figure out what all unique pathway names are.
-    all_pathways = []
-    for sample_d in sample_path_abun_raw:
-      all_pathways = list(set(all_pathways + list(sample_d.keys())))
-    all_pathways = set(all_pathways)
-
-    # Loop through all samples and make dictionary of these return pathway
-    # abundances.
-    sample_path_abun = {}
-    for i, sample_id in enumerate(samples):
-      sample_path_abun[sample_id] = sample_path_abun_raw[i]
-
-    # Write output file of pathway abundances.
-    outfile = open(args.output, "w")
-
-    # Write header-line.
-    outfile.write("\t".join(["pathway"] + list(samples)) + "\n")
-
-    # Loop through pathways and write out abundances per sample.
-    for pathway in all_pathways:
-      out_row = [pathway]
-      for sample_id in samples:
-        out_row += [str(sample_path_abun[sample_id][pathway])]
-
-      outfile.write("\t".join(out_row) + "\n")
-
-    outfile.close()
-
-    # Remove intermediate files unless "--keep_tmp" option specified.
-    if not args.keep_tmp:
-        system_call_check("rm -r " + tmp_dir, print_out=args.print_cmds)
 
 if __name__ == "__main__":
     main()

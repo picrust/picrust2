@@ -1,24 +1,54 @@
 #!/usr/bin/env python
 
 from __future__ import division
+from biom import load_table
 from collections import defaultdict
-from picrust2.util import system_call_check, get_picrust_project_dir
+import tempfile
+import pandas as pd
+from picrust2.util import (system_call_check, get_picrust_project_dir,
+                           make_tmp_directory)
 from os import path
 
 __license__ = "GPL"
 __version__ = "2-alpha.7"
 
-# Class that contains pathway abundances for each sample.
-class pathway_counts():
 
-	def __init__(self, filename):
-		self.__counts = defaultdict(float)
+def run_minpath_pipeline(input,
+                         mapfile,
+                         keep_tmp=False,
+                         threads=1,
+                         tmp_dir=None,
+                         print_cmds=False):
+    '''Pipeline containing full pipeline for reading input files, making
+    calls to functions to run MinPath and to return an output table of
+    predicted pathway abundances that can be written to a file.'''
 
-	def set_pathway_abun(self, path_id, abun):
-		self.__counts[path_id] = abun
+    # Create temporary folder for intermediate files.
+    tmp_dirname = make_tmp_directory(dir_name=tmp_dir,
+                                     dir_prefix="minpath_tmp_")
 
-	def return_pathway_abun(self, path_id):
-		return self.__counts[path_id]
+    # Read in table of gene family abundances. 
+    biom_in = load_table(input)
+
+    # Remove all empty rows and columns.
+    biom_in.remove_empty(axis='whole', inplace=True)
+
+    # Get samples and functions as separate lists.
+    samples = biom_in.ids()
+    functions = biom_in.ids(axis="observation")
+
+    # Run minpath wrapper on all samples.
+    sample_path_abun_raw = Parallel(n_jobs=threads)(delayed(
+                                    minpath_wrapper)(sample_id, biom_in,
+                                    mapfile, tmp_dir, functions, print_cmds)
+                                    for sample_id in samples)
+
+    # Remove intermediate files unless "keep_tmp" option specified.
+    if not keep_tmp:
+        system_call_check("rm -r " + tmp_dirname, print_out=print_cmds)
+
+    # Return pandas dataframe.
+    return(pd.DataFrame(sample_path_abun_raw))
 
 
 def minpath_wrapper(sample_id, biom_in, minpath_map, tmp_dir, functions,
