@@ -1,28 +1,72 @@
 #!/usr/bin/env python
 
 from __future__ import division
+from biom import load_table
 from collections import defaultdict
-from picrust2.util import system_call_check
+from joblib import Parallel, delayed
+from os import path
+import pandas as pd
+import tempfile
+from picrust2.util import (system_call_check, get_picrust_project_dir,
+                           make_tmp_directory)
 
 __license__ = "GPL"
 __version__ = "2-alpha.7"
 
-# Class that contains pathway abundances for each sample.
-class pathway_counts():
 
-	def __init__(self, filename):
-		self.__counts = defaultdict(float)
+def run_minpath_pipeline(inputfile,
+                         mapfile,
+                         keep_tmp=False,
+                         threads=1,
+                         tmp_dir=None,
+                         print_cmds=False):
+    '''Pipeline containing full pipeline for reading input files, making
+    calls to functions to run MinPath and to return an output table of
+    predicted pathway abundances that can be written to a file.'''
 
-	def set_pathway_abun(self, path_id, abun):
-		self.__counts[path_id] = abun
+    # Create temporary folder for intermediate files.
+    tmp_dirname = make_tmp_directory(dir_name=tmp_dir,
+                                     dir_prefix="minpath_tmp_")
 
-	def return_pathway_abun(self, path_id):
-		return self.__counts[path_id]
+    # Read in table of gene family abundances. 
+    biom_in = load_table(inputfile)
+
+    # Remove all empty rows and columns.
+    biom_in.remove_empty(axis='whole', inplace=True)
+
+    # Get samples and functions as separate lists.
+    samples = biom_in.ids()
+    functions = biom_in.ids(axis="observation")
+
+    # Run minpath wrapper on all samples.
+    sample_path_abun_raw = Parallel(n_jobs=threads)(delayed(
+                                    minpath_wrapper)(sample_id, biom_in,
+                                    mapfile, tmp_dir, functions, print_cmds)
+                                    for sample_id in samples)
+
+    # Remove intermediate files unless "keep_tmp" option specified.
+    if not keep_tmp:
+        system_call_check("rm -r " + tmp_dirname, print_out=print_cmds)
+
+    # Convert this returned list of dictionaries to pandas dataframe.
+    sample_path_abun = pd.DataFrame(sample_path_abun_raw)
+
+    # Set index labels of this dataframe to be sample names.
+    sample_path_abun = sample_path_abun.set_index(samples)
+
+    # Replace all missing values (NaN) with 0s (i.e. pathway was missing in
+    # that sample).
+    sample_path_abun.fillna(0, inplace=True)
+
+    # Return pandas dataframe transposed (samples as columns and pathways as
+    # rows).
+    return(sample_path_abun.transpose())
 
 
 def minpath_wrapper(sample_id, biom_in, minpath_map, tmp_dir, functions,
-	                print_opt):
-	'''Read in sample_id, tmp_dir, list of functions to loop through.'''
+	                print_opt=False):
+	'''Read in sample_id, gene family table, tmp_dir, list of functions to loop
+    through and run MinPath based on the gene family abundances.'''
 
 	# Define MinPath input and outout filenames.
 	minpath_in = str(tmp_dir + "/" + sample_id + "_minpath_in.txt")
@@ -51,7 +95,10 @@ def minpath_wrapper(sample_id, biom_in, minpath_map, tmp_dir, functions,
 	id_minpath_fh.close()
 
 	# Run MinPath on this sample.
-	minpath_cmd = "MinPath12hmp.py -any " + minpath_in + " -map " +\
+	path2minpath = path.join(get_picrust_project_dir(), 'MinPath',
+                                 'MinPath12hmp.py')
+
+	minpath_cmd = path2minpath + " -any " + minpath_in + " -map " +\
                   minpath_map + " -report " + minpath_report +\
                   " -details " + minpath_details + " -mps " + minpath_mps
 
@@ -70,7 +117,7 @@ def minpath_wrapper(sample_id, biom_in, minpath_map, tmp_dir, functions,
 				path_present.add(line_split[-1])
 
 	# Now read in details file and take abundance of pathway to be
-	# harmonic mean of gene families in pathway to be abundance of pathway.
+	# mean of top 1/2 most abundanct gene families.
 	# Abundances of 0 will be added in for gene families not found.
 
 	# Initialize dictionary that will contain pathway abundances.
@@ -116,7 +163,7 @@ def minpath_wrapper(sample_id, biom_in, minpath_map, tmp_dir, functions,
 		# Like HUMAnN2, sort enzyme reactions, take second half, and get 
 		# their mean abundance.
 		sorted_gf_abundances = sorted(gf_abundances[pathway])
-		gf_abundances_subset = sorted_gf_abundances[int(len(sorted_gf_abundances)/ 2):]
+		gf_abundances_subset = sorted_gf_abundances[int(len(sorted_gf_abundances) / 2):]
 		pathway_abun = sum(gf_abundances_subset)/len(gf_abundances_subset)
 
 		path_abun[pathway] = pathway_abun
