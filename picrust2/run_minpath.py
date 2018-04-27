@@ -51,7 +51,10 @@ def minpath_wrapper(sample_id, biom_in, minpath_map, tmp_dir, functions,
 	id_minpath_fh.close()
 
 	# Run MinPath on this sample.
-	minpath_cmd = "MinPath12hmp.py -any " + minpath_in + " -map " +\
+	path2minpath = path.join(get_picrust_project_dir(), 'MinPath',
+                                 'MinPath12hmp.py')
+
+	minpath_cmd = path2minpath + " -any " + minpath_in + " -map " +\
                   minpath_map + " -report " + minpath_report +\
                   " -details " + minpath_details + " -mps " + minpath_mps
 
