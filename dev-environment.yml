@@ -1,7 +1,10 @@
 name: picrust2-dev
 channels:
+- conda-forge
 - r
+- bioconda
 - defaults
+
 dependencies:
 - h5py
 - joblib
@@ -9,7 +12,9 @@ dependencies:
 - python=3.6.5
 - r-base
 - r-ape
+- r-castor
 - rpy2
+- pplacer
 - pip:
   - biom-format
   - pytest
