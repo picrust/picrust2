@@ -66,6 +66,10 @@ def sample_func_prob_dist(func_probs, seq_counts, sample_id):
     # unambiguous rows)
     func_abun = (func_abun * func_abun.columns.values) + starting_count
 
+    # Set first column to be 0.
+    if 0 in func_abun.columns:
+        func_abun[0] = 0
+
     return(convolve_mult_prob_dist(func_probs, func_abun))
 
 
@@ -102,10 +106,6 @@ def expectation_and_ci_val(poss_counts, count_probs, rounded=True):
     # If only 1 possible count given then return it as all 3 values.
     if len(poss_counts) == 1:
         return([poss_counts[0], poss_counts[0], poss_counts[0]])
-
-    print(poss_counts)
-    print(count_probs)
-    print("---------------\n\n\n\n\n")
 
     # Get expected value.
     exp_count = sum(poss_counts*count_probs)
