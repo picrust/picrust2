@@ -41,7 +41,7 @@ def run_minpath_pipeline(inputfile,
     # Run minpath wrapper on all samples.
     sample_path_abun_raw = Parallel(n_jobs=threads)(delayed(
                                     minpath_wrapper)(sample_id, biom_in,
-                                    mapfile, tmp_dir, functions, print_cmds)
+                                    mapfile, tmp_dirname, functions, print_cmds)
                                     for sample_id in samples)
 
     # Remove intermediate files unless "keep_tmp" option specified.
