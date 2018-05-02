@@ -11,8 +11,7 @@ import pandas as pd
 from os import path
 from tempfile import TemporaryDirectory
 from picrust2.run_minpath import minpath_wrapper, run_minpath_pipeline
-from picrust2.util import (generate_temp_filename, get_picrust_project_dir,
-                           system_call_check)
+from picrust2.util import get_picrust_project_dir
 
 # Path to test directory.
 test_dir_path = path.join(get_picrust_project_dir(), "tests")
@@ -63,7 +62,7 @@ class minpath_wrapper_tests(unittest.TestCase):
         exp_path_abun_B1 = exp_path_abun[["B1"]]
 
         # Remove rows that are all 0s.
-        exp_path_abun_B1 = exp_path_abun_B1.loc[~(exp_path_abun_B1==0).all(axis=1)]
+        exp_path_abun_B1 = exp_path_abun_B1.loc[~(exp_path_abun_B1 == 0).all(axis=1)]
 
         pd.testing.assert_frame_equal(exp_path_abun_B1, path_abun_df)
 

@@ -8,9 +8,9 @@ import unittest
 from os import path
 from tempfile import TemporaryDirectory
 from picrust2.util import get_picrust_project_dir, read_phylip, read_fasta
-from picrust2.place_seqs import (place_seqs_pipeline, run_papara, 
-                                split_ref_study_papara, run_epa_ng,
-                                gappa_jplace_to_newick)
+from picrust2.place_seqs import (place_seqs_pipeline, run_papara,
+                                 split_ref_study_papara, run_epa_ng,
+                                 gappa_jplace_to_newick)
 
 # Set paths to test files.
 test_dir_path = path.join(get_picrust_project_dir(), "tests")
@@ -41,8 +41,8 @@ exp_newick = path.join(test_dir_path, "test_data", "place_seqs",
                        "img_centroid_16S_aligned_head30_placed.tre")
 
 exp_jplace = path.join(test_dir_path, "test_data", "place_seqs",
-                          "place_seqs_output", "place_seqs_working",
-                          "epa_out", "epa_result.jplace")
+                       "place_seqs_output", "place_seqs_working",
+                       "epa_out", "epa_result.jplace")
 
 
 class place_seqs_tests(unittest.TestCase):
@@ -60,7 +60,7 @@ class place_seqs_tests(unittest.TestCase):
 
         with open(default_fasta) as fasta_in:
             fasta_hash.update(fasta_in.read().encode())
-        
+
         with open(default_tree) as tree_in:
             tree_hash.update(tree_in.read().encode())
 
@@ -68,7 +68,6 @@ class place_seqs_tests(unittest.TestCase):
         self.assertEqual([fasta_hash.hexdigest(), tree_hash.hexdigest()],
                          ['dcfadb9ed0c86a80a69c559dc161eb98',
                          'b2b46e23ccea2365d29f06d83cf7babf'])
-
 
     def test_run_papara(self):
         '''Basic test for run_papara function.'''
@@ -83,7 +82,6 @@ class place_seqs_tests(unittest.TestCase):
                                     study_fasta=test_study_seqs)
 
         self.assertEqual(exp_phylip, obs_phylip)
-
 
     def test_split_ref_study_papara(self):
         '''Basic test for split_ref_study_papara function.'''
@@ -110,7 +108,6 @@ class place_seqs_tests(unittest.TestCase):
 
         self.assertEqual(exp_fasta, obs_fasta)
 
-
     def test_gappa_jplace_to_newick(self):
         '''Basic test for gappa_jplace_to_newick function.'''
 
@@ -126,7 +123,6 @@ class place_seqs_tests(unittest.TestCase):
 
         self.assertEqual(exp_newick_in, obs_newick_in)
 
-
     def test_run_epa_ng(self):
         '''Basic test to check whether EPA-NG wrapper can be run. Exact
         matches to a treefile are not checked since slight differences
@@ -137,7 +133,6 @@ class place_seqs_tests(unittest.TestCase):
                        ref_msa_fastafile=exp_ref_fasta,
                        study_msa_fastafile=exp_study_fasta,
                        out_dir=temp_dir)
-
 
     def test_run_place_seqs_pipeline(self):
         '''Basic test of full place seqs pipeline. As for EPA-NG, exact
@@ -156,6 +151,7 @@ class place_seqs_tests(unittest.TestCase):
                                 out_dir=temp_dir,
                                 chunk_size=5000,
                                 print_cmds=False)
+
 
 if __name__ == '__main__':
     unittest.main()
