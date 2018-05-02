@@ -476,17 +476,3 @@ def generate_temp_filename(temp_dir=None, prefix="", suffix=""):
 
     return(temp_dir + "/" + prefix + next(tempfile._get_candidate_names()) +\
            suffix)
-
-
-def make_tmp_directory(dir_name=None, dir_prefix=""):
-    '''Creates an output directory. If not specified by name then
-    will create a random name. A prefix can be added to the beginning of
-    this random name if needed. Will return the name of the created
-     directory'''
-
-    if not dir_name:
-        dir_name = dir_prefix + next(tempfile._get_candidate_names())
-
-    make_output_dir(dir_name)
-
-    return(dir_name)
