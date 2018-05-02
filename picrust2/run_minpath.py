@@ -6,9 +6,7 @@ from collections import defaultdict
 from joblib import Parallel, delayed
 from os import path
 import pandas as pd
-import tempfile
-from picrust2.util import (system_call_check, get_picrust_project_dir,
-                           make_tmp_directory)
+from picrust2.util import (system_call_check, get_picrust_project_dir)
 
 __license__ = "GPL"
 __version__ = "2-alpha.8"
@@ -16,17 +14,12 @@ __version__ = "2-alpha.8"
 
 def run_minpath_pipeline(inputfile,
                          mapfile,
-                         keep_tmp=False,
                          threads=1,
-                         tmp_dir=None,
+                         out_dir=None,
                          print_cmds=False):
     '''Pipeline containing full pipeline for reading input files, making
     calls to functions to run MinPath and to return an output table of
     predicted pathway abundances that can be written to a file.'''
-
-    # Create temporary folder for intermediate files.
-    tmp_dirname = make_tmp_directory(dir_name=tmp_dir,
-                                     dir_prefix="minpath_tmp_")
 
     # Read in table of gene family abundances. 
     biom_in = load_table(inputfile)
@@ -41,12 +34,8 @@ def run_minpath_pipeline(inputfile,
     # Run minpath wrapper on all samples.
     sample_path_abun_raw = Parallel(n_jobs=threads)(delayed(
                                     minpath_wrapper)(sample_id, biom_in,
-                                    mapfile, tmp_dirname, functions, print_cmds)
+                                    mapfile, out_dir, functions, print_cmds)
                                     for sample_id in samples)
-
-    # Remove intermediate files unless "keep_tmp" option specified.
-    if not keep_tmp:
-        system_call_check("rm -r " + tmp_dirname, print_out=print_cmds)
 
     # Convert this returned list of dictionaries to pandas dataframe.
     sample_path_abun = pd.DataFrame(sample_path_abun_raw)
@@ -63,17 +52,17 @@ def run_minpath_pipeline(inputfile,
     return(sample_path_abun.transpose())
 
 
-def minpath_wrapper(sample_id, biom_in, minpath_map, tmp_dir, functions,
+def minpath_wrapper(sample_id, biom_in, minpath_map, out_dir, functions,
 	                print_opt=False):
-	'''Read in sample_id, gene family table, tmp_dir, list of functions to loop
+	'''Read in sample_id, gene family table, out_dir, list of functions to loop
     through and run MinPath based on the gene family abundances.'''
 
 	# Define MinPath input and outout filenames.
-	minpath_in = str(tmp_dir + "/" + sample_id + "_minpath_in.txt")
-	minpath_report = str(tmp_dir + "/" + sample_id + "_minpath_report.txt")
-	minpath_details = str(tmp_dir + "/" + sample_id + "_minpath_details.txt")
-	minpath_mps = str(tmp_dir + "/" + sample_id + "_minpath.mps")
-	minpath_output = open(str(tmp_dir + "/" + sample_id + 
+	minpath_in = str(out_dir + "/" + sample_id + "_minpath_in.txt")
+	minpath_report = str(out_dir + "/" + sample_id + "_minpath_report.txt")
+	minpath_details = str(out_dir + "/" + sample_id + "_minpath_details.txt")
+	minpath_mps = str(out_dir + "/" + sample_id + "_minpath.mps")
+	minpath_output = open(str(out_dir + "/" + sample_id + 
                           "_minpath_out.txt"), "w")
 
 	id_minpath_fh = open(minpath_in, "w")
