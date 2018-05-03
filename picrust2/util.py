@@ -476,3 +476,14 @@ def generate_temp_filename(temp_dir=None, prefix="", suffix=""):
 
     return(temp_dir + "/" + prefix + next(tempfile._get_candidate_names()) +\
            suffix)
+
+def biom_to_pandas_df(biom_tab):
+    '''Will convert from biom Table object to pandas dataframe.'''
+
+    # Note this is based on James Morton's helpful blog post here:
+    # http://mortonjt.blogspot.ca/2016/07/behind-scenes-with-biom-tables.html)
+
+    return(pd.DataFrame(np.array(biom_tab.matrix_data.todense()),
+                                 index=biom_tab.ids(axis='observation'),
+                                 columns=biom_tab.ids(axis='sample')))
+
