@@ -11,7 +11,7 @@ We are planning to release PICRUSt 2 by the end of 2018. It includes these and o
 * Addition of hidden-state prediction algorithms from the ```castor``` R package.
 
 # Citations
-PICRUSt2 wraps a number of tools to generate functional predictions from amplicon sequences. If you use PICRUSt2 you also need to cite these tools:
+PICRUSt2 wraps a number of tools to generate functional predictions from amplicon sequences. **If you use PICRUSt2 you also need to cite the below tools**.
 
 ### For phylogenetic placement of reads:
 * [PaPaRa](https://academic.oup.com/bioinformatics/article/27/15/2068/400617)
