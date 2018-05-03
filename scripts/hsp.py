@@ -6,26 +6,11 @@ __version__ = "2-alpha.8"
 import argparse
 from picrust2.wrap_hsp import castor_hsp_wrapper
 from picrust2.util import make_output_dir_for_file, get_picrust_project_dir
+from picrust2.precalc import default_tables
 
 HSP_METHODS = ['mp', 'emp_prob', 'pic', 'scp', 'subtree_average']
 
 TRAIT_OPTIONS = ['16S', 'COG', 'EC', 'KO', 'PFAM', 'TIGRFAM']
-
-# Inititalize default trait table files.
-project_dir = get_picrust_project_dir()
-
-default_tables = {"16S" : project_dir + \
-                  "/precalculated/prokaryotic/16S_counts_mean_round_var.txt",
-                  "COG" : project_dir + \
-                  "/precalculated/prokaryotic/cog_counts_mean_round_var.txt",
-                  "EC" : project_dir + \
-                  "/precalculated/prokaryotic/ec_counts_mean_round_var.txt",
-                  "KO" : project_dir + \
-                  "/precalculated/prokaryotic/ko_counts_mean_round_var.txt",
-                  "PFAM" : project_dir + \
-                  "/precalculated/prokaryotic/pfam_counts_mean_round_var.txt",
-                  "TIGRFAM": project_dir + \
-                  "/precalculated/prokaryotic/tfam_counts_mean_round_var.txt"}
 
 parser = argparse.ArgumentParser(
 
