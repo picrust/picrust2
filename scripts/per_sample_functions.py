@@ -12,13 +12,15 @@ import numpy as np
 from rpy2.robjects import pandas2ri
 from joblib import Parallel, delayed
 from picrust2.per_sample_functions import(read_in_rds,
-                                          norm_by_marker_copies,
                                           process_func_count_prob)
+from picrust2.metagenome_pipeline import norm_by_marker_copies
 
 parser = argparse.ArgumentParser(
 
     description="Outputs expected counts and confidence intervals per " +
-                "function for each sample.",
+                "function for each sample. This is an EXPERIMENTAL script - " +
+                "most users should use metagenome_pipeline.py to get the " +
+                "metagenome predictions.",
 
     formatter_class=argparse.RawDescriptionHelpFormatter)
 

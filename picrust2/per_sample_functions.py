@@ -73,32 +73,6 @@ def sample_func_prob_dist(func_probs, seq_counts, sample_id):
     return(convolve_mult_prob_dist(func_probs, func_abun))
 
 
-def norm_by_marker_copies(input_seq_counts,
-                          input_marker_num,
-                          output_normfile=False,
-                          norm_filename="norm_seq_counts.tsv",
-                          round_norm=True):
-
-    '''Divides sequence counts (which correspond to amplicon sequence
-    variants) by the predicted marker gene copies for each sequence. Will write
-    out the normalized table if option specified.'''
-    input_seq_counts = input_seq_counts.div(input_marker_num.loc[
-                                                input_seq_counts.index.values,
-                                                "16S_rRNA_Count"],
-                                            axis="index")
-
-    if round_norm:
-        input_seq_counts = input_seq_counts.round(decimals=0)
-
-    # Output normalized table if specified.
-    if output_normfile:
-        input_seq_counts.to_csv(path_or_buf=norm_filename,
-                                index_label="sequence",
-                                sep="\t")
-
-    return(input_seq_counts)
-
-
 def expectation_and_ci_val(poss_counts, count_probs, rounded=True):
     '''Given lists of possible counts and probabilities of these counts, return
     list of expected count and lower and upper 95% CIs.'''
