@@ -8,6 +8,7 @@ __version__ = "2-alpha.8"
 import argparse
 from picrust2.run_minpath import run_minpath_pipeline
 from tempfile import TemporaryDirectory
+from picrust2.util import make_output_dir
 import pandas as pd
 
 parser = argparse.ArgumentParser(
