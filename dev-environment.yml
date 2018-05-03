@@ -15,7 +15,6 @@ dependencies:
 - r-castor
 - rpy2
 - glpk
-- pplacer
 - pip:
   - biom-format
   - pytest
