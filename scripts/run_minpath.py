@@ -7,6 +7,7 @@ __version__ = "2-alpha.8"
 
 import argparse
 from picrust2.run_minpath import run_minpath_pipeline
+from tempfile import TemporaryDirectory
 import pandas as pd
 
 parser = argparse.ArgumentParser(
@@ -24,14 +25,12 @@ parser.add_argument('-m', '--map', metavar='PATH', required=True, type=str,
 parser.add_argument('-o', '--output', metavar='PATH', required=True, type=str,
                     help='Output file containing pathway abundances')
 
-parser.add_argument('--keep_tmp', default=False, action="store_true",
-                    help='If specified, keep temporary folder')
+parser.add_argument('--out_dir', metavar='PATH', type=str, default=None,
+                    help='Output folder for intermediate files (wont be ' +
+                         'kept unless this option is set.')
 
 parser.add_argument('-t', '--threads', default=1, type=int,
                     help='Number of threads')
-
-parser.add_argument('--tmp_dir', metavar='PATH', type=str,
-                    help='Temporary directory for running MinPath')
 
 parser.add_argument('--print_cmds', default=False, action="store_true",
                     help='If specified, print out wrapped commands to screen')
@@ -41,17 +40,28 @@ def main():
 
     args = parser.parse_args()
 
-    metacyc_predictions = run_minpath_pipeline(inputfile=args.input,
-                                               mapfile=args.map,
-                                               keep_tmp=args.keep_tmp,
-                                               threads=args.threads,
-                                               tmp_dir=args.tmp_dir,
-                                               print_cmds=args.print_cmds)
+    # If intermediate output directory set then create and output there.
+    # Otherwise make a temporary directory for the intermediate files.
+
+    if args.out_dir:
+        make_output_dir(args.out_dir)
+        
+        metacyc_predictions = run_minpath_pipeline(inputfile=args.input,
+                                                   mapfile=args.map,
+                                                   threads=args.threads,
+                                                   out_dir=args.out_dir,
+                                                   print_cmds=args.print_cmds)
+    else:
+        with TemporaryDirectory() as temp_dir:
+                metacyc_predictions = run_minpath_pipeline(inputfile=args.input,
+                                                           mapfile=args.map,
+                                                           threads=args.threads,
+                                                           out_dir=temp_dir,
+                                                           print_cmds=args.print_cmds)
 
     metacyc_predictions.to_csv(path_or_buf=args.output,
                                sep="\t",
                                index_label="pathway")
-
 
 if __name__ == "__main__":
     main()

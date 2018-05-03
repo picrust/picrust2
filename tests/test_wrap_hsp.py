@@ -1,32 +1,38 @@
 #!/usr/bin/env python
 
-__author__ = "Gavin Douglas"
 __copyright__ = "Copyright 2018, The PICRUSt Project"
 __license__ = "GPL"
 __version__ = "2-alpha.8"
 
-import sys, os, unittest
+import unittest
+import os
+from os import path
 import pandas as pd
 from picrust2.wrap_hsp import castor_hsp_wrapper, castor_hsp_loocv_wrapper
 from picrust2.util import generate_temp_filename, get_picrust_project_dir
 
 # Path to test directory.
-test_dir_path = get_picrust_project_dir() + "/tests"
+test_dir_path = path.join(get_picrust_project_dir(), "tests", "test_data",
+                          "hsp")
 
-in_traits1 = test_dir_path + "/" + "test_data/hsp/known_traits.tsv"
-in_tree1 = test_dir_path + "/" + "test_data/hsp/tree.tre"
+in_traits1 = path.join(test_dir_path, "known_traits.tsv")
+in_tree1 = path.join(test_dir_path, "tree.tre")
 
-hsp_mp_pred = test_dir_path + "/" + "test_data/hsp/hsp_output/mp_pred_out.tsv"
-hsp_emp_prob_pred = test_dir_path + "/" + "test_data/hsp/hsp_output/emp_prob_pred_out.tsv"
-hsp_pic_pred = test_dir_path + "/" + "test_data/hsp/hsp_output/pic_pred_out.tsv"
-hsp_scp_pred = test_dir_path + "/" + "test_data/hsp/hsp_output/scp_pred_out.tsv"
-hsp_subtree_average_pred = test_dir_path + "/" + "test_data/hsp/hsp_output/subtree_average_pred_out.tsv"
+hsp_mp_pred = path.join(test_dir_path, "hsp_output", "mp_pred_out.tsv")
+hsp_emp_prob_pred = path.join(test_dir_path, "hsp_output",
+                              "emp_prob_pred_out.tsv")
+hsp_pic_pred = path.join(test_dir_path, "hsp_output", "pic_pred_out.tsv")
+hsp_scp_pred = path.join(test_dir_path, "hsp_output", "scp_pred_out.tsv")
+hsp_subtree_average_pred = path.join(test_dir_path, "hsp_output",
+                                     "subtree_average_pred_out.tsv")
 
-hsp_mp_pred_in = pd.read_table(filepath_or_buffer=hsp_mp_pred, sep="\t", index_col="tips")
-hsp_emp_prob_pred_in = pd.read_table(filepath_or_buffer=hsp_emp_prob_pred, sep="\t", index_col="tips")
-hsp_pic_pred_in = pd.read_table(filepath_or_buffer=hsp_pic_pred, sep="\t", index_col="tips")
-hsp_scp_pred_in = pd.read_table(filepath_or_buffer=hsp_scp_pred, sep="\t", index_col="tips")
-hsp_subtree_average_pred_in = pd.read_table(filepath_or_buffer=hsp_subtree_average_pred, sep="\t", index_col="tips")
+hsp_mp_pred_in = pd.read_table(hsp_mp_pred, sep="\t", index_col="tips")
+hsp_emp_prob_pred_in = pd.read_table(hsp_emp_prob_pred, sep="\t",
+                                     index_col="tips")
+hsp_pic_pred_in = pd.read_table(hsp_pic_pred, sep="\t", index_col="tips")
+hsp_scp_pred_in = pd.read_table(hsp_scp_pred, sep="\t", index_col="tips")
+hsp_subtree_average_pred_in = pd.read_table(hsp_subtree_average_pred, sep="\t",
+                                            index_col="tips")
 
 
 class castor_hsp_wrapper_tests(unittest.TestCase):
@@ -48,7 +54,6 @@ class castor_hsp_wrapper_tests(unittest.TestCase):
 
         pd.testing.assert_frame_equal(predict_out, hsp_mp_pred_in)
 
-
     def test_emp_prob_simple(self):
 
         rds_path = generate_temp_filename()
@@ -63,7 +68,6 @@ class castor_hsp_wrapper_tests(unittest.TestCase):
 
         pd.testing.assert_frame_equal(predict_out, hsp_emp_prob_pred_in)
 
-
     def test_pic_simple(self):
 
         predict_out, ci_out = castor_hsp_wrapper(tree_path=in_tree1,
@@ -72,7 +76,6 @@ class castor_hsp_wrapper_tests(unittest.TestCase):
                                                  ran_seed=10)
 
         pd.testing.assert_frame_equal(predict_out, hsp_pic_pred_in)
-
 
     def test_scp_simple(self):
 
@@ -83,7 +86,6 @@ class castor_hsp_wrapper_tests(unittest.TestCase):
 
         pd.testing.assert_frame_equal(predict_out, hsp_scp_pred_in)
 
-
     def test_subtree_average_simple(self):
 
         predict_out, ci_out = castor_hsp_wrapper(tree_path=in_tree1,
@@ -93,18 +95,17 @@ class castor_hsp_wrapper_tests(unittest.TestCase):
 
         pd.testing.assert_frame_equal(predict_out, hsp_subtree_average_pred_in)
 
-
     # With mp method:
-        # Check that can run with and without confidence intervals (+ check that values match exactly)
-        # Check that can run with and without NSTI calculation (+ check that values match exactly)
+        # Check that can run with and without confidence intervals
+        # (+ check that values match exactly)
+        # Check that can run with and without NSTI calculation
+        # (+ check that values match exactly)
         # Check that can run with and without --check option.
         # Check that can run on 1 or 2 processors.
 
     # Also try out a couple of different trees (e.g. rooted vs unrooted)
     # And a trait table with a lot of variation in values.
 
-
-###class castor_hsp_wrapper_tests(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
