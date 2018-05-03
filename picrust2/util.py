@@ -17,6 +17,8 @@ from numpy import array, asarray, atleast_1d
 from os import fsync, makedirs, remove, rename
 from os.path import abspath, dirname, isdir, join, split
 from subprocess import PIPE, Popen, call
+import pandas
+import numpy
 import tempfile
 
 
@@ -483,7 +485,7 @@ def biom_to_pandas_df(biom_tab):
     # Note this is based on James Morton's helpful blog post here:
     # http://mortonjt.blogspot.ca/2016/07/behind-scenes-with-biom-tables.html)
 
-    return(pd.DataFrame(np.array(biom_tab.matrix_data.todense()),
+    return(pandas.DataFrame(numpy.array(biom_tab.matrix_data.todense()),
                                  index=biom_tab.ids(axis='observation'),
                                  columns=biom_tab.ids(axis='sample')))
 
