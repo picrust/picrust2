@@ -50,16 +50,10 @@ parser.add_argument('--ci_outfile', default='ci_predict_out.tsv',
 parser.add_argument('-t', '--threads', default=1, type=int,
                     help='Number of threads')
 
-parser.add_argument('--output_norm', default=False, action='store_true',
-                    help='If specified, write out sequence abundance table ' +
-                         'normalized (divided) by predicted abundance of ' +
-                         'marker genes')
-
 parser.add_argument('--norm_outfile', default='norm_seq_counts.tsv', 
                     metavar='PATH', type=str,
                     help='Optional output file of normalized sequence ' +
-                         'abundance counts (only if \"--output_norm\" flag ' +
-                         'set')
+                         'abundance counts')
 
 
 def main():
@@ -72,16 +66,10 @@ def main():
 
     func_names = predict_func_probs.names
 
-    # Read in study sequences in HDF5 BIOM format.
-    input_biom = biom.load_table(args.input)
-
-    # Convert biom table to pandas dataframe.
+    # Read in and convert input biom table to pandas dataframe.
     # (Based on James Morton's blog post here:
     # http://mortonjt.blogspot.ca/2016/07/behind-scenes-with-biom-tables.html)
-    study_seq_counts = pd.DataFrame(np.array(
-                                        input_biom.matrix_data.todense()),
-                             index=input_biom.ids(axis='observation'),
-                             columns=input_biom.ids(axis='sample'))
+    study_seq_counts = biom_to_pandas_df(biom.load_table(args.input))
 
     exp_marker_copy = pd.read_table(filepath_or_buffer=args.marker,
                                     sep="\t",
@@ -89,7 +77,6 @@ def main():
 
     study_seq_counts = norm_by_marker_copies(study_seq_counts,
                                              exp_marker_copy,
-                                             args.output_norm,
                                              args.norm_outfile)
 
     if args.threads > 1:
