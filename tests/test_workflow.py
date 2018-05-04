@@ -43,8 +43,6 @@ class workflow_test(unittest.TestCase):
 
         with TemporaryDirectory() as temp_dir:
 
-            temp_dir = "/home/gavin/tmp"
-
             out_tree = path.join(temp_dir, "out.tre")
 
             system_call_check("place_seqs.py -s " + test_study_seqs + " -r " +\
