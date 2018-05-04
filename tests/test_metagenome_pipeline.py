@@ -68,6 +68,22 @@ class metagenome_pipeline_test(unittest.TestCase):
 
         pd.testing.assert_frame_equal(unstrat_out, exp_unstrat_in)
 
+    def test_full_pipeline_strat_tsv_2proc(self):
+        '''Test that run_metagenome_pipeline works on tsv input seqtab and
+        running on 2 processes.'''
+
+        with TemporaryDirectory() as temp_dir:
+            strat_out, unstrat_out = run_metagenome_pipeline(input_biom=seqtab_tsv,
+                                                             function=func_predict,
+                                                             marker=marker_predict,
+                                                             out_dir=temp_dir,
+                                                             proc=2)
+
+        # Need to reset index names since these aren't in output files.
+        strat_out.index = range(30)
+    
+        pd.testing.assert_frame_equal(strat_out, exp_strat_in)
+
 
     def test_full_pipeline_strat_biom(self):
         '''Test that run_metagenome_pipeline works on tsv input seqtab.'''
