@@ -4,69 +4,64 @@ __license__ = "GPL"
 __version__ = "2-alpha.8"
 
 import argparse
+from os import path
 from picrust2.util import system_call_check
+from picrust2.metagenome_pipeline import run_metagenome_pipeline
 
 parser = argparse.ArgumentParser(
 
-    description="Wrapper for the three metagenome prediction pipeline scripts",
+    description="Per-sample metagenome functional profiles are generated " +
+                "based on the predicted functions for each study sequence. " +
+                "The specified sequence abundance table will be normalized " +
+                "by the predicted number of marker gene copies. Two main " +
+                "output files will be generated: one stratified and one " +
+                "non-stratified by contributing taxa",
 
     formatter_class=argparse.RawDescriptionHelpFormatter)
 
 parser.add_argument('-i', '--input', metavar='PATH',
                     required=True, type=str,
-                    help='Input BIOM table')
+                    help='Input table of sequence abundances (BIOM or TSV ' +
+                         'format)')
 
-parser.add_argument('-c', '--input_copies', metavar='PATH',
+parser.add_argument('-f', '--function', metavar='PATH',
                     required=True, type=str,
-                    help='Table of predicted marker gene copy numbers')
+                    help='Table of predicted gene family copy numbers ' +
+                         '(output of hsp.py)')
 
-parser.add_argument('-f', '--input_function', metavar='PATH',
+parser.add_argument('-m', '--marker', metavar='PATH',
                     required=True, type=str,
-                    help='Table of predicted gene family copy numbers')
+                    help='Table of predicted marker gene copy numbers ' +
+                         '(output of hsp.py, typically for 16S)')
 
-parser.add_argument('-o', '--out_prefix', metavar='PREFIX', type=str,
-                    default='pipeline_out',
-                    help='Prefix for output file names')
+parser.add_argument('-p', '--proc', metavar='PREFIX', type=int, default=1,
+                    help='Number of processes to run in parallel.')
 
-parser.add_argument('--tsv', action="store_true",
-                    help='If specified, also output tables in TSV format')
+parser.add_argument('-o', '--out_dir', metavar='PATH', type=str,
+                    default='metagenome_out',
+                    help='Output directory for metagenome predictions.')
 
 
 def main():
 
     args = parser.parse_args()
 
-    norm_out = args.out_prefix + ".norm.biom"
-    meta_out = args.out_prefix + ".genefamilies.biom"
+    # Pass arguments to key function and get predicted functions
+    # stratified and unstratified by genomes.
+    strat_pred, unstrat_pred = run_metagenome_pipeline(input_biom=args.input,
+                                                       function=args.function,
+                                                       marker=args.marker,
+                                                       out_dir=args.out_dir,
+                                                       proc=args.proc,
+                                                       output_normfile=True)
 
-    norm_cmd = "normalize_by_copy_number.py -i " + args.input + " -c " +\
-               args.input_copies + " -o " + norm_out
+    # Generate output table filepaths and write out pandas dataframes.
+    strat_outfile = path.join(args.out_dir, "pred_metagenome_strat.tsv")
+    unstrat_outfile = path.join(args.out_dir, "pred_metagenome_unstrat.tsv")
 
-    meta_cmd = "predict_metagenomes.py -i " + norm_out + " -c " +\
-               args.input_function + " -o " + meta_out
-
-    print(norm_cmd)
-    process = system_call_check(norm_cmd.split(" "))
-
-    print(meta_cmd)
-    process = system_call_check(meta_cmd.split(" "))
-
-    if args.tsv:
-        norm_out_tsv = args.out_prefix + ".norm.biom.tsv"
-        meta_out_tsv = args.out_prefix + ".genefamilies.biom.tsv"
-
-        norm_convert_cmd = "biom convert -i " + norm_out + " -o " +\
-                           norm_out_tsv + " --to-tsv"
-
-        meta_convert_cmd = "biom convert -i " + meta_out + " -o " +\
-                           meta_out_tsv + " --to-tsv"
-
-        print(norm_convert_cmd)
-        process = system_call_check(norm_convert_cmd.split(" "))
-
-        print(meta_convert_cmd)
-        process = system_call_check(meta_convert_cmd.split(" "))
-
+    # Note that no index labels are written for stratified output.
+    strat_pred.to_csv(path_or_buf=strat_outfile, sep="\t", index=False)
+    unstrat_pred.to_csv(path_or_buf=unstrat_outfile, sep="\t")
 
 if __name__ == "__main__":
     main()
