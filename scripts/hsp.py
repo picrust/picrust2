@@ -21,10 +21,7 @@ parser = argparse.ArgumentParser(
                 "abundance of gene families present in " +
                 "each taxon, given a tree and a set of " +
                 "known trait values. This script " +
-                "outputs a table of trait predictions. " +
-                "Note that this script assumes that the input " +
-                "trait values will include \"0\" counts.",
-
+                "outputs a table of trait predictions.",
     epilog='''
 
 Usage example:
