@@ -193,6 +193,12 @@ def make_output_dir(dirpath, strict=False):
 
     return dirpath
 
+def make_output_dir_for_file(filepath):
+    """Create sub-directories for a new file if they don't already exist"""
+    dirpath = dirname(filepath)
+    if not isdir(dirpath) and not dirpath == '':
+        makedirs(dirpath)
+
 def generate_temp_filename(temp_dir=None, prefix="", suffix=""):
     '''Function to generate path to temporary filenames (does not create the)
     files). The input arguments can be used to customize the temporary
@@ -233,3 +239,5 @@ def three_df_index_overlap_sort(df1, df2, df3):
     df3 = df3.reindex(label_overlap)
 
     return(df1, df2, df3)
+
+
