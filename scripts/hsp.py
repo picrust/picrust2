@@ -34,7 +34,7 @@ parser.add_argument('-t', '--tree', metavar='PATH', required=True, type=str,
 
 parser.add_argument('-o', '--output_prefix', metavar='PATH', type=str,
                     required=True,
-                    help='Prefix for output filenames (RDS, predicted count ' +
+                    help='Prefix for output filenames (predicted count ' +
                          'table and optionally a table of CIs)')
 
 parser.add_argument('-i', '--in_trait', type=str.upper, choices=TRAIT_OPTIONS,
@@ -79,6 +79,10 @@ parser.add_argument('--seed', default=None, type=int,
                     help='Seed to make output reproducible ' +
                          '(necessary for mp and emp_prob methods)')
 
+parser.add_argument('--rds', default=False, action='store_true',
+                    help='Output RDS object of state probabilities ' +
+                         ' (advanced users).')
+
 parser.add_argument('--debug', default=False, action='store_true',
                     help='Run in debugging mode')
 
@@ -110,7 +114,12 @@ def main():
     else:
         ci_setting = False
 
-    rds_outfile = args.output_prefix + ".rds"
+    # Set rds outfile name if --rds flag set.
+    if args.rds:
+        rds_outfile = args.output_prefix + ".rds"
+    else:
+        rds_outfile = None
+
     count_outfile = args.output_prefix + ".tsv"
     ci_outfile = args.output_prefix + "_ci.tsv"
 

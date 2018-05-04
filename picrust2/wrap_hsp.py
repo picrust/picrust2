@@ -46,6 +46,11 @@ def castor_hsp_wrapper(tree_path,
     else:
         check_input_setting = "FALSE"
 
+    if rds_outfile:
+        write_rds = "TRUE"
+    else:
+        write_rds = "FALSE"
+
     hsp_cmd = " ".join(["Rscript",
                         castor_hsp_script_fp,
                         tree_path,
@@ -57,8 +62,9 @@ def castor_hsp_wrapper(tree_path,
                         str(num_cores),
                         tmp_output_count_path,
                         tmp_output_ci_path,
-                        rds_outfile,
-                        str(ran_seed)])
+                        str(rds_outfile),
+                        str(ran_seed),
+                        write_rds])
 
     # Run castor_hsp.R here
     result = system_call_check(hsp_cmd)
