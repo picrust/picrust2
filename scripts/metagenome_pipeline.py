@@ -34,7 +34,7 @@ parser.add_argument('-m', '--marker', metavar='PATH',
                     help='Table of predicted marker gene copy numbers ' +
                          '(output of hsp.py, typically for 16S)')
 
-parser.add_argument('-p', '--proc', metavar='PREFIX', type=int, default=1,
+parser.add_argument('-p', '--proc', metavar='INT', type=int, default=1,
                     help='Number of processes to run in parallel.')
 
 parser.add_argument('-o', '--out_dir', metavar='PATH', type=str,
