@@ -30,8 +30,8 @@ def run_metagenome_pipeline(input_biom,
     study_seq_counts = biom_to_pandas_df(biom.load_table(input_biom))
 
     # Read in predicted function and marker gene abundances.
-    pred_function = pd.read_table(function, sep="\t", index_col="tips")
-    pred_marker = pd.read_table(marker, sep="\t", index_col="tips")
+    pred_function = pd.read_table(function, sep="\t", index_col="sequence")
+    pred_marker = pd.read_table(marker, sep="\t", index_col="sequence")
 
     # Re-order predicted abundance tables to be in same order as study seqs.
     # Also, drop any sequence ids that don't overlap across all dataframes.

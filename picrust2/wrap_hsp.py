@@ -72,7 +72,7 @@ def castor_hsp_wrapper(tree_path,
     # Load the output into Table objects
     try:
         asr_table = pd.read_table(filepath_or_buffer=tmp_output_count_path,
-                                  sep="\t", index_col="tips")
+                                  sep="\t", index_col="sequence")
     except IOError:
         raise ValueError("Cannot read in expected output file" +
                          tmp_output_count_path)
@@ -81,7 +81,7 @@ def castor_hsp_wrapper(tree_path,
 
     if calc_ci:
         asr_ci_table = pd.read_table(filepath_or_buffer=tmp_output_ci_path,
-                                  sep="\t", index_col="tips")
+                                  sep="\t", index_col="sequence")
         remove(tmp_output_ci_path)
     else:
         asr_ci_table = None

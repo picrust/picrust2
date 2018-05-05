@@ -26,13 +26,13 @@ hsp_scp_pred = path.join(test_dir_path, "hsp_output", "scp_pred_out.tsv")
 hsp_subtree_average_pred = path.join(test_dir_path, "hsp_output",
                                      "subtree_average_pred_out.tsv")
 
-hsp_mp_pred_in = pd.read_table(hsp_mp_pred, sep="\t", index_col="tips")
+hsp_mp_pred_in = pd.read_table(hsp_mp_pred, sep="\t", index_col="sequence")
 hsp_emp_prob_pred_in = pd.read_table(hsp_emp_prob_pred, sep="\t",
-                                     index_col="tips")
-hsp_pic_pred_in = pd.read_table(hsp_pic_pred, sep="\t", index_col="tips")
-hsp_scp_pred_in = pd.read_table(hsp_scp_pred, sep="\t", index_col="tips")
+                                     index_col="sequence")
+hsp_pic_pred_in = pd.read_table(hsp_pic_pred, sep="\t", index_col="sequence")
+hsp_scp_pred_in = pd.read_table(hsp_scp_pred, sep="\t", index_col="sequence")
 hsp_subtree_average_pred_in = pd.read_table(hsp_subtree_average_pred, sep="\t",
-                                            index_col="tips")
+                                            index_col="sequence")
 
 
 class castor_hsp_wrapper_tests(unittest.TestCase):

@@ -32,8 +32,8 @@ exp_unstrat = path.join(test_dir_path, "metagenome_out",
 exp_norm = path.join(test_dir_path, "metagenome_out", "seqtab_norm.tsv")
 
 # Read in test inputs and expected files.
-func_predict_in = pd.read_table(func_predict, sep="\t", index_col="tips")
-marker_predict_in = pd.read_table(marker_predict, sep="\t", index_col="tips")
+func_predict_in = pd.read_table(func_predict, sep="\t", index_col="sequence")
+marker_predict_in = pd.read_table(marker_predict, sep="\t", index_col="sequence")
 
 exp_strat_in = pd.read_table(exp_strat, sep="\t")
 

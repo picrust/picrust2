@@ -73,7 +73,7 @@ def main():
 
     exp_marker_copy = pd.read_table(filepath_or_buffer=args.marker,
                                     sep="\t",
-                                    index_col="tips")
+                                    index_col="sequence")
 
     study_seq_counts = norm_by_marker_copies(study_seq_counts,
                                              exp_marker_copy,

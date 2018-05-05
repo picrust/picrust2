@@ -136,13 +136,13 @@ def main():
 
     # Output the table to file.
     make_output_dir_for_file(count_outfile)
-    hsp_table.to_csv(path_or_buf=count_outfile, index_label="tips",
+    hsp_table.to_csv(path_or_buf=count_outfile, index_label="sequence",
                      sep="\t")
 
     # Output the CI file as well if option set.
     if ci_setting:
         make_output_dir_for_file(ci_outfile)
-        ci_table.to_csv(path_or_buf=ci_outfile, index_label="tips", sep="\t")
+        ci_table.to_csv(path_or_buf=ci_outfile, index_label="sequence", sep="\t")
 
 
 if __name__ == "__main__":

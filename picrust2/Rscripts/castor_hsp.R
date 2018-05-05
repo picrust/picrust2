@@ -187,18 +187,18 @@ if (hsp_method == "pic" | hsp_method == "scp" | hsp_method == "subtree_average")
     ci_values <- ci_values[ , order(names(ci_values))]
     
     orig_ci_colnames <- colnames(ci_values)    
-    ci_values$tips <- unknown_tips
-    ci_values <- ci_values[, c("tips", orig_ci_colnames)]
+    ci_values$sequence <- unknown_tips
+    ci_values <- ci_values[, c("sequence", orig_ci_colnames)]
     
     write.table(ci_values, file=ci_outfile, sep="\t", quote=FALSE, row.names=FALSE)
   }
   
 }
 
-# Add tips as first column of predicted_values.
+# Add "sequence" as first column of predicted_values.
 predicted_values <- data.frame(predicted_values, check.names = FALSE)
-predicted_values$tips <- full_tree$tip.label[unknown_tips_index]
-predicted_values <- predicted_values[, c("tips", colnames(trait_values_ordered))]
+predicted_values$sequence <- full_tree$tip.label[unknown_tips_index]
+predicted_values <- predicted_values[, c("sequence", colnames(trait_values_ordered))]
 # Calculate NSTI per tip and add to output as last column if option set.
 if(calc_nsti) {
   predicted_values$metadata_NSTI <- NA
