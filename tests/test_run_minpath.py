@@ -67,13 +67,13 @@ class minpath_wrapper_tests(unittest.TestCase):
 class run_minpath_pipeline_tests(unittest.TestCase):
     """Tests for run_minpath_pipeline function."""
 
-    def test_basic_pipeline_2_threads(self):
-        '''Test running full pipeline on 2 threads.'''
+    def test_basic_pipeline_2_proc(self):
+        '''Test running full pipeline over 2 processes.'''
 
         with TemporaryDirectory() as temp_dir:
             test_unstrat, test_strat = run_minpath_pipeline(inputfile=in_metagenome_abun,
                                                             mapfile=map_ec2path_prokaryotic,
-                                                            threads=2,
+                                                            proc=2,
                                                             out_dir=temp_dir)
 
         # Compare to expected pathway abundances.

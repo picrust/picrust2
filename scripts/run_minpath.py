@@ -32,7 +32,7 @@ parser.add_argument('--intermediate', metavar='DIR', type=str, default=None,
                     help='Output folder for intermediate files (wont be ' +
                          'kept unless this option is set.')
 
-parser.add_argument('-t', '--threads', default=1, type=int,
+parser.add_argument('-p', '--proc', default=1, type=int,
                     help='Number of threads')
 
 parser.add_argument('--print_cmds', default=False, action="store_true",
@@ -51,14 +51,14 @@ def main():
         
         unstrat_out, strat_out = run_minpath_pipeline(inputfile=args.input,
                                                       mapfile=args.map,
-                                                      threads=args.threads,
+                                                      proc=args.proc,
                                                       out_dir=args.intermediate,
                                                       print_cmds=args.print_cmds)
     else:
         with TemporaryDirectory() as temp_dir:
                 unstrat_out, strat_out = run_minpath_pipeline(inputfile=args.input,
                                                               mapfile=args.map,
-                                                              threads=args.threads,
+                                                              proc=args.proc,
                                                               out_dir=temp_dir,
                                                               print_cmds=args.print_cmds)
 

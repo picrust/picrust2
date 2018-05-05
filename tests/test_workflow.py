@@ -77,7 +77,7 @@ class workflow_test(unittest.TestCase):
                               marker_predict + " -o " + metagenome_out)
 
             metagenome_outfile = path.join(metagenome_out,
-                                           "pred_metagenome_unstrat.tsv")
+                                           "pred_metagenome_strat.tsv")
 
             minpath_out = path.join(temp_dir, "minpath_out")
 
@@ -120,7 +120,7 @@ class workflow_test(unittest.TestCase):
                               marker_predict + " -o " + metagenome_out)
 
             metagenome_outfile = path.join(metagenome_out,
-                                           "pred_metagenome_unstrat.tsv")
+                                           "pred_metagenome_strat.tsv")
 
             minpath_out = path.join(temp_dir, "minpath_out")
 

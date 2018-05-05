@@ -14,7 +14,7 @@ __version__ = "2-alpha.8"
 
 def run_minpath_pipeline(inputfile,
                          mapfile,
-                         threads=1,
+                         proc=1,
                          out_dir=None,
                          print_cmds=False):
     '''Pipeline containing full pipeline for reading input files, making
@@ -31,7 +31,7 @@ def run_minpath_pipeline(inputfile,
 
     # Run minpath wrapper on all samples.
     # Note that input stratified table is subsetted to required columns only.
-    sample_path_abun_raw = Parallel(n_jobs=threads)(delayed(
+    sample_path_abun_raw = Parallel(n_jobs=proc)(delayed(
                                     minpath_wrapper)(sample_id,
                                     strat_in[["sequence", "function", sample_id]],
                                     mapfile, out_dir, print_cmds)
