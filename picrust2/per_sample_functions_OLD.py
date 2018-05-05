@@ -3,7 +3,7 @@
 from __future__ import division
 
 __license__ = "GPL"
-__version__ = "2-alpha.9"
+__version__ = "2-alpha.6"
 
 import rpy2.robjects as robjects
 from rpy2.robjects import pandas2ri
@@ -17,6 +17,75 @@ def read_in_rds(rds_path):
 
     readRDS = robjects.r['readRDS']
     return(readRDS(rds_path))
+
+
+def fix_dup_counts(poss_counts, count_probs):
+    '''Dereplicate same count values and sum their probabilities.'''
+
+    unique_poss_counts = set(poss_counts)
+    for count in unique_poss_counts:
+        count_i = np.where(poss_counts == count)[0]
+
+        # If this count value is duplicated then sum probs for all
+        # instances.
+        if len(count_i) > 1:
+            summed_prob = 0
+            for match_i in sorted(count_i, reverse=True):
+                del poss_counts[match_i]
+
+                summed_prob += count_probs[match_i]
+                del count_probs[match_i]
+
+            # Add count back in once at end along with summed probability.
+            poss_counts += [count]
+            count_probs += [summed_prob]
+
+    return poss_counts, count_probs
+
+
+def all_possible_counts(probs_in, abun_in, poss_counts):
+    '''Loop through all rows of input dataframes and return possible counts
+    and the probability of each count'''
+
+    count_probs = [1]
+
+    # Loop through all sequences.
+    for seqname in probs_in.index.values:
+
+        # Identify non-zero indices.
+        nonzero_seq_col = list(probs_in.loc[seqname, ] > 0)
+
+        # Subset to non-zero indices for count and prob rows.
+        seq_poss_counts = abun_in.loc[seqname, nonzero_seq_col] *\
+                          abun_in.columns.values[nonzero_seq_col]
+
+        seq_count_probs = probs_in.loc[seqname, nonzero_seq_col]
+
+        # Add these seq counts to possible counts.
+        new_poss_count = []
+        for seq_poss_count in seq_poss_counts:
+            new_poss_count += [seq_poss_count + x for x in poss_counts]
+
+        poss_counts = new_poss_count
+
+        # Do the same procedure, but for count probabilities.
+        new_count_probs = []
+        for count_prob in seq_count_probs:
+            new_count_probs += [count_prob * x for x in count_probs]
+
+        count_probs = new_count_probs
+
+    # Check if any duplicates in possible counts and correct if so.
+    if len(set(poss_counts)) < len(poss_counts):
+        poss_counts, count_probs = fix_dup_counts(poss_counts, count_probs)
+
+    # Convert to numpy arrays and return them sorted by counts.
+    poss_counts = np.array(poss_counts)
+    count_probs = np.array(count_probs)
+
+    sorted_count_i = poss_counts.argsort()
+
+    return poss_counts[sorted_count_i], count_probs[sorted_count_i]
 
 
 def sample_func_prob_dist(func_probs, seq_counts, sample_id):
@@ -33,7 +102,7 @@ def sample_func_prob_dist(func_probs, seq_counts, sample_id):
     func_probs = func_probs.reindex(func_abun.index)
 
     # Identify rows that are > 0 in columns besides the first.    
-    non_zero_rows = list(func_abun.iloc[:, 1:].sum(axis=1) > 0)
+    non_zero_rows = list(func_abun.iloc[:, 1:-1].sum(axis=1) > 0)
 
     # If there are no rows that match this description then return 0.
     if sum(non_zero_rows) == 0:
@@ -62,15 +131,40 @@ def sample_func_prob_dist(func_probs, seq_counts, sample_id):
     if sum(ambig_rows) == 0:
         return(np.array([starting_count]), np.array([1]))
 
-    # Multiply func abundance by column values (and add starting counts from 
-    # unambiguous rows)
-    func_abun = (func_abun * func_abun.columns.values) + starting_count
+    return(convolve_mult_prob_dist(func_probs,
+                                   func_abun * func_abun.columns.values))
 
-    # Set first column to be 0.
-    if 0 in func_abun.columns:
-        func_abun[0] = 0
+    ##### Original method:
+    # # Otherwise subset to ambiguous rows and get all possible counts.
+    # return(all_possible_counts(probs_in=func_probs.iloc[ambig_rows, :],
+    #                            abun_in=func_abun.iloc[ambig_rows, :],
+    #                            poss_counts=possible_counts))
 
-    return(convolve_mult_prob_dist(func_probs, func_abun))
+
+def norm_by_marker_copies(input_seq_counts,
+                          input_marker_num,
+                          output_normfile=False,
+                          norm_filename="norm_seq_counts.tsv",
+                          round_norm=True):
+
+    '''Divides sequence counts (which correspond to amplicon sequence
+    variants) by the predicted marker gene copies for each sequence. Will write
+    out the normalized table if option specified.'''
+    input_seq_counts = input_seq_counts.div(input_marker_num.loc[
+                                                input_seq_counts.index.values,
+                                                "16S_rRNA_Count"],
+                                            axis="index")
+
+    if round_norm:
+        input_seq_counts = input_seq_counts.round(decimals=0)
+
+    # Output normalized table if specified.
+    if output_normfile:
+        input_seq_counts.to_csv(path_or_buf=norm_filename,
+                                index_label="sequence",
+                                sep="\t")
+
+    return(input_seq_counts)
 
 
 def expectation_and_ci_val(poss_counts, count_probs, rounded=True):

@@ -3,7 +3,7 @@
 from __future__ import division
 
 __license__ = "GPL"
-__version__ = "2-alpha.8"
+__version__ = "2-alpha.9"
 
 import argparse
 import biom

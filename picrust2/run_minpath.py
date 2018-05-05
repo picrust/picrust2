@@ -10,7 +10,7 @@ import itertools
 from picrust2.util import (system_call_check, get_picrust_project_dir)
 
 __license__ = "GPL"
-__version__ = "2-alpha.8"
+__version__ = "2-alpha.9"
 
 def run_minpath_pipeline(inputfile,
                          mapfile,

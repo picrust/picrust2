@@ -2,7 +2,7 @@
 
 __copyright__ = "Copyright 2018, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2-alpha.8"
+__version__ = "2-alpha.9"
 
 import unittest
 from os import path
