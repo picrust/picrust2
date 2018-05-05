@@ -1,16 +1,16 @@
 #!/usr/bin/env python
 
 from __future__ import division
-from biom import load_table
 from collections import defaultdict
 from joblib import Parallel, delayed
 from os import path
 import pandas as pd
+import numpy as np
+import itertools
 from picrust2.util import (system_call_check, get_picrust_project_dir)
 
 __license__ = "GPL"
 __version__ = "2-alpha.8"
-
 
 def run_minpath_pipeline(inputfile,
                          mapfile,
@@ -21,140 +21,255 @@ def run_minpath_pipeline(inputfile,
     calls to functions to run MinPath and to return an output table of
     predicted pathway abundances that can be written to a file.'''
 
-    # Read in table of gene family abundances. 
-    biom_in = load_table(inputfile)
+    # Read in table of gene family abundances stratified by contributing
+    # seqeunces.
+    strat_in = read_strat_genes(inputfile)
 
-    # Remove all empty rows and columns.
-    biom_in.remove_empty(axis='whole', inplace=True)
-
-    # Get samples and functions as separate lists.
-    samples = biom_in.ids()
-    functions = biom_in.ids(axis="observation")
+    # Get list of sample ids.
+    samples = [col for col in strat_in.columns \
+               if col not in ["function", "sequence"]]
 
     # Run minpath wrapper on all samples.
+    # Note that input stratified table is subsetted to required columns only.
     sample_path_abun_raw = Parallel(n_jobs=threads)(delayed(
-                                    minpath_wrapper)(sample_id, biom_in,
-                                    mapfile, out_dir, functions, print_cmds)
+                                    minpath_wrapper)(sample_id,
+                                    strat_in[["sequence", "function", sample_id]],
+                                    mapfile, out_dir, print_cmds)
                                     for sample_id in samples)
 
-    # Convert this returned list of dictionaries to pandas dataframe.
-    sample_path_abun = pd.DataFrame(sample_path_abun_raw)
+    # Split the output into unstratified and stratified.
+    sample_path_abun_raw_unstrat = []
+    sample_path_abun_raw_strat = []
 
-    # Set index labels of this dataframe to be sample names.
-    sample_path_abun = sample_path_abun.set_index(samples)
+    for sample_output in sample_path_abun_raw:
+        sample_path_abun_raw_unstrat += [sample_output[0]]
+        sample_path_abun_raw_strat += [sample_output[1]]
+
+    # Convert these returned lists of dictionaries into pandas dataframes.
+    sample_path_abun_unstrat = pd.DataFrame(sample_path_abun_raw_unstrat)
+    sample_path_abun_strat = pd.DataFrame(sample_path_abun_raw_strat)
+
+    # Set index labels of dataframes to be sample names.
+    sample_path_abun_unstrat.index = samples
+    sample_path_abun_strat.index = samples
 
     # Replace all missing values (NaN) with 0s (i.e. pathway was missing in
-    # that sample).
-    sample_path_abun.fillna(0, inplace=True)
+    # that sample) and transpose.
+    sample_path_abun_unstrat = sample_path_abun_unstrat.fillna(0).transpose()
+    sample_path_abun_strat = sample_path_abun_strat.fillna(0).transpose()
 
-    # Return pandas dataframe transposed (samples as columns and pathways as
-    # rows).
-    return(sample_path_abun.transpose())
+    # Add pathway and sequence as columns of stratified table.
+    sample_path_abun_strat["pathway"] = list(map(lambda x: list(x)[0],
+                                             sample_path_abun_strat.index.values))
+    sample_path_abun_strat["sequence"] = list(map(lambda x: list(x)[1],
+                                              sample_path_abun_strat.index.values))
 
+    # Re-order columns of stratified table.
+    sample_path_abun_strat = sample_path_abun_strat[["pathway", "sequence"] +\
+                                                     samples]
 
-def minpath_wrapper(sample_id, biom_in, minpath_map, out_dir, functions,
-	                print_opt=False):
-	'''Read in sample_id, gene family table, out_dir, list of functions to loop
-    through and run MinPath based on the gene family abundances.'''
+    return(sample_path_abun_unstrat, sample_path_abun_strat)
 
-	# Define MinPath input and outout filenames.
-	minpath_in = str(out_dir + "/" + sample_id + "_minpath_in.txt")
-	minpath_report = str(out_dir + "/" + sample_id + "_minpath_report.txt")
-	minpath_details = str(out_dir + "/" + sample_id + "_minpath_details.txt")
-	minpath_mps = str(out_dir + "/" + sample_id + "_minpath.mps")
-	minpath_output = open(str(out_dir + "/" + sample_id + 
-                          "_minpath_out.txt"), "w")
+def read_strat_genes(filename):
+    '''Reads in gene abundancy table stratified by contributing sequences
+    (output of metagenome_pipeline.py). If an unstratified file is input
+    it will return an error.'''
 
-	id_minpath_fh = open(minpath_in, "w")
+    # Read in input file as pandas dataframe.
+    input_df = pd.read_table(filename, sep="\t")
 
-	# Counter to give each "read" in MinPath input a different id.
-	func_num = 0
+    # Check that expected columns are in table.
+    if "function" not in input_df.columns or "sequence" not in input_df.columns:
+        raise ValueError("Did not find at least one of the expected " +\
+                         "in input file (\"function\" and \"sequence\". " +\
+                         "Make sure the stratified metagenome predictions " +\
+                         "were input.")
 
-	for func_id in functions:
-    	# Get count of each sequence in sample and write that sequence out
-    	# along with count if non-zero abundance.
-		func_count = int(biom_in.get_value_by_ids(obs_id=func_id,
-                                                      samp_id=sample_id))
-		# If 0 then skip.
-		if func_count == 0:
-			continue
+    return(input_df)
 
-		id_minpath_fh.write(func_id + "\t" + str(func_count) + "\n")
+def strat_to_unstrat_counts(strat_df, func_col="function"):
+    '''Given a pandas dataframe with the columns "sequence", "function" (by
+    default), and at least 1 sample column, will return the dataframe after
+    removing sequence column and summing all functions per sample. Functions
+    will be new index labels.'''
 
-	id_minpath_fh.close()
+    # Drop column containing sequence ids.
+    strat_df = strat_df.drop(["sequence"], axis=1)
 
-	# Run MinPath on this sample.
-	path2minpath = path.join(get_picrust_project_dir(), 'MinPath',
+    return(pd.pivot_table(data=strat_df, index=func_col, aggfunc=np.sum))
+
+def identify_minpath_present(report_file):
+    '''Parse MinPath report output file and returns set containing all pathways
+    ids that were called as present.'''
+
+    path_present = set()
+
+    with open(report_file, "r") as minpath_report_in:
+        for line in minpath_report_in:
+            line_split = line.split()
+
+            if int(line_split[7]) == 1:
+                path_present.add(line_split[-1])
+
+    return(path_present)
+
+def parse_minpath_details(details_file : str, path_present : set):
+    '''Parse MinPath details output file and returns dictionaries containing
+    the abundances of gene families within each pathway and the ids of these
+    gene families. Note that the pathways that were called as present in the
+    MinPath report file need to be given as an input argument as a set.'''
+
+    # Initialize dictionary that will contain gene family abundance per
+    # pathway and one that contains gene family ids in each pathway.
+    gf_abund = {}
+    gf_names = {}
+
+    # Boolean specifying that pathway in details file was called as
+    # present by MinPath.
+    present = False
+
+    with open(details_file, "r") as minpath_details_in:
+        for line in minpath_details_in:
+            line_split = line.split()
+
+            # If line starts with "path" then keep track of pathway name if
+            # it was called as present in report file.
+            if line_split[0] == "path":
+                if line_split[-1] not in path_present:
+                    present = False
+                    continue
+
+                present = True
+                current_pathway = line_split[-1]
+
+                # Initialize list containing gene family abundances and list
+                # containing the matching gene family ids in the same order.
+                gf_abund[current_pathway] = []
+                gf_names[current_pathway] = []
+
+                # Add in abundances of 0 for missing genes (and None as
+                # placeholder for missing gene family ids).
+                for i in range(int(line_split[3]) - int(line_split[5])):
+                    gf_abund[current_pathway] += [0]
+                    gf_names[current_pathway] += [None]
+
+            # If line does not start with "path" then only proceed if current
+            # pathway is present.
+            elif present:
+                gf_abund[current_pathway] += [int(float(line_split[2]))]
+                gf_names[current_pathway] += [str(line_split[0])]
+
+    return(gf_abund, gf_names)
+
+def path_abun_by_seq(gene_abun, gene_ids, total_sum, path_abun):
+    '''Takes in a stratified dataframe, subsets functions to those of interest,
+    and pivots by sequence column (takes sum over other columns). Also takes
+    in total sum of gene families that went into calculating pathway abundance
+    and the calculated pathway abundance. Will return the weighted pathway
+    abundance contributed by each sequence.'''
+
+    # Subset to genes in pathway.
+    gene_abun = gene_abun.loc[gene_abun['function'].isin(gene_ids)]
+
+    # Drop function column.
+    gene_abun = gene_abun.drop(["function"], axis=1)
+
+    # Return dataframe with sum of all genes per sequence.
+    seq_path_abun = pd.pivot_table(data=gene_abun, index="sequence",
+                                   aggfunc=np.sum)
+
+    # Return weighted pathway abundance (rounded).
+    return(np.around((seq_path_abun/total_sum)*path_abun, decimals=2))
+
+def minpath_wrapper(sample_id, strat_input, minpath_map, out_dir,
+                    print_opt=False):
+    '''Read in sample_id, gene family table, and out_dir, and run MinPath based
+    on the gene family abundances. Returns both unstratified and stratified
+    pathway abundances as dictionaries in a list.'''
+
+    # Get gene family abundances summed over all sequences for this sample.
+    unstrat_input = strat_to_unstrat_counts(strat_input)
+
+    # Define MinPath input and outout filenames.
+    minpath_in = path.join(out_dir, sample_id + "_minpath_in.txt")
+    minpath_report = path.join(out_dir, sample_id + "_minpath_report.txt")
+    minpath_details = path.join(out_dir, sample_id + "_minpath_details.txt")
+    minpath_mps = path.join(out_dir, sample_id + "_minpath.mps")
+
+    minpath_output = open(path.join(out_dir, sample_id + "_minpath_out.txt"),
+                          "w")
+
+    id_minpath_fh = open(minpath_in, "w")
+
+    # Counter to give each "read" in MinPath input a different id.
+    func_num = 0
+
+    # Loop over all functions (which are the index labels in unstrat table).
+    for func_id in unstrat_input.index.values:
+        # Get count of each sequence in sample and write that sequence out
+        # along with count if non-zero abundance.
+        func_count = unstrat_input.loc[func_id, sample_id]
+
+        # If 0 then skip.
+        if func_count == 0:
+            continue
+
+        id_minpath_fh.write(func_id + "\t" + str(func_count) + "\n")
+
+    id_minpath_fh.close()
+
+    # Run MinPath on this sample.
+    path2minpath = path.join(get_picrust_project_dir(), 'MinPath',
                                  'MinPath12hmp.py')
 
-	minpath_cmd = path2minpath + " -any " + minpath_in + " -map " +\
+    minpath_cmd = path2minpath + " -any " + minpath_in + " -map " +\
                   minpath_map + " -report " + minpath_report +\
                   " -details " + minpath_details + " -mps " + minpath_mps
 
-	system_call_check(minpath_cmd, print_out=print_opt,
+    system_call_check(minpath_cmd, print_out=print_opt,
                       stdout=minpath_output)
 
-	# Read through MinPath report and keep track of pathways identified
-	# to be present.
-	path_present = set()
+    # Read through MinPath report and keep track of pathways identified
+    # to be present.
+    path_present = identify_minpath_present(minpath_report)
 
-	with open(minpath_report, "r") as minpath_report_in:
-		for line in minpath_report_in:
-			line_split = line.split()
+    # Now read in details file and take abundance of pathway to be
+    # mean of top 1/2 most abundant gene families.
+    # Abundances of 0 will be added in for gene families not found.
+    gf_abundances, gf_ids = parse_minpath_details(minpath_details, path_present)
 
-			if int(line_split[7]) == 1:
-				path_present.add(line_split[-1])
+    # Initialize dictionaries that will contain pathway abundances.
+    unstrat_abun = defaultdict(float)
+    strat_abun = defaultdict(float)
 
-	# Now read in details file and take abundance of pathway to be
-	# mean of top 1/2 most abundanct gene families.
-	# Abundances of 0 will be added in for gene families not found.
+    # Loop through all pathways present and get mean of 1/2 most abundant.
+    for pathway in gf_abundances.keys():
 
-	# Initialize dictionary that will contain pathway abundances.
-	path_abun = defaultdict(float)
+        # Like HUMAnN2, sort enzyme reactions, take second half, and get
+        # their mean abundance.
 
-	# Initialize dictionary that will contain gene family abundance per
-	# pathway.
-	gf_abundances = {}
+        # First get indices of sorted list.
+        sorted_index = list(np.argsort(gf_abundances[pathway]))
+        sorted_gf_abundances = [gf_abundances[pathway][i] for i in sorted_index]
+        sorted_gf_ids = [gf_ids[pathway][i] for i in sorted_index]
 
-	# Boolean specifying that pathway in details file was called as
-	# present by MinPath.
-	present = False
+        # Take second half of gene family abundances and ids lists.
+        half_i = int(len(sorted_gf_abundances) / 2)
+        gf_abundances_subset = sorted_gf_abundances[half_i:]
+        gf_ids_subset = sorted_gf_ids[half_i:]
 
-	with open(minpath_details, "r") as minpath_details_in:
-		for line in minpath_details_in:
-			line_split = line.split()
+        # Take mean for unstratified pathway abundance.
+        unstrat_abun[pathway] = sum(gf_abundances_subset)/len(gf_abundances_subset)
 
-			# If line starts with "path" then keep track of pathway name if
-			# it was called as present in report file.
-			if line_split[0] == "path":
-				if line_split[-1] not in path_present:
-					present = False
-					continue
-        
-				present = True
-				current_pathway = line_split[-1]
+        # Get stratified pathway abundances by sequences.
+        strat_path_abun = path_abun_by_seq(strat_input,
+                                           gf_ids_subset,
+                                           sum(gf_abundances_subset),
+                                           unstrat_abun[pathway])
 
-				# Initialize list containing gene family abundances.
-				gf_abundances[current_pathway] = []
+        # Loop through each row in stratified table and add as key/value pair
+        # to dictionary.
+        for index, row in strat_path_abun.iterrows():
+            strat_abun[tuple([pathway, index])] = row[sample_id]
 
-				# Add in abundances of 0 for missing genes.
-				for i in range(int(line_split[3]) - int(line_split[5])):
-					gf_abundances[current_pathway] += [0]
-
-			# If line does not start with "path" then only proceed if current
-			# pathway is present.
-			elif present:
-				gf_abundances[current_pathway] += [int(float(line_split[2]))]
-
-	# Loop through all pathways present and get mean of 1/2 most abundant.
-	for pathway in gf_abundances.keys():
-
-		# Like HUMAnN2, sort enzyme reactions, take second half, and get 
-		# their mean abundance.
-		sorted_gf_abundances = sorted(gf_abundances[pathway])
-		gf_abundances_subset = sorted_gf_abundances[int(len(sorted_gf_abundances) / 2):]
-		pathway_abun = sum(gf_abundances_subset)/len(gf_abundances_subset)
-
-		path_abun[pathway] = pathway_abun
-
-	return(path_abun)
+    return([unstrat_abun, strat_abun])

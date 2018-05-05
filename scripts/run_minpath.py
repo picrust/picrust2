@@ -17,16 +17,18 @@ parser = argparse.ArgumentParser(
 
     formatter_class=argparse.RawDescriptionHelpFormatter)
 
-parser.add_argument('-i', '--input', metavar='PATH', required=True, type=str,
-                    help='Input BIOM table of E.C. number abundances')
+parser.add_argument('-i', '--input', metavar='IN_TABLE', required=True,
+                    type=str,
+                    help='Input TSV table of E.C. number abundances')
 
-parser.add_argument('-m', '--map', metavar='PATH', required=True, type=str,
+parser.add_argument('-m', '--map', metavar='MAP', required=True, type=str,
                     help='MinPath mapfile')
 
-parser.add_argument('-o', '--output', metavar='PATH', required=True, type=str,
-                    help='Output file containing pathway abundances')
+parser.add_argument('-o', '--out_prefix', metavar='PREFIX', required=True,
+                    type=str, help='Prefix for stratified and unstratified ' +\
+                                   'pathway abundances.')
 
-parser.add_argument('--out_dir', metavar='PATH', type=str, default=None,
+parser.add_argument('--intermediate', metavar='DIR', type=str, default=None,
                     help='Output folder for intermediate files (wont be ' +
                          'kept unless this option is set.')
 
@@ -44,25 +46,30 @@ def main():
     # If intermediate output directory set then create and output there.
     # Otherwise make a temporary directory for the intermediate files.
 
-    if args.out_dir:
-        make_output_dir(args.out_dir)
+    if args.intermediate:
+        make_output_dir(args.intermediate)
         
-        metacyc_predictions = run_minpath_pipeline(inputfile=args.input,
-                                                   mapfile=args.map,
-                                                   threads=args.threads,
-                                                   out_dir=args.out_dir,
-                                                   print_cmds=args.print_cmds)
+        unstrat_out, strat_out = run_minpath_pipeline(inputfile=args.input,
+                                                      mapfile=args.map,
+                                                      threads=args.threads,
+                                                      out_dir=args.intermediate,
+                                                      print_cmds=args.print_cmds)
     else:
         with TemporaryDirectory() as temp_dir:
-                metacyc_predictions = run_minpath_pipeline(inputfile=args.input,
-                                                           mapfile=args.map,
-                                                           threads=args.threads,
-                                                           out_dir=temp_dir,
-                                                           print_cmds=args.print_cmds)
+                unstrat_out, strat_out = run_minpath_pipeline(inputfile=args.input,
+                                                              mapfile=args.map,
+                                                              threads=args.threads,
+                                                              out_dir=temp_dir,
+                                                              print_cmds=args.print_cmds)
 
-    metacyc_predictions.to_csv(path_or_buf=args.output,
-                               sep="\t",
-                               index_label="pathway")
+    # Write output files.
+    unstrat_outfile = args.out_prefix + "_unstrat_path.tsv"
+    strat_outfile = args.out_prefix + "_strat_path.tsv"
+
+    unstrat_out.to_csv(path_or_buf=unstrat_outfile,  sep="\t",
+                       index_label="pathway")
+
+    strat_out.to_csv(path_or_buf=strat_outfile,  sep="\t", index=False)
 
 if __name__ == "__main__":
     main()
