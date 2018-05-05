@@ -17,7 +17,7 @@ def castor_hsp_wrapper(tree_path,
                        calc_ci=False,
                        check_input=False,
                        num_cores=1,
-                       rds_outfile="trait_state_probs.rds",
+                       rds_outfile=None,
                        ran_seed=None,
                        HALT_EXEC=False):
                        
