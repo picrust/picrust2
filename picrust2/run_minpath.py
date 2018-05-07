@@ -35,7 +35,7 @@ def run_minpath_pipeline(inputfile,
     # Note that input stratified table is subsetted to required columns only.
     sample_path_abun_raw = Parallel(n_jobs=proc)(delayed(
                                     minpath_wrapper)(sample_id,
-                                    strat_in[["sequence", "function", sample_id]],
+                                    strat_in[["function", "sequence", sample_id]],
                                     mapfile, out_dir, print_cmds)
                                     for sample_id in samples)
 
@@ -47,13 +47,12 @@ def run_minpath_pipeline(inputfile,
         sample_path_abun_raw_unstrat += [sample_output[0]]
         sample_path_abun_raw_strat += [sample_output[1]]
 
-    # Convert these returned lists of dictionaries into pandas dataframes.
+    # Convert these returned lists of series into pandas dataframes.
     sample_path_abun_unstrat = pd.DataFrame(sample_path_abun_raw_unstrat)
     sample_path_abun_strat = pd.DataFrame(sample_path_abun_raw_strat)
 
-    # Set index labels of dataframes to be sample names.
+    # Set index labels of unstratified dataframe to be sample names.
     sample_path_abun_unstrat.index = samples
-    sample_path_abun_strat.index = samples
 
     # Replace all missing values (NaN) with 0s (i.e. pathway was missing in
     # that sample) and transpose.
@@ -61,14 +60,7 @@ def run_minpath_pipeline(inputfile,
     sample_path_abun_strat = sample_path_abun_strat.fillna(0).transpose()
 
     # Add pathway and sequence as columns of stratified table.
-    sample_path_abun_strat["pathway"] = list(map(lambda x: list(x)[0],
-                                             sample_path_abun_strat.index.values))
-    sample_path_abun_strat["sequence"] = list(map(lambda x: list(x)[1],
-                                              sample_path_abun_strat.index.values))
-
-    # Re-order columns of stratified table.
-    sample_path_abun_strat = sample_path_abun_strat[["pathway", "sequence"] +
-                                                     samples]
+    sample_path_abun_strat.reset_index(inplace=True)
 
     return(sample_path_abun_unstrat, sample_path_abun_strat)
 
@@ -243,9 +235,10 @@ def minpath_wrapper(sample_id, strat_input, minpath_map, out_dir,
     # Abundances of 0 will be added in for gene families not found.
     gf_abundances, gf_ids = parse_minpath_details(minpath_details, path_present)
 
-    # Initialize dictionaries that will contain pathway abundances.
-    unstrat_abun = defaultdict(float)
-    strat_abun = defaultdict(float)
+    # Initialize series and dataframe that will contain pathway abundances.
+    unstrat_abun = pd.Series()
+    strat_abun = pd.DataFrame(columns=["pathway", "sequence", sample_id])
+    strat_abun = strat_abun.set_index(["pathway", "sequence"])
 
     # Loop through all pathways present and get mean of 1/2 most abundant.
     for pathway in gf_abundances.keys():
@@ -271,10 +264,20 @@ def minpath_wrapper(sample_id, strat_input, minpath_map, out_dir,
                                            gf_ids_subset,
                                            sum(gf_abundances_subset),
                                            unstrat_abun[pathway])
+        # Remove rows that are all 0.
+        strat_path_abun[strat_path_abun[sample_id] > 0]
 
-        # Loop through each row in stratified table and add as key/value pair
-        # to dictionary.
-        for index, row in strat_path_abun.iterrows():
-            strat_abun[tuple([pathway, index])] = row[sample_id]
+        # Add pathway as new column.
+        strat_path_abun["pathway"] = [pathway]*strat_path_abun.shape[0]
 
-    return([unstrat_abun, strat_abun])
+        strat_path_abun.set_index("pathway", append=True, inplace=True)
+
+        # Changes levels of index labels.
+        strat_path_abun = strat_path_abun.reorder_levels(["pathway",
+                                                          "sequence"])
+
+        strat_abun = pd.concat([strat_abun, strat_path_abun], levels=["pathway", "sequence"])
+
+    # Return unstratified and stratified abundances.
+    # Note that the stratified abundances are converted to a series.
+    return([unstrat_abun, strat_abun[sample_id]])

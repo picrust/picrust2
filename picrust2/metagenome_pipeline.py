@@ -32,6 +32,13 @@ def run_metagenome_pipeline(input_biom,
     pred_function = pd.read_table(function, sep="\t", index_col="sequence")
     pred_marker = pd.read_table(marker, sep="\t", index_col="sequence")
 
+    # Remove NSTI column if it exists (in both dataframes).
+    if "metadata_NSTI" in pred_function.columns:
+        pred_function.drop('metadata_NSTI', axis=1, inplace=True)
+
+    if "metadata_NSTI" in pred_marker.columns:
+        pred_marker.drop('metadata_NSTI', axis=1, inplace=True)
+
     # Re-order predicted abundance tables to be in same order as study seqs.
     # Also, drop any sequence ids that don't overlap across all dataframes.
     study_seq_counts, pred_function, pred_marker = three_df_index_overlap_sort(study_seq_counts,
@@ -56,7 +63,8 @@ def run_metagenome_pipeline(input_biom,
     # Get predicted function counts by sample, stratified by contributing
     # genomes and also separately unstratified.
     return(funcs_by_sample(input_seq_counts=study_seq_counts,
-                           input_function_num=pred_function))
+                           input_function_num=pred_function,
+                           proc=proc))
 
 
 def norm_by_marker_copies(input_seq_counts,
@@ -111,33 +119,24 @@ def funcs_by_sample(input_seq_counts, input_function_num, proc=1):
             strat_out += [func_by_seq_abun(input_seq_counts[sample],
                                            input_function_num)]
 
-    # Build dataframe from list of dictionaries per sample.
+    # Build dataframe from list of series (one per sample).
     strat_out_df = pd.DataFrame(strat_out).transpose()
+
+    # Replace all NaN values with 0s.
+    strat_out_df.fillna(0, inplace=True)
 
     # Set column names to be sample ids.
     strat_out_df.columns = sample_ids
 
-    # Remove rows that are all 0s.
-    strat_out_df = strat_out_df.loc[~(strat_out_df == 0).all(axis=1)]
-
-    # Add function names as column to dataframe.
-    strat_out_df["function"] = list(map(lambda x: list(x)[0],
-                                    strat_out_df.index.values))
+    strat_out_df.reset_index(inplace=True)
 
     # Sum rows by function id for unstratified output and set index labels
-    # equal to function ids.
+    # equal to function ids (remove "sequence" column first).
     unstrat_out_df = strat_out_df.copy()
 
-    unstrat_out_df = pd.pivot_table(unstrat_out_df,
+    unstrat_out_df = pd.pivot_table(unstrat_out_df.drop('sequence', 1),
                                     index="function",
                                     aggfunc=np.sum)
-
-    # Also add sequence as column to stratified output.
-    strat_out_df["sequence"] = list(map(lambda x: list(x)[1],
-                                    strat_out_df.index.values))
-
-    # Re-order columns.
-    strat_out_df = strat_out_df[["function", "sequence"] + list(sample_ids)]
 
     return(strat_out_df, unstrat_out_df)
 
@@ -157,17 +156,19 @@ def func_by_seq_abun(sample_seq_counts, func_abun):
     # Set index labels (sequence ids) to be new column.
     func_abun_depth["sequence"] = func_abun_depth.index.values
 
-    # Convert from wide to long table format (only columns for
-    # sequence, function, and count)
+    # Convert from wide to long table format (only columns for sequence,
+    # function, and count).
     func_abun_depth_long = pd.melt(func_abun_depth, id_vars=["sequence"],
                                    var_name="function", value_name="count")
 
-    # Convert long-form pandas dataframe to dictionary.
-    func_dict = {}
+    # Remove all rows with counts of zero.
+    func_abun_depth_long = func_abun_depth_long[func_abun_depth_long['count'] > 0]
 
-    # Loop through all rows of pandas dataframe and add values as nested
-    # dictionaries.
-    for index, row in func_abun_depth_long.iterrows():
-        func_dict[tuple([row["function"], row["sequence"]])] = row["count"]
+    func_abun_depth_long.transpose()
 
-    return(func_dict)
+    # Set index labels to be sequence and function columns.
+    func_abun_depth_long = func_abun_depth_long.set_index(keys=["function",
+                                                                "sequence"])
+
+    # Convert long-form pandas dataframe to series and return.
+    return(func_abun_depth_long["count"])

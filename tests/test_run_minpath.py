@@ -58,7 +58,8 @@ class minpath_wrapper_tests(unittest.TestCase):
 
         exp_path_abun_s2 = exp_path_abun[["sample2"]]
 
-        pd.testing.assert_frame_equal(exp_path_abun_s2, unstrat_path_abun_df)
+        pd.testing.assert_frame_equal(exp_path_abun_s2, unstrat_path_abun_df,
+                                      check_like=True)
 
 
 class run_minpath_pipeline_tests(unittest.TestCase):
@@ -81,10 +82,18 @@ class run_minpath_pipeline_tests(unittest.TestCase):
 
         test_unstrat.index.name = "pathway"
 
-        test_strat.index = range(40)
+        # Sort stratified files (different versions can sort the output slightly differently).
+        test_strat.sort_values(['pathway', 'sequence'], inplace=True)
+        exp_path_abun_strat.sort_values(['pathway', 'sequence'], inplace=True)
 
-        pd.testing.assert_frame_equal(exp_path_abun_unstrat, test_unstrat)
-        pd.testing.assert_frame_equal(exp_path_abun_strat, test_strat)
+        # Reset index labels.
+        test_strat.reset_index(inplace=True, drop=True)
+        exp_path_abun_strat.reset_index(inplace=True, drop=True)
+
+        pd.testing.assert_frame_equal(exp_path_abun_unstrat, test_unstrat,
+                                      check_like=True)
+        pd.testing.assert_frame_equal(exp_path_abun_strat, test_strat,
+                                      check_like=True)
 
 
 if __name__ == '__main__':
