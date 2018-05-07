@@ -4,3 +4,4 @@ PICRUSt2.egg-info/
 tests/__pycache__/
 precalculated/prokaryotic/*_counts_mean_round_var.txt
 picrust2/Rscripts/*WORKING.R
+testing_datasets/

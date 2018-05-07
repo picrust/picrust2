@@ -8,7 +8,7 @@ import unittest
 from os import path
 import pandas as pd
 from picrust2.wrap_hsp import castor_hsp_wrapper, castor_hsp_loocv_wrapper
-from picrust2.util import generate_temp_filename, get_picrust_project_dir
+from picrust2.util import get_picrust_project_dir
 
 # Read in expected output files.
 test_dir_path = path.join(get_picrust_project_dir(), "tests", "test_data",
@@ -31,11 +31,11 @@ hsp_subtree_average_pred = path.join(test_dir_path, "hsp_output",
 
 hsp_mp_pred_in = pd.read_table(hsp_mp_pred, sep="\t", index_col="sequence")
 
-hsp_mp_pred_in_nsti  = pd.read_table(hsp_mp_pred_nsti, sep="\t",
-                                     index_col="sequence")
+hsp_mp_pred_in_nsti = pd.read_table(hsp_mp_pred_nsti, sep="\t",
+                                    index_col="sequence")
 
-hsp_mp_pred_in_ci  = pd.read_table(hsp_mp_pred_ci, sep="\t",
-                                     index_col="sequence")
+hsp_mp_pred_in_ci = pd.read_table(hsp_mp_pred_ci, sep="\t",
+                                  index_col="sequence")
 
 hsp_emp_prob_pred_in = pd.read_table(hsp_emp_prob_pred, sep="\t",
                                      index_col="sequence")
@@ -43,6 +43,7 @@ hsp_pic_pred_in = pd.read_table(hsp_pic_pred, sep="\t", index_col="sequence")
 hsp_scp_pred_in = pd.read_table(hsp_scp_pred, sep="\t", index_col="sequence")
 hsp_subtree_average_pred_in = pd.read_table(hsp_subtree_average_pred, sep="\t",
                                             index_col="sequence")
+
 
 class castor_hsp_wrapper_tests(unittest.TestCase):
     """Tests for castor_hsp_wrapper function."""
@@ -94,7 +95,6 @@ class castor_hsp_wrapper_tests(unittest.TestCase):
 
         pd.testing.assert_frame_equal(predict_out, hsp_subtree_average_pred_in)
 
-
     def test_mp_ci(self):
         '''Test that MP confidence intervals calculated correctly.'''
         predict_out, ci_out = castor_hsp_wrapper(tree_path=in_tree1,
@@ -113,7 +113,8 @@ class castor_hsp_wrapper_tests(unittest.TestCase):
                                                  ran_seed=10,
                                                  calc_nsti=True)
 
-        pd.testing.assert_frame_equal(predict_out, hsp_mp_pred_in_nsti)    
+        pd.testing.assert_frame_equal(predict_out, hsp_mp_pred_in_nsti)
+
 
 if __name__ == '__main__':
     unittest.main()

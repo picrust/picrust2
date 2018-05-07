@@ -4,7 +4,6 @@ __copyright__ = "Copyright 2018, The PICRUSt Project"
 __license__ = "GPL"
 __version__ = "2-alpha.9"
 
-from biom import load_table
 import unittest
 import pandas as pd
 from os import path
@@ -23,10 +22,11 @@ exp_minpath_out_strat = path.join(test_dir_path, "test_data", "run_minpath",
                                   "expected_out_strat_path.tsv")
 
 exp_minpath_out_unstrat = path.join(test_dir_path, "test_data", "run_minpath",
-                                  "expected_out_unstrat_path.tsv")
+                                    "expected_out_unstrat_path.tsv")
 
 map_ec2path_prokaryotic = path.join(get_picrust_project_dir(), "MinPath",
                                     "ec2metacyc_picrust_prokaryotic.txt")
+
 
 class minpath_wrapper_tests(unittest.TestCase):
     """Tests for minpath_wrapper function."""
@@ -58,9 +58,6 @@ class minpath_wrapper_tests(unittest.TestCase):
 
         exp_path_abun_s2 = exp_path_abun[["sample2"]]
 
-        # Remove rows that are all 0s.
-        exp_path_abun_B1 = exp_path_abun_s2.loc[~(exp_path_abun_s2 == 0).all(axis=1)]
-
         pd.testing.assert_frame_equal(exp_path_abun_s2, unstrat_path_abun_df)
 
 
@@ -88,6 +85,7 @@ class run_minpath_pipeline_tests(unittest.TestCase):
 
         pd.testing.assert_frame_equal(exp_path_abun_unstrat, test_unstrat)
         pd.testing.assert_frame_equal(exp_path_abun_strat, test_strat)
+
 
 if __name__ == '__main__':
     unittest.main()

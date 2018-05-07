@@ -9,8 +9,7 @@ from os import path
 import pandas as pd
 import biom
 from tempfile import TemporaryDirectory
-from picrust2.util import (get_picrust_project_dir, biom_to_pandas_df,
-                           three_df_index_overlap_sort)
+from picrust2.util import get_picrust_project_dir, biom_to_pandas_df
 from picrust2.metagenome_pipeline import (run_metagenome_pipeline,
                                           norm_by_marker_copies)
 
@@ -33,13 +32,15 @@ exp_norm = path.join(test_dir_path, "metagenome_out", "seqtab_norm.tsv")
 
 # Read in test inputs and expected files.
 func_predict_in = pd.read_table(func_predict, sep="\t", index_col="sequence")
-marker_predict_in = pd.read_table(marker_predict, sep="\t", index_col="sequence")
+marker_predict_in = pd.read_table(marker_predict, sep="\t",
+                                  index_col="sequence")
 
 exp_strat_in = pd.read_table(exp_strat, sep="\t")
 
 exp_unstrat_in = pd.read_table(exp_unstrat, sep="\t", index_col="function")
 
 exp_norm_in = pd.read_table(exp_norm, sep="\t", index_col="sequence")
+
 
 class metagenome_pipeline_test(unittest.TestCase):
 
@@ -54,7 +55,7 @@ class metagenome_pipeline_test(unittest.TestCase):
 
         # Need to reset index names since these aren't in output files.
         strat_out.index = range(30)
-    
+
         pd.testing.assert_frame_equal(strat_out, exp_strat_in)
 
     def test_full_pipeline_unstrat_tsv(self):
@@ -84,7 +85,6 @@ class metagenome_pipeline_test(unittest.TestCase):
     
         pd.testing.assert_frame_equal(strat_out, exp_strat_in)
 
-
     def test_full_pipeline_strat_biom(self):
         '''Test that run_metagenome_pipeline works on tsv input seqtab.'''
 
@@ -95,7 +95,7 @@ class metagenome_pipeline_test(unittest.TestCase):
                                                              out_dir=temp_dir)
         # Need to reset index names since these aren't in output files.
         strat_out.index = range(30)
-    
+
         pd.testing.assert_frame_equal(strat_out, exp_strat_in)
 
     def test_full_pipeline_unstrat_biom(self):
@@ -123,6 +123,7 @@ class metagenome_pipeline_test(unittest.TestCase):
 
         # Test whether normalized table matches expected table.
         pd.testing.assert_frame_equal(test_norm, exp_norm_in)
+
 
 if __name__ == '__main__':
     unittest.main()

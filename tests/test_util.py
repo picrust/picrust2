@@ -12,29 +12,30 @@ from picrust2.util import (write_fasta, read_fasta, write_phylip, read_phylip,
                            three_df_index_overlap_sort)
 
 # Inititalize 3 test pandas dataframes.
-test1 = pd.DataFrame.from_dict({ "a" : [1, 2, 3],
-                                 "b" : [10, 6, 5],
-                                 "c" : [1, 3, 4] },
-                                 orient='index')
+test1 = pd.DataFrame.from_dict({"a": [1, 2, 3],
+                                "b": [10, 6, 5],
+                                "c": [1, 3, 4]},
+                               orient='index')
 
-test2 = pd.DataFrame.from_dict({ "b" : [10, 7, 0],
-                                 "c" : [0, 0, 0],
-                                 "d" : [5, 4, 3] },
-                                 orient='index')
+test2 = pd.DataFrame.from_dict({"b": [10, 7, 0],
+                                "c": [0, 0, 0],
+                                "d": [5, 4, 3]},
+                               orient='index')
 
-test3 = pd.DataFrame.from_dict({ "e" : [0, 5, 3],
-                                 "c" : [9, 0, 7],
-                                 "b" : [1, 0, 2] },
-                                 orient='index')
+test3 = pd.DataFrame.from_dict({"e": [0, 5, 3],
+                                "c": [9, 0, 7],
+                                "b": [1, 0, 2]},
+                               orient='index')
+
 
 class util_test(unittest.TestCase):
 
     def test_read_write_fasta(self):
         '''Basic test that FASTA files are read and written correctly.'''
 
-        test_seqs_dict = {"seq1" : "GNATNGAC",
-                           "seq2" : "GTCGTGGC",
-                           "seq3" : "GNCTGAGATTAACC"}
+        test_seqs_dict = {"seq1": "GNATNGAC",
+                          "seq2": "GTCGTGGC",
+                          "seq3": "GNCTGAGATTAACC"}
 
         # Write these sequences temp file and then read them back in again.
         with TemporaryDirectory() as temp_dir:
@@ -43,15 +44,15 @@ class util_test(unittest.TestCase):
             write_fasta(test_seqs_dict, outfile)
 
             test_seqs_dict_in = read_fasta(outfile)
-        
+
         self.assertEqual(test_seqs_dict, test_seqs_dict_in)
 
     def test_read_write_phylip(self):
         '''Basic test that Phylip files are read and written correctly.'''
 
-        test_seqs_dict = {"seq1" : "GNATNGAC",
-                          "seq2" : "GTCGTGGC",
-                          "seq3" : "GNCTGAGA"}
+        test_seqs_dict = {"seq1": "GNATNGAC",
+                          "seq2": "GTCGTGGC",
+                          "seq3": "GNCTGAGA"}
 
         # Write these sequences temp file and then read them back in again.
         with TemporaryDirectory() as temp_dir:
@@ -60,7 +61,7 @@ class util_test(unittest.TestCase):
             write_phylip(test_seqs_dict, outfile)
 
             test_seqs_dict_in = read_phylip(outfile)
-        
+
         self.assertEqual(test_seqs_dict, test_seqs_dict_in)
 
     def test_three_df_index_overlap_sort(self):
@@ -86,14 +87,15 @@ class util_test(unittest.TestCase):
         index labels will give error if index label don't overlap..'''
 
         # Define df without overlapping index labels.
-        test_no_overlap = pd.DataFrame.from_dict({ "e" : [0, 5, 3],
-                                                   "f" : [9, 0, 7],
-                                                   "g" : [1, 0, 2] },
+        test_no_overlap = pd.DataFrame.from_dict({"e": [0, 5, 3],
+                                                  "f": [9, 0, 7],
+                                                  "g": [1, 0, 2]},
                                                  orient='index')
 
         # Check that ValueError assertion raised.
         self.assertRaises(ValueError, three_df_index_overlap_sort, test1,
                           test2, test_no_overlap)
+
 
 if __name__ == '__main__':
     unittest.main()
