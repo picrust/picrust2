@@ -5,3 +5,4 @@ tests/__pycache__/
 precalculated/prokaryotic/*_counts_mean_round_var.txt
 picrust2/Rscripts/*WORKING.R
 testing_datasets/
+.pytest_cache/
