@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+__copyright__ = "Copyright 2018, The PICRUSt Project"
 __license__ = "GPL"
 __version__ = "2-alpha.9"
 
@@ -19,20 +20,20 @@ default_tree = path.join(project_dir, "precalculated", "prokaryotic",
 # Inititalize default trait table files for hsp.py.
 prokaryotic_dir = path.join(project_dir, "precalculated", "prokaryotic")
 
-default_tables = {"16S" : path.join(prokaryotic_dir,
-                                    "16S_counts_mean_round_var.txt"),
+default_tables = {"16S": path.join(prokaryotic_dir,
+                                   "16S_counts_mean_round_var.txt"),
 
-                  "COG" : path.join(prokaryotic_dir,
-                                    "cog_counts_mean_round_var.txt"),
+                  "COG": path.join(prokaryotic_dir,
+                                   "cog_counts_mean_round_var.txt"),
 
-                  "EC" : path.join(prokaryotic_dir,
-                                   "ec_counts_mean_round_var.txt"),
+                  "EC": path.join(prokaryotic_dir,
+                                  "ec_counts_mean_round_var.txt"),
 
-                  "KO" : path.join(prokaryotic_dir,
-                                   "ko_counts_mean_round_var.txt"),
+                  "KO": path.join(prokaryotic_dir,
+                                  "ko_counts_mean_round_var.txt"),
 
-                  "PFAM" : path.join(prokaryotic_dir,
-                                     "pfam_counts_mean_round_var.txt"),
+                  "PFAM": path.join(prokaryotic_dir,
+                                    "pfam_counts_mean_round_var.txt"),
 
                   "TIGRFAM": path.join(prokaryotic_dir,
                                        "tfam_counts_mean_round_var.txt")}

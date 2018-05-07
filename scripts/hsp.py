@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 
+__copyright__ = "Copyright 2018, The PICRUSt Project"
 __license__ = "GPL"
 __version__ = "2-alpha.9"
 
 import argparse
 from picrust2.wrap_hsp import castor_hsp_wrapper
-from picrust2.util import make_output_dir_for_file, get_picrust_project_dir
+from picrust2.util import make_output_dir_for_file
 from picrust2.precalc import default_tables
 
 HSP_METHODS = ['mp', 'emp_prob', 'pic', 'scp', 'subtree_average']
@@ -94,7 +95,7 @@ def main():
 
     args = parser.parse_args()
 
-    # Determine which input trait table was specified. If neither a default 
+    # Determine which input trait table was specified. If neither a default
     # or custom table was specified then throw an error.
     if args.in_trait:
         trait_table = default_tables[args.in_trait]
@@ -142,7 +143,8 @@ def main():
     # Output the CI file as well if option set.
     if ci_setting:
         make_output_dir_for_file(ci_outfile)
-        ci_table.to_csv(path_or_buf=ci_outfile, index_label="sequence", sep="\t")
+        ci_table.to_csv(path_or_buf=ci_outfile, index_label="sequence",
+                        sep="\t")
 
 
 if __name__ == "__main__":

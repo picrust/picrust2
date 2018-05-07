@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+__copyright__ = "Copyright 2018, The PICRUSt Project"
 __license__ = "GPL"
 __version__ = "2-alpha.9"
 
@@ -53,6 +54,7 @@ parser.add_argument('--debug', default=False, action='store_true',
 parser.add_argument('-v', '--version', default=False, action='version',
                     version="%(prog)s " + __version__)
 
+
 def main():
 
     args = parser.parse_args()
@@ -66,6 +68,7 @@ def main():
                              metrics_out_path=args.metrics_out,
                              num_cores=args.processes,
                              HALT_EXEC=args.debug)
+
 
 if __name__ == "__main__":
     main()

@@ -11,6 +11,7 @@ import pandas as pd
 import numpy as np
 import tempfile
 
+
 def read_fasta(filename, cut_header=False):
 
     '''Read in FASTA file and return dictionary with each independent sequence
@@ -52,6 +53,7 @@ def read_fasta(filename, cut_header=False):
 
     return seq
 
+
 def write_fasta(seq, outfile):
     out_fasta = open(outfile, "w")
 
@@ -60,6 +62,7 @@ def write_fasta(seq, outfile):
         out_fasta.write(seq[s] + "\n")
 
     out_fasta.close()
+
 
 def read_phylip(filename, check_input=True):
 
@@ -107,6 +110,7 @@ def read_phylip(filename, check_input=True):
 
     return seq
 
+
 def write_phylip(seq, outfile):
     out_phylip = open(outfile, "w")
 
@@ -126,13 +130,14 @@ def write_phylip(seq, outfile):
         if seq_length != len(seq[s]):
 
             # Throw error if sequence is unexpected length.
-            raise SystemExit("Expected sequence " + s + " to be length " + 
+            raise SystemExit("Expected sequence " + s + " to be length " +
                              str(seq_length) + ", but was " +
                              str(len(seq[s])))
 
         out_phylip.write(s + " " + seq[s] + "\n")
 
     out_phylip.close()
+
 
 def system_call_check(cmd, print_out=False, stdout=None, stderr=None):
     """Run system command and throw and error if return is not 0. Input command
@@ -157,6 +162,7 @@ def system_call_check(cmd, print_out=False, stdout=None, stderr=None):
     else:
         return(return_value)
 
+
 def get_picrust_project_dir():
     """ Returns the top-level PICRUST directory
     """
@@ -166,6 +172,7 @@ def get_picrust_project_dir():
     current_dir_path = dirname(current_file_path)
     # Return the directory containing the directory containing util.py
     return dirname(current_dir_path)
+
 
 def make_output_dir(dirpath, strict=False):
     """Make an output directory if it doesn't exist
@@ -177,9 +184,9 @@ def make_output_dir(dirpath, strict=False):
     """
     dirpath = abspath(dirpath)
 
-    #Check if directory already exists
+    # Check if directory already exists
     if isdir(dirpath):
-        if strict == True:
+        if strict:
             err_str = "Directory '%s' already exists" % dirpath
             raise IOError(err_str)
 
@@ -193,11 +200,13 @@ def make_output_dir(dirpath, strict=False):
 
     return dirpath
 
+
 def make_output_dir_for_file(filepath):
     """Create sub-directories for a new file if they don't already exist"""
     dirpath = dirname(filepath)
     if not isdir(dirpath) and not dirpath == '':
         makedirs(dirpath)
+
 
 def generate_temp_filename(temp_dir=None, prefix="", suffix=""):
     '''Function to generate path to temporary filenames (does not create the)
@@ -209,8 +218,9 @@ def generate_temp_filename(temp_dir=None, prefix="", suffix=""):
     if not temp_dir:
         temp_dir = tempfile._get_default_tempdir()
 
-    return(join(temp_dir, prefix +\
+    return(join(temp_dir, prefix +
                 next(tempfile._get_candidate_names()) + suffix))
+
 
 def biom_to_pandas_df(biom_tab):
     '''Will convert from biom Table object to pandas dataframe.'''
@@ -222,10 +232,11 @@ def biom_to_pandas_df(biom_tab):
                                  index=biom_tab.ids(axis='observation'),
                                  columns=biom_tab.ids(axis='sample')))
 
+
 def three_df_index_overlap_sort(df1, df2, df3):
     '''Given 3 pandas dataframes, will first determine which index labels
     overlap across all dataframes and will subset the labels to this set and
-    then will sort the dataframes to be in the same order''' 
+    then will sort the dataframes to be in the same order'''
 
     label_overlap = df1.index.intersection(df2.index.intersection(df3.index))
 
@@ -239,5 +250,3 @@ def three_df_index_overlap_sort(df1, df2, df3):
     df3 = df3.reindex(label_overlap)
 
     return(df1, df2, df3)
-
-

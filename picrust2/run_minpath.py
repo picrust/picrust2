@@ -1,16 +1,18 @@
 #!/usr/bin/env python
 
 from __future__ import division
+
+__copyright__ = "Copyright 2018, The PICRUSt Project"
+__license__ = "GPL"
+__version__ = "2-alpha.9"
+
 from collections import defaultdict
 from joblib import Parallel, delayed
 from os import path
 import pandas as pd
 import numpy as np
-import itertools
 from picrust2.util import (system_call_check, get_picrust_project_dir)
 
-__license__ = "GPL"
-__version__ = "2-alpha.9"
 
 def run_minpath_pipeline(inputfile,
                          mapfile,
@@ -26,7 +28,7 @@ def run_minpath_pipeline(inputfile,
     strat_in = read_strat_genes(inputfile)
 
     # Get list of sample ids.
-    samples = [col for col in strat_in.columns \
+    samples = [col for col in strat_in.columns
                if col not in ["function", "sequence"]]
 
     # Run minpath wrapper on all samples.
@@ -65,10 +67,11 @@ def run_minpath_pipeline(inputfile,
                                               sample_path_abun_strat.index.values))
 
     # Re-order columns of stratified table.
-    sample_path_abun_strat = sample_path_abun_strat[["pathway", "sequence"] +\
+    sample_path_abun_strat = sample_path_abun_strat[["pathway", "sequence"] +
                                                      samples]
 
     return(sample_path_abun_unstrat, sample_path_abun_strat)
+
 
 def read_strat_genes(filename):
     '''Reads in gene abundancy table stratified by contributing sequences
@@ -80,12 +83,13 @@ def read_strat_genes(filename):
 
     # Check that expected columns are in table.
     if "function" not in input_df.columns or "sequence" not in input_df.columns:
-        raise ValueError("Did not find at least one of the expected " +\
-                         "in input file (\"function\" and \"sequence\". " +\
-                         "Make sure the stratified metagenome predictions " +\
+        raise ValueError("Did not find at least one of the expected " +
+                         "in input file (\"function\" and \"sequence\". " +
+                         "Make sure the stratified metagenome predictions " +
                          "were input.")
 
     return(input_df)
+
 
 def strat_to_unstrat_counts(strat_df, func_col="function"):
     '''Given a pandas dataframe with the columns "sequence", "function" (by
@@ -97,6 +101,7 @@ def strat_to_unstrat_counts(strat_df, func_col="function"):
     strat_df = strat_df.drop(["sequence"], axis=1)
 
     return(pd.pivot_table(data=strat_df, index=func_col, aggfunc=np.sum))
+
 
 def identify_minpath_present(report_file):
     '''Parse MinPath report output file and returns set containing all pathways
@@ -113,7 +118,8 @@ def identify_minpath_present(report_file):
 
     return(path_present)
 
-def parse_minpath_details(details_file : str, path_present : set):
+
+def parse_minpath_details(details_file: str, path_present: set):
     '''Parse MinPath details output file and returns dictionaries containing
     the abundances of gene families within each pathway and the ids of these
     gene families. Note that the pathways that were called as present in the
@@ -161,6 +167,7 @@ def parse_minpath_details(details_file : str, path_present : set):
 
     return(gf_abund, gf_names)
 
+
 def path_abun_by_seq(gene_abun, gene_ids, total_sum, path_abun):
     '''Takes in a stratified dataframe, subsets functions to those of interest,
     and pivots by sequence column (takes sum over other columns). Also takes
@@ -181,6 +188,7 @@ def path_abun_by_seq(gene_abun, gene_ids, total_sum, path_abun):
     # Return weighted pathway abundance (rounded).
     return(np.around((seq_path_abun/total_sum)*path_abun, decimals=2))
 
+
 def minpath_wrapper(sample_id, strat_input, minpath_map, out_dir,
                     print_opt=False):
     '''Read in sample_id, gene family table, and out_dir, and run MinPath based
@@ -200,9 +208,6 @@ def minpath_wrapper(sample_id, strat_input, minpath_map, out_dir,
                           "w")
 
     id_minpath_fh = open(minpath_in, "w")
-
-    # Counter to give each "read" in MinPath input a different id.
-    func_num = 0
 
     # Loop over all functions (which are the index labels in unstrat table).
     for func_id in unstrat_input.index.values:

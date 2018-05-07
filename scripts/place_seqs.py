@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+__copyright__ = "Copyright 2018, The PICRUSt Project"
 __license__ = "GPL"
 __version__ = "2-alpha.9"
 
@@ -54,7 +55,6 @@ def main():
 
     args = parser.parse_args()
 
-
     # If intermediate output directory set then create and output there.
     # Otherwise make a temporary directory for the intermediate files.
 
@@ -75,14 +75,14 @@ def main():
     else:
         with TemporaryDirectory() as temp_dir:
                 place_seqs_pipeline(study_fasta=args.study_fasta,
-                        ref_msa=args.ref_msa,
-                        tree=args.tree,
-                        out_tree=args.out_tree,
-                        threads=args.threads,
-                        papara_output=args.papara_output,
-                        out_dir=temp_dir,
-                        chunk_size=args.chunk_size,
-                        print_cmds=args.print_cmds)
+                                    ref_msa=args.ref_msa,
+                                    tree=args.tree,
+                                    out_tree=args.out_tree,
+                                    threads=args.threads,
+                                    papara_output=args.papara_output,
+                                    out_dir=temp_dir,
+                                    chunk_size=args.chunk_size,
+                                    print_cmds=args.print_cmds)
 
 
 if __name__ == "__main__":

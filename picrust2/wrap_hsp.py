@@ -2,6 +2,7 @@
 
 from __future__ import division
 
+__copyright__ = "Copyright 2018, The PICRUSt Project"
 __license__ = "GPL"
 __version__ = "2-alpha.9"
 
@@ -9,6 +10,7 @@ from os import remove, path
 import pandas as pd
 from picrust2.util import (system_call_check, get_picrust_project_dir,
                            generate_temp_filename)
+
 
 def castor_hsp_wrapper(tree_path,
                        trait_table_path,
@@ -20,11 +22,10 @@ def castor_hsp_wrapper(tree_path,
                        rds_outfile=None,
                        ran_seed=None,
                        HALT_EXEC=False):
-                       
     '''Runs the castor_hsp.R Rscript and returns predicted counts and
     confidence interval (if applicable) tables as pandas dataframes'''
 
-    castor_hsp_script_fp = path.join(get_picrust_project_dir(), 'picrust2', 
+    castor_hsp_script_fp = path.join(get_picrust_project_dir(), 'picrust2',
                                      'Rscripts', 'castor_hsp.R')
 
     tmp_output_count_path = generate_temp_filename()
@@ -67,7 +68,7 @@ def castor_hsp_wrapper(tree_path,
                         write_rds])
 
     # Run castor_hsp.R here
-    result = system_call_check(hsp_cmd)
+    system_call_check(hsp_cmd)
 
     # Load the output into Table objects
     try:
@@ -98,7 +99,6 @@ def castor_hsp_loocv_wrapper(tree_path,
                              metrics_out_path,
                              num_cores=1,
                              HALT_EXEC=False):
-                       
     '''Runs the castor_hsp_loocv.R Rscript and writes out result tables'''
     castor_loocv_hsp_script_fp = path.join(get_picrust_project_dir(),
                                            'picrust2', 'Rscripts',
@@ -116,4 +116,4 @@ def castor_hsp_loocv_wrapper(tree_path,
                           str(num_cores)])
 
     # Run castor_hsp_loocv.R here
-    result = system_call_check(loocv_cmd)
+    system_call_check(loocv_cmd)

@@ -2,6 +2,7 @@
 
 from __future__ import division
 
+__copyright__ = "Copyright 2018, The PICRUSt Project"
 __license__ = "GPL"
 __version__ = "2-alpha.9"
 
@@ -9,7 +10,6 @@ import argparse
 from picrust2.run_minpath import run_minpath_pipeline
 from tempfile import TemporaryDirectory
 from picrust2.util import make_output_dir
-import pandas as pd
 
 parser = argparse.ArgumentParser(
 
@@ -25,7 +25,7 @@ parser.add_argument('-m', '--map', metavar='MAP', required=True, type=str,
                     help='MinPath mapfile')
 
 parser.add_argument('-o', '--out_prefix', metavar='PREFIX', required=True,
-                    type=str, help='Prefix for stratified and unstratified ' +\
+                    type=str, help='Prefix for stratified and unstratified ' +
                                    'pathway abundances.')
 
 parser.add_argument('--intermediate', metavar='DIR', type=str, default=None,
@@ -48,7 +48,7 @@ def main():
 
     if args.intermediate:
         make_output_dir(args.intermediate)
-        
+
         unstrat_out, strat_out = run_minpath_pipeline(inputfile=args.input,
                                                       mapfile=args.map,
                                                       proc=args.proc,
@@ -70,6 +70,7 @@ def main():
                        index_label="pathway")
 
     strat_out.to_csv(path_or_buf=strat_outfile,  sep="\t", index=False)
+
 
 if __name__ == "__main__":
     main()

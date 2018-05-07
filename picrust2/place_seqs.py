@@ -1,11 +1,13 @@
 #!/usr/bin/env python
 
+__copyright__ = "Copyright 2018, The PICRUSt Project"
 __license__ = "GPL"
 __version__ = "2-alpha.9"
 
 from os import path, chdir, getcwd
 from picrust2.util import (system_call_check, make_output_dir, read_fasta,
                            read_phylip, write_fasta, write_phylip)
+
 
 def place_seqs_pipeline(study_fasta,
                         ref_msa,
@@ -23,14 +25,14 @@ def place_seqs_pipeline(study_fasta,
 
     # Either read in PaPaRa output or run it.
     if papara_output:
-      # Read in PaPaRa output if already done.
-      papara_out = read_phylip(papara_output, check_input=True)
+        # Read in PaPaRa output if already done.
+        papara_out = read_phylip(papara_output, check_input=True)
 
     else:
-      # Run PaPaRa to place study sequences and read in Phylip file.
-      papara_out = run_papara(tree=tree, ref_msa=ref_msa,
-                              study_fasta=study_fasta, out_dir=out_dir,
-                              threads=threads, print_cmds=print_cmds)
+        # Run PaPaRa to place study sequences and read in Phylip file.
+        papara_out = run_papara(tree=tree, ref_msa=ref_msa,
+                                study_fasta=study_fasta, out_dir=out_dir,
+                                threads=threads, print_cmds=print_cmds)
 
     # Specify split FASTA files to be created.
     study_msa_fastafile = path.join(out_dir, "study_seqs_papara.fasta")
@@ -59,8 +61,8 @@ def place_seqs_pipeline(study_fasta,
 def run_papara(tree: str, ref_msa: dict, study_fasta: str, out_dir: str,
                threads=1, print_cmds=False):
     '''Run PaPaRa to place study sequences into reference multiple-sequence
-    alignment (MSA). Will return dictionary of the the output MSA (sequence ids as
-    keys). Expects path to tree and study FASTA as strings. Expects
+    alignment (MSA). Will return dictionary of the the output MSA (sequence ids
+    as keys). Expects path to tree and study FASTA as strings. Expects
     reference MSA as a dictionary output by read_fasta. This MSA will be
     converted to phylip format before running PaPaRa.'''
 
@@ -94,7 +96,7 @@ def split_ref_study_papara(papara_out: dict, ref_seqnames: set, ref_fasta: str,
                            study_fasta: str):
     '''Split PaPaRa phylip output into FASTA MSA files of study sequences and
     reference sequences separately. Expects PaPaRa output already read in
-    as dictionary. Takes in the PaPaRa output as a dictionary, a set that 
+    as dictionary. Takes in the PaPaRa output as a dictionary, a set that
     contains all sequence ids in reference MSA, and the output FASTA
     filenames.'''
 
@@ -140,4 +142,3 @@ def gappa_jplace_to_newick(jplace_file: str, outfile: str, print_cmds=False):
     # Rename newick file to be specified outfile.
     system_call_check("mv " + newick_file + " " + outfile,
                       print_out=print_cmds)
-

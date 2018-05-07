@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 
+__copyright__ = "Copyright 2018, The PICRUSt Project"
 __license__ = "GPL"
 __version__ = "2-alpha.9"
 
 import argparse
 from os import path
-from picrust2.util import system_call_check
 from picrust2.metagenome_pipeline import run_metagenome_pipeline
 
 parser = argparse.ArgumentParser(
@@ -62,6 +62,7 @@ def main():
     # Note that no index labels are written for stratified output.
     strat_pred.to_csv(path_or_buf=strat_outfile, sep="\t", index=False)
     unstrat_pred.to_csv(path_or_buf=unstrat_outfile, sep="\t")
+
 
 if __name__ == "__main__":
     main()

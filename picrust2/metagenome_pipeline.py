@@ -7,14 +7,13 @@ __license__ = "GPL"
 __version__ = "2-alpha.9"
 
 import biom
-import itertools
 import pandas as pd
 import numpy as np
 from os import path
-from tempfile import TemporaryDirectory
 from joblib import Parallel, delayed
 from picrust2.util import (biom_to_pandas_df, make_output_dir,
                            three_df_index_overlap_sort)
+
 
 def run_metagenome_pipeline(input_biom,
                             function,
@@ -35,7 +34,7 @@ def run_metagenome_pipeline(input_biom,
 
     # Re-order predicted abundance tables to be in same order as study seqs.
     # Also, drop any sequence ids that don't overlap across all dataframes.
-    study_seq_counts, pred_function, pred_marker = three_df_index_overlap_sort(study_seq_counts, 
+    study_seq_counts, pred_function, pred_marker = three_df_index_overlap_sort(study_seq_counts,
                                                                                pred_function,
                                                                                pred_marker)
 
@@ -58,6 +57,7 @@ def run_metagenome_pipeline(input_biom,
     # genomes and also separately unstratified.
     return(funcs_by_sample(input_seq_counts=study_seq_counts,
                            input_function_num=pred_function))
+
 
 def norm_by_marker_copies(input_seq_counts,
                           input_marker_num,
@@ -83,6 +83,7 @@ def norm_by_marker_copies(input_seq_counts,
                                 sep="\t")
 
     return(input_seq_counts)
+
 
 def funcs_by_sample(input_seq_counts, input_function_num, proc=1):
     '''Function that reads in study sequence abundances and predicted
@@ -117,7 +118,7 @@ def funcs_by_sample(input_seq_counts, input_function_num, proc=1):
     strat_out_df.columns = sample_ids
 
     # Remove rows that are all 0s.
-    strat_out_df = strat_out_df.loc[~(strat_out_df==0).all(axis=1)]
+    strat_out_df = strat_out_df.loc[~(strat_out_df == 0).all(axis=1)]
 
     # Add function names as column to dataframe.
     strat_out_df["function"] = list(map(lambda x: list(x)[0],
@@ -140,10 +141,11 @@ def funcs_by_sample(input_seq_counts, input_function_num, proc=1):
 
     return(strat_out_df, unstrat_out_df)
 
+
 def func_by_seq_abun(sample_seq_counts, func_abun):
-    '''Given the abundances of sequences in a sample (as a pandas series) and 
-    the predicted functions of those sequences (as a pandas dataframe), this 
-    function will return the functional abundances after multiplying the 
+    '''Given the abundances of sequences in a sample (as a pandas series) and
+    the predicted functions of those sequences (as a pandas dataframe), this
+    function will return the functional abundances after multiplying the
     abundances of functions contributed by a sequence by that sequence's
     abundance. Will return a long-form dataframe with 3 columns: function,
     sequence, and count. Note that this function assumes that the order of the
