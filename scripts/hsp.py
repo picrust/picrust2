@@ -6,7 +6,7 @@ __version__ = "2-alpha.9"
 
 import argparse
 from picrust2.wrap_hsp import castor_hsp_wrapper
-from picrust2.util import make_output_dir_for_file
+from picrust2.util import make_output_dir_for_file, check_files_exist
 from picrust2.precalc import default_tables
 
 HSP_METHODS = ['mp', 'emp_prob', 'pic', 'scp', 'subtree_average']
@@ -106,6 +106,9 @@ def main():
             "A default input trait table needs to be specified with the " +
             "--in_trait option, or alternatively a custom table can be " +
             "specified with the --observed_trait_table option")
+
+    # Check that input filenames exist.
+    check_files_exist([args.tree, trait_table])
 
     # Methods for discrete trait prediction with CI enabled.
     discrete_set = set(['emp_prob', 'mp'])

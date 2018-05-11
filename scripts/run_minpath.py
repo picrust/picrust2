@@ -9,7 +9,7 @@ __version__ = "2-alpha.9"
 import argparse
 from picrust2.run_minpath import run_minpath_pipeline
 from tempfile import TemporaryDirectory
-from picrust2.util import make_output_dir
+from picrust2.util import make_output_dir, check_files_exist
 
 parser = argparse.ArgumentParser(
 
@@ -43,9 +43,11 @@ def main():
 
     args = parser.parse_args()
 
+    # Check that input files exist.
+    check_files_exist([args.input, args.map])
+
     # If intermediate output directory set then create and output there.
     # Otherwise make a temporary directory for the intermediate files.
-
     if args.intermediate:
         make_output_dir(args.intermediate)
 

@@ -5,7 +5,7 @@ __license__ = "GPL"
 __version__ = "2-alpha.9"
 
 from os import makedirs
-from os.path import abspath, dirname, isdir, join
+from os.path import abspath, dirname, isdir, join, exists
 from subprocess import call
 import pandas as pd
 import numpy as np
@@ -250,3 +250,26 @@ def three_df_index_overlap_sort(df1, df2, df3):
     df3 = df3.reindex(label_overlap)
 
     return(df1, df2, df3)
+
+
+def check_files_exist(filepaths):
+    '''Takes in a list of filepaths and checks whether they exist. Will
+    throw error describing which files do not exist if applicable.'''
+
+    num_nonexist = 0
+
+    missing_files = []
+
+    for filepath in filepaths:
+
+        if not exists(filepath):
+            missing_files += [filepath]
+            num_nonexist += 1
+
+    if num_nonexist == 0:
+        pass
+    elif num_nonexist == 1:
+        raise ValueError("This input file was not found: " + missing_files[0])
+    elif num_nonexist > 1:
+        raise ValueError("These input files were not found: " +
+                         ", ".join(missing_files))

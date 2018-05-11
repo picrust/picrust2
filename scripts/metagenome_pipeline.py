@@ -7,6 +7,7 @@ __version__ = "2-alpha.9"
 import argparse
 from os import path
 from picrust2.metagenome_pipeline import run_metagenome_pipeline
+from picrust2.util import check_files_exist
 
 parser = argparse.ArgumentParser(
 
@@ -45,6 +46,9 @@ parser.add_argument('-o', '--out_dir', metavar='PATH', type=str,
 def main():
 
     args = parser.parse_args()
+
+    # Check that input files exist.
+    check_files_exist([args.input, args.function, args.marker])
 
     # Pass arguments to key function and get predicted functions
     # stratified and unstratified by genomes.

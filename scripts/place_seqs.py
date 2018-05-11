@@ -8,7 +8,7 @@ import argparse
 from tempfile import TemporaryDirectory
 from picrust2.place_seqs import place_seqs_pipeline
 from picrust2.precalc import default_fasta, default_tree
-from picrust2.util import make_output_dir
+from picrust2.util import make_output_dir, check_files_exist
 
 parser = argparse.ArgumentParser(
 
@@ -55,9 +55,11 @@ def main():
 
     args = parser.parse_args()
 
+    # Check that input filenames exist.
+    check_files_exist([args.study_fasta, args.ref_msa, args.tree])	
+
     # If intermediate output directory set then create and output there.
     # Otherwise make a temporary directory for the intermediate files.
-
     if args.out_dir:
 
         make_output_dir(args.out_dir)
