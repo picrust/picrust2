@@ -51,7 +51,7 @@ ci_95_states2values <- function(state_probs) {
 # Function to get HSP state probabilities for study (i.e. "unknown" tips only).
 # Adds rownames of sequences and colnames of counts. 
 # Also remove columns that are all zeros (no probability of that state).
-get_sorted_prob <- function(in_likelihood, study_tips_i, tree_tips, study_tips) {
+get_sorted_prob <- function(in_likelihood, study_tips_i, tree_tips) {
   
   # Subet to study sequences only and set as rownames.
   tmp_lik <- in_likelihood[study_tips_i, , drop=FALSE]
@@ -66,14 +66,14 @@ get_sorted_prob <- function(in_likelihood, study_tips_i, tree_tips, study_tips) 
     tmp_lik <- tmp_lik[, -col2remove, drop=FALSE]
   }
   
-  return(tmp_lik[study_tips, , drop=FALSE])
+  return(tmp_lik)
   
 }
 
 
 # Order the trait table to match the tree tip labels. Set all tips without a value to be NA.
-unknown_tips <- full_tree$tip.label[which(! full_tree$tip.label %in% rownames(trait_values))]
-unknown_tips_index <- which(full_tree$tip.label %in% unknown_tips)
+unknown_tips_index <- which(! full_tree$tip.label %in% rownames(trait_values))
+unknown_tips <- full_tree$tip.label[unknown_tips_index]
 
 unknown_df <- as.data.frame(matrix(NA,
                                    nrow=length(unknown_tips),
@@ -149,8 +149,7 @@ if (hsp_method == "pic" | hsp_method == "scp" | hsp_method == "subtree_average")
   hsp_out_models_unknown_lik <- mclapply(names(hsp_out_models), 
                                          function(x) { get_sorted_prob(hsp_out_models[[x]]$likelihoods,
                                                                        study_tips_i=unknown_tips_index, 
-                                                                       tree_tips=full_tree$tip.label, 
-                                                                       study_tips=unknown_tips)},
+                                                                       tree_tips=full_tree$tip.label)},
                                          mc.cores = num_cores)
   
   names(hsp_out_models_unknown_lik) <- names(hsp_out_models)
