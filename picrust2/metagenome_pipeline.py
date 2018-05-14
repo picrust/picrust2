@@ -70,7 +70,7 @@ def run_metagenome_pipeline(input_biom,
 def norm_by_marker_copies(input_seq_counts,
                           input_marker_num,
                           norm_filename=None,
-                          round_norm=True):
+                          round_decimal=2):
 
     '''Divides sequence counts (which correspond to amplicon sequence
     variants) by the predicted marker gene copies for each sequence. Will write
@@ -81,8 +81,8 @@ def norm_by_marker_copies(input_seq_counts,
                                                 input_marker_num.columns.values[0]],
                                             axis="index")
 
-    if round_norm:
-        input_seq_counts = input_seq_counts.round(decimals=0)
+
+    input_seq_counts = input_seq_counts.round(decimals=round_decimal)
 
     # Output normalized table if specified.
     if norm_filename:
