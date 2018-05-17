@@ -3,16 +3,13 @@
 # Read in quietly to avoid outputting "Loading required package: Rcpp" to stderr.
 library(castor, quietly = TRUE)
 
-# Read in ape as well for "read.tree" function.
-library(ape)
-
 # Load parallel package to run over multiple cores.
 library(parallel)
 
 Args <- commandArgs(TRUE)
 
 # Read in command-line arguments.
-full_tree <- read.tree(Args[1])
+full_tree <- read_tree(file=Args[1], check_label_uniqueness = TRUE)
 trait_values <- read.delim(Args[2], check.names=FALSE, row.names=1)
 tips_to_test <- as.vector(read.delim(Args[3], header=FALSE, stringsAsFactors = FALSE)$V1)
 hsp_method <- Args[4]
