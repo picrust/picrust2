@@ -59,6 +59,10 @@ def run_minpath_pipeline(inputfile,
     sample_path_abun_unstrat = sample_path_abun_unstrat.fillna(0).transpose()
     sample_path_abun_strat = sample_path_abun_strat.fillna(0).transpose()
 
+    # Round each value to 2 decimal places.
+    sample_path_abun_unstrat = sample_path_abun_unstrat.round(decimals=2)
+    sample_path_abun_strat = sample_path_abun_strat.round(decimals=2)
+
     # Add pathway and sequence as columns of stratified table.
     sample_path_abun_strat.reset_index(inplace=True)
 
