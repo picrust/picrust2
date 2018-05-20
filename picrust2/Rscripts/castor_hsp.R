@@ -3,31 +3,23 @@
 # Read in quietly to avoid outputting "Loading required package: Rcpp" to stderr.
 library(castor, quietly = TRUE)
 
-# Load parallel package to run over multiple cores.
-library(parallel)
-
 Args <- commandArgs(TRUE)
 
 # Read in command-line arguments.
 full_tree <- read_tree(file=Args[1], check_label_uniqueness = TRUE)
 trait_values <- read.delim(Args[2], check.names=FALSE, row.names=1)
 hsp_method <- Args[3]
-calc_nsti <- as.logical(Args[4])
-calc_ci <- as.logical(Args[5])
-check_input_set <- as.logical(Args[6])
-num_cores <- Args[7]
-predict_outfile <- Args[8]
-ci_outfile <- Args[9]
-rds_outfile <- Args[10]
-seed_setting <- Args[11]
-write_rds <- as.logical(Args[12])
+calc_ci <- as.logical(Args[4])
+check_input_set <- as.logical(Args[5])
+predict_outfile <- Args[6]
+ci_outfile <- Args[7]
+seed_setting <- Args[8]
 
 # Set random seed if integer specified.
 if(seed_setting != "None") {
   RNGkind("L'Ecuyer-CMRG")
   set.seed(as.integer(seed_setting))
 }
-
 
 # Function to get CIs for certain HSP methods.
 ci_95_states2values <- function(state_probs) {
@@ -68,105 +60,122 @@ get_sorted_prob <- function(in_likelihood, study_tips_i, tree_tips) {
 }
 
 
+### Function to wrap hsp_max_parsimony  and return probabilities for 
+### study sequences only (and for non-zero states only).
+mp_study_probs <- function(in_trait, in_tree ,unknown_i, check_input) {
+
+  mp_hsp_out <- hsp_max_parsimony(tree = in_tree,
+                                  tip_states = in_trait,
+                                  check_input=check_input,
+                                  transition_costs = "proportional",
+                                  weight_by_scenarios = TRUE)
+  
+  return(get_sorted_prob(mp_hsp_out$likelihoods,
+                         study_tips_i=unknown_i, 
+                         tree_tips=in_tree$tip.label))
+}
+
+
+### Function to wrap hsp_empirical_probabilities and return probabilities for 
+### study sequences only (and for non-zero states only).
+emp_prob_study_probs <- function(in_trait, in_tree, unknown_i, check_input) {
+  
+  emp_prob_hsp_out <- hsp_empirical_probabilities(tree = in_tree,
+                                                  tip_states = in_trait,
+                                                  check_input=check_input)
+  
+  return(get_sorted_prob(emp_prob_hsp_out$likelihoods,
+                         study_tips_i=unknown_i, 
+                         tree_tips=in_tree$tip.label))
+}
+
+
 # Order the trait table to match the tree tip labels. Set all tips without a value to be NA.
 unknown_tips_index <- which(! full_tree$tip.label %in% rownames(trait_values))
 unknown_tips <- full_tree$tip.label[unknown_tips_index]
+num_unknown = length(unknown_tips)
 
 unknown_df <- as.data.frame(matrix(NA,
-                                   nrow=length(unknown_tips),
+                                   nrow=num_unknown,
                                    ncol=ncol(trait_values)))
 
 rownames(unknown_df) = unknown_tips
 colnames(unknown_df) = colnames(trait_values)
 
-trait_values_ordered <- rbind(trait_values, unknown_df)
+# Get combined dataframe with known and unknown tips
+# (unknown tips have NA as trait values).
+trait_values <- rbind(trait_values, unknown_df)
 
-trait_values_ordered <- trait_values_ordered[full_tree$tip.label, , drop=FALSE]
+# Remove unknown_df object from memory.
+remove(unknown_df)
 
-num_tip <- nrow(trait_values_ordered)
+# Order this combined trait table by the order of tips in the tree.
+trait_values <- trait_values[full_tree$tip.label, , drop=FALSE]
+
+num_tip <- nrow(trait_values)
 
 if (hsp_method == "pic" | hsp_method == "scp" | hsp_method == "subtree_average") {
   
   if (hsp_method == "pic") {
-    predict_out <- mclapply(trait_values_ordered,
+    predict_out <- lapply(trait_values,
                             hsp_independent_contrasts,
                             tree=full_tree,
                             weighted=TRUE,
-                            check_input=check_input_set,
-                            mc.cores = num_cores)
+                            check_input=check_input_set)
     
   } else if (hsp_method == "scp") {
     
-    predict_out <- mclapply(trait_values_ordered,
+    predict_out <- lapply(trait_values,
                             hsp_squared_change_parsimony,
                             tree=full_tree,
                             weighted=TRUE,
-                            check_input=check_input_set,
-                            mc.cores = num_cores)
+                            check_input=check_input_set)
     
   } else if (hsp_method == "subtree_average") {
     
-    predict_out <- mclapply(trait_values_ordered,
+    predict_out <- lapply(trait_values,
                             hsp_subtree_averaging,
                             tree = full_tree,
-                            check_input = check_input_set,
-                            mc.cores = num_cores)
+                            check_input = check_input_set)
   }
   
-  predicted_values <- mclapply(predict_out, function(x) { x$states[unknown_tips_index] }, mc.cores = num_cores)
+  predicted_values <- lapply(predict_out, function(x) { x$states[unknown_tips_index] })
+  
+  # Remove raw predict_out object from memory.
+  remove(predict_out)
   
 } else if(hsp_method == "emp_prob" | hsp_method == "mp") {
   
   # Add 1 to all input counts because because traits states need to start at 1.
-  trait_states_mapped <- trait_values_ordered + 1
+  trait_values <- trait_values + 1
   
   if (hsp_method == "emp_prob") {
     
-    hsp_out_models <- mclapply(trait_states_mapped,
-                               hsp_empirical_probabilities,
-                               tree = full_tree,
-                               check_input = check_input_set,
-                               mc.cores = num_cores)
-    
+    hsp_out_models_unknown_lik <- lapply(trait_values, 
+                                         function(x) {
+                                           emp_prob_study_probs(in_trait = x,
+                                                                in_tree = full_tree,
+                                                                unknown_i = unknown_tips_index,
+                                                                check_input = check_input_set)})
   } else if (hsp_method == "mp") {
     
-    hsp_out_models <- mclapply(trait_states_mapped,
-                               hsp_max_parsimony,
-                               tree = full_tree,
-                               check_input = check_input_set,
-                               transition_costs = "proportional",
-                               weight_by_scenarios = TRUE,
-                               mc.cores = num_cores)
-    
+    hsp_out_models_unknown_lik <- lapply(trait_values, 
+                                         function(x) {
+                                           mp_study_probs(in_trait = x,
+                                                          in_tree = full_tree,
+                                                          unknown_i = unknown_tips_index,
+                                                          check_input = check_input_set)})
   }
-  
-  # Get subset of likelihood matrices for previously unknown tips only and output RDS file.
-  num_unknown <- length(unknown_tips)
-  
-  hsp_out_models_unknown_lik <- mclapply(names(hsp_out_models), 
-                                         function(x) { get_sorted_prob(hsp_out_models[[x]]$likelihoods,
-                                                                       study_tips_i=unknown_tips_index, 
-                                                                       tree_tips=full_tree$tip.label)},
-                                         mc.cores = num_cores)
-  
-  names(hsp_out_models_unknown_lik) <- names(hsp_out_models)
-  
+
   # Get state with highest probability in each case.
-  predicted_values <- mclapply(hsp_out_models_unknown_lik,
-                               function(x) { colnames(x)[max.col(x)] },
-                               mc.cores = num_cores)
-  
-  # Save RDS object if option set.  
-  if(write_rds) {
-    saveRDS(object = hsp_out_models_unknown_lik, file = rds_outfile)
-  }
-  
+  predicted_values <- lapply(hsp_out_models_unknown_lik,
+                               function(x) { colnames(x)[max.col(x)] })
+
   # If calc_ci set then figure out what the assigned trait would be at the 95% CI and output resulting matrix.
   if(calc_ci) {
     
-    ci_values <- data.frame(mclapply(hsp_out_models_unknown_lik,
-                                     function(x) { ci_95_states2values(x) },
-                                     mc.cores = num_cores),
+    ci_values <- data.frame(lapply(hsp_out_models_unknown_lik,
+                                     function(x) { ci_95_states2values(x) }),
                             check.names = FALSE)
     
     colnames(ci_values) <- names(hsp_out_models_unknown_lik)
@@ -193,21 +202,8 @@ if (hsp_method == "pic" | hsp_method == "scp" | hsp_method == "subtree_average")
 
 # Add "sequence" as first column of predicted_values.
 predicted_values <- data.frame(predicted_values, check.names = FALSE)
-predicted_values$sequence <- full_tree$tip.label[unknown_tips_index]
-predicted_values <- predicted_values[, c("sequence", colnames(trait_values_ordered))]
-# Calculate NSTI per tip and add to output as last column if option set.
-if(calc_nsti) {
-  predicted_values$metadata_NSTI <- NA
-  
-  # Calculate NSTIs for tips with previously unknown trait values.
-  all_tip_range <- 1:length(full_tree$tip.label)
-  
-  known_tip_range <- which(! full_tree$tip.label %in% unknown_tips)
-  
-  predicted_values[, "metadata_NSTI"] <- find_nearest_tips(full_tree,
-                                                           target_tips=known_tip_range,
-                                                           check_input=check_input_set)$nearest_distance_per_tip[unknown_tips_index]
-}
+predicted_values$sequence <- unknown_tips
+predicted_values <- predicted_values[, c("sequence", colnames(trait_values))]
 
 # Write out predicted values.
 write.table(predicted_values, file=predict_outfile, row.names=FALSE, quote=FALSE, sep="\t")
