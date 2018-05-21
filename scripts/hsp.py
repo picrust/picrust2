@@ -51,8 +51,12 @@ parser.add_argument('--observed_trait_table', metavar='PATH', type=str,
 
 parser.add_argument('--chunk_size', default=500, type=int,
                     help='Number of functions to run at a time on one ' +
-                         'processor. Increase this value to speed up ' +
-                         'program (default: %(default)d).')
+                         'processor. Note that you should consider how many ' +
+                         'processes you have specified before changing this ' +
+                         'option. E.g. if you specify the chunk_size to be ' +
+                         'the total number of functions, 1 processor will ' +
+                         'be used even if you specified more so the job will ' +
+                         'be substantially slower (default: %(default)d).')
 
 parser.add_argument('-m', '--hsp_method', default='mp',
                     choices=HSP_METHODS,
