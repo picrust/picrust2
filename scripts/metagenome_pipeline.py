@@ -36,12 +36,16 @@ parser.add_argument('-m', '--marker', metavar='PATH',
                          '(output of hsp.py, typically for 16S)')
 
 parser.add_argument('-p', '--proc', metavar='INT', type=int, default=1,
-                    help='Number of processes to run in parallel.')
+                    help='Number of processes to run in parallel ' +
+                         '(default: %(default)d).')
 
 parser.add_argument('-o', '--out_dir', metavar='PATH', type=str,
                     default='metagenome_out',
-                    help='Output directory for metagenome predictions.')
+                    help='Output directory for metagenome predictions. ' +
+                         '(default: %(default)s).')
 
+parser.add_argument('-v', '--version', default=False, action='version',
+                    version="%(prog)s " + __version__)
 
 def main():
 

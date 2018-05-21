@@ -24,17 +24,18 @@ parser.add_argument('-s', '--study_fasta', metavar='PATH', required=True,
 
 parser.add_argument('-r', '--ref_msa', metavar='PATH', type=str,
                     default=default_fasta,
-                    help='FASTA of aligned reference sequences')
+                    help='FASTA of aligned reference sequences (default: %(default)s).')
 
 parser.add_argument('-t', '--tree', metavar='PATH', type=str,
                     default=default_tree,
-                    help='Input tree based on aligned reference sequences.')
+                    help='Input tree based on aligned reference sequences. ' +
+                         '(default: %(default)s).')
 
 parser.add_argument('-o', '--out_tree', metavar='PATH', required=True,
                     type=str, help='Name of final output tree')
 
 parser.add_argument('--threads', type=int, default=1,
-                    help='Number of threads to use when possible')
+                    help='Number of threads to use (default: %(default)d).')
 
 parser.add_argument('--papara_output', metavar='PATH', type=str, default=None,
                     help='Path to PaPaRa output in Phylip format (will skip ' +
@@ -45,11 +46,14 @@ parser.add_argument('--out_dir', metavar='PATH', type=str, default=None,
                          'kept unless this option is set.')
 
 parser.add_argument('--chunk_size', type=int, default=5000,
-                    help='Number of query seqs to read in at once for epa-ng')
+                    help='Number of query seqs to read in at once for epa-ng ' +
+                         '(default: %(default)d).')
 
 parser.add_argument('--print_cmds', default=False, action='store_true',
                     help='If specified, print out wrapped commands to screen')
 
+parser.add_argument('-v', '--version', default=False, action='version',
+                    version="%(prog)s " + __version__)
 
 def main():
 

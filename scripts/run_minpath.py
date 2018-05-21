@@ -33,11 +33,13 @@ parser.add_argument('--intermediate', metavar='DIR', type=str, default=None,
                          'kept unless this option is set.')
 
 parser.add_argument('-p', '--proc', default=1, type=int,
-                    help='Number of threads')
+                    help='Number of processes to run (default: %(default)d).')
 
 parser.add_argument('--print_cmds', default=False, action="store_true",
                     help='If specified, print out wrapped commands to screen')
 
+parser.add_argument('-v', '--version', default=False, action='version',
+                    version="%(prog)s " + __version__)
 
 def main():
 

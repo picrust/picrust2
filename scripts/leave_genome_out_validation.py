@@ -31,22 +31,26 @@ parser.add_argument('-n', '--names', metavar="PATH", required=True, type=str,
 
 parser.add_argument('-o', '--output_trait_table', metavar='PATH', type=str,
                     default='predicted_traits.tsv',
-                    help='The output filepath for trait predictions')
+                    help='The output filepath for trait predictions ' +
+                         '(default: %(default)s).')
 
 parser.add_argument('--exp_out', metavar="PATH", default='expected_traits.tsv',
-                    help='The output filepath for expected trait values')
+                    help='The output filepath for expected trait values ' +
+                         '(default: %(default)s).')
 
 parser.add_argument('--pred_out', metavar="PATH",
                     default='expected_traits.tsv',
-                    help='The output filepath for predicted trait values')
+                    help='The output filepath for predicted trait values ' +
+                         '(default: %(default)s).')
 
 parser.add_argument('-m', '--metrics_out', metavar="PATH",
                     default='rho_nsti_out.tsv',
                     help='The output filepath for Rho and NSTI values per ' +
-                         'left out genome')
+                         'left out genome (default: %(default)s).')
 
 parser.add_argument('-p', '--processes', default=1, type=int,
-                    help='Number of processes to run in parallel')
+                    help='Number of processes to run in parallel ' +
+                         '(default: %(default)d).')
 
 parser.add_argument('--debug', default=False, action='store_true',
                     help='Run in debugging mode')
