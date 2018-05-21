@@ -16,7 +16,7 @@ from picrust2.util import (system_call_check, get_picrust_project_dir)
 def castor_hsp_workflow(tree_path,
                         trait_table_path,
                         hsp_method,
-                        chunk_size,
+                        chunk_size=500,
                         calc_nsti=False,
                         calc_ci=False,
                         check_input=False,
