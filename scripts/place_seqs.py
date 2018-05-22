@@ -7,7 +7,7 @@ __version__ = "2-alpha.10"
 import argparse
 from tempfile import TemporaryDirectory
 from picrust2.place_seqs import place_seqs_pipeline
-from picrust2.precalc import default_fasta, default_tree
+from picrust2.default import default_fasta, default_tree
 from picrust2.util import make_output_dir, check_files_exist
 
 parser = argparse.ArgumentParser(

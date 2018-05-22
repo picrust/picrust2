@@ -48,10 +48,10 @@ exp_jplace = path.join(test_dir_path, "test_data", "place_seqs",
 class place_seqs_tests(unittest.TestCase):
     '''Tests for place seqs pipeline (functions in picrust2/place_seqs.py)'''
 
-    def test_precalc_md5sum(self):
-        '''Test that precalculated files match expected md5sum values.'''
+    def test_default_md5sum(self):
+        '''Test that default files match expected md5sum values.'''
 
-        from picrust2.precalc import default_fasta, default_tree
+        from picrust2.default import default_fasta, default_tree
         import hashlib
 
         # Calculate md5sum for fasta and treefile respectively.

@@ -10,15 +10,15 @@ from os import path
 # Default support files packaged with PICRUSt2.
 project_dir = get_picrust_project_dir()
 
-default_fasta = path.join(project_dir, "precalculated", "prokaryotic",
+default_fasta = path.join(project_dir, "default_files", "prokaryotic",
                           "img_centroid_16S_aligned.fna")
 
-default_tree = path.join(project_dir, "precalculated", "prokaryotic",
+default_tree = path.join(project_dir, "default_files", "prokaryotic",
                          "img_centroid_16S_aligned.tree")
 
 
 # Inititalize default trait table files for hsp.py.
-prokaryotic_dir = path.join(project_dir, "precalculated", "prokaryotic")
+prokaryotic_dir = path.join(project_dir, "default_files", "prokaryotic")
 
 default_tables = {"16S": path.join(prokaryotic_dir,
                                    "16S_counts_mean_round_var.txt.gz"),
