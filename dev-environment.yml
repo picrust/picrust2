@@ -12,7 +12,6 @@ dependencies:
 - python=3.6.5
 - r-base
 - r-castor
-- rpy2
 - glpk
 - pip:
   - biom-format

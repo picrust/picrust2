@@ -5,7 +5,7 @@ __license__ = "GPL"
 __version__ = "2-alpha.10"
 
 import argparse
-from picrust2.wrap_hsp import castor_hsp_wrapper
+from picrust2.wrap_hsp import castor_hsp_workflow
 from picrust2.util import make_output_dir_for_file, check_files_exist
 from picrust2.precalc import default_tables
 
@@ -49,6 +49,15 @@ parser.add_argument('--observed_trait_table', metavar='PATH', type=str,
                          'tab-delimited format. Necessary if you want to ' +
                          'use a custom table.')
 
+parser.add_argument('--chunk_size', default=500, type=int,
+                    help='Number of functions to run at a time on one ' +
+                         'processor. Note that you should consider how many ' +
+                         'processes you have specified before changing this ' +
+                         'option. E.g. if you specify the chunk_size to be ' +
+                         'the total number of functions, 1 processor will ' +
+                         'be used even if you specified more so the job will ' +
+                         'be substantially slower (default: %(default)d).')
+
 parser.add_argument('-m', '--hsp_method', default='mp',
                     choices=HSP_METHODS,
                     help='HSP method to use.' +
@@ -58,7 +67,8 @@ parser.add_argument('-m', '--hsp_method', default='mp',
                     'predict continuous traits using subtree averaging. ' +
                     '"pic": predict continuous traits with phylogentic ' +
                     'independent contrast. "scp": reconstruct continuous ' +
-                    'traits using squared-change parsimony')
+                    'traits using squared-change parsimony (default: ' +
+                    '%(default)s).')
 
 parser.add_argument('-n', '--calculate_NSTI', default=False,
                     action='store_true',
@@ -74,18 +84,12 @@ parser.add_argument('--check', default=False, action='store_true',
                     help='Check input trait table before HSP')
 
 parser.add_argument('-p', '--processes', default=1, type=int,
-                    help='Number of processes to run in parallel')
+                    help='Number of processes to run in parallel (default: ' +
+                    '%(default)d).')
 
 parser.add_argument('--seed', default=None, type=int,
                     help='Seed to make output reproducible ' +
                          '(necessary for mp and emp_prob methods)')
-
-parser.add_argument('--rds', default=False, action='store_true',
-                    help='Output RDS object of state probabilities ' +
-                         ' (advanced users).')
-
-parser.add_argument('--debug', default=False, action='store_true',
-                    help='Run in debugging mode')
 
 parser.add_argument('-v', '--version', default=False, action='version',
                     version="%(prog)s " + __version__)
@@ -118,25 +122,18 @@ def main():
     else:
         ci_setting = False
 
-    # Set rds outfile name if --rds flag set.
-    if args.rds:
-        rds_outfile = args.output_prefix + ".rds"
-    else:
-        rds_outfile = None
-
     count_outfile = args.output_prefix + ".tsv"
     ci_outfile = args.output_prefix + "_ci.tsv"
 
-    hsp_table, ci_table = castor_hsp_wrapper(tree_path=args.tree,
-                                             trait_table_path=trait_table,
-                                             hsp_method=args.hsp_method,
-                                             calc_nsti=args.calculate_NSTI,
-                                             calc_ci=ci_setting,
-                                             check_input=args.check,
-                                             num_cores=args.processes,
-                                             rds_outfile=rds_outfile,
-                                             ran_seed=args.seed,
-                                             HALT_EXEC=args.debug)
+    hsp_table, ci_table = castor_hsp_workflow(tree_path=args.tree,
+                                              trait_table_path=trait_table,
+                                              hsp_method=args.hsp_method,
+                                              chunk_size=args.chunk_size,
+                                              calc_nsti=args.calculate_NSTI,
+                                              calc_ci=ci_setting,
+                                              check_input=args.check,
+                                              num_proc=args.processes,
+                                              ran_seed=args.seed)
 
     # Output the table to file.
     make_output_dir_for_file(count_outfile)
