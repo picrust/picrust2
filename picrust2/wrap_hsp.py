@@ -74,6 +74,11 @@ def castor_hsp_workflow(tree_path,
 
     predict_out_combined = pd.concat(predict_out_chunks, axis=1)
 
+    # Add NSTI as column as well if option specified.
+    if calc_nsti:
+        predict_out_combined = pd.concat([predict_out_combined, nsti_values],
+                                         axis=1)
+
     ci_out_combined = None
 
     if calc_ci:

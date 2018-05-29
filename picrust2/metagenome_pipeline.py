@@ -8,6 +8,7 @@ __version__ = "2.0.0-b.1"
 
 import biom
 import pandas as pd
+from pandas.util.testing import assert_frame_equal
 import numpy as np
 from os import path
 from joblib import Parallel, delayed
@@ -18,6 +19,7 @@ from picrust2.util import (biom_to_pandas_df, make_output_dir,
 def run_metagenome_pipeline(input_biom,
                             function,
                             marker,
+                            max_nsti,
                             out_dir='metagenome_out',
                             proc=1,
                             output_normfile=False):
@@ -32,11 +34,22 @@ def run_metagenome_pipeline(input_biom,
     pred_function = pd.read_table(function, sep="\t", index_col="sequence")
     pred_marker = pd.read_table(marker, sep="\t", index_col="sequence")
 
-    # Remove NSTI column if it exists (in both dataframes).
+    # Initialize object to contain nsti values as None
+    nsti_val = None
+
+    # If NSTI column present then remove all rows with value above specified
+    # max value. Also, remove NSTI column (in both dataframes).
     if "metadata_NSTI" in pred_function.columns:
+
+        pred_function = pred_function[pred_function['metadata_NSTI'] <= max_nsti]
+        nsti_val = pred_function[['metadata_NSTI']]
         pred_function.drop('metadata_NSTI', axis=1, inplace=True)
 
     if "metadata_NSTI" in pred_marker.columns:
+        pred_marker = pred_marker[pred_marker['metadata_NSTI'] <= max_nsti]
+
+        nsti_val = pred_marker[['metadata_NSTI']]
+
         pred_marker.drop('metadata_NSTI', axis=1, inplace=True)
 
     # Re-order predicted abundance tables to be in same order as study seqs.
@@ -60,11 +73,37 @@ def run_metagenome_pipeline(input_biom,
                                              input_marker_num=pred_marker,
                                              norm_filename=norm_output)
 
+    # If NSTI column input then output weighted NSTI values.
+    weighted_nsti_out = path.join(out_dir, "weighted_nsti.tsv")
+    weighted_nsti = calc_weighted_nsti(seq_counts=study_seq_counts,
+                                       nsti_input=nsti_val,
+                                       outfile=weighted_nsti_out)
+
     # Get predicted function counts by sample, stratified by contributing
     # genomes and also separately unstratified.
     return(funcs_by_sample(input_seq_counts=study_seq_counts,
                            input_function_num=pred_function,
                            proc=proc))
+
+
+def calc_weighted_nsti(seq_counts, nsti_input, outfile):
+    '''Will calculate weighted NSTI values given sequence count table and NSTI
+    value for each sequence. Will output these weighted values to a file if
+    output file is specified.'''
+
+    nsti_mult = seq_counts.mul(nsti_input.metadata_NSTI, axis=0)
+
+    # Get column sums divided by total abundance per sample.
+    weighted_nsti = pd.DataFrame(nsti_mult.sum(axis=0)/seq_counts.sum(axis=0))
+
+    weighted_nsti.columns = ["weighted_NSTI"]
+
+    # Write to outfile if specified.
+    if outfile:
+        weighted_nsti.to_csv(path_or_buf=outfile, sep="\t", header=True,
+                             index_label="sequence")
+
+    return(weighted_nsti)
 
 
 def norm_by_marker_copies(input_seq_counts,
