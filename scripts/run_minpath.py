@@ -4,7 +4,7 @@ from __future__ import division
 
 __copyright__ = "Copyright 2018, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.0.0-b.1"
+__version__ = "2.0.0-b.2"
 
 import argparse
 from picrust2.run_minpath import run_minpath_pipeline
