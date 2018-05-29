@@ -4,7 +4,7 @@ from __future__ import division
 
 __copyright__ = "Copyright 2018, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.0.0-b.1"
+__version__ = "2.0.0-b.2"
 
 from os import path
 import pandas as pd
@@ -73,6 +73,11 @@ def castor_hsp_workflow(tree_path,
         ci_out_chunks.append(castor_out_raw[i][1])
 
     predict_out_combined = pd.concat(predict_out_chunks, axis=1)
+
+    # Add NSTI as column as well if option specified.
+    if calc_nsti:
+        predict_out_combined = pd.concat([predict_out_combined, nsti_values],
+                                         axis=1)
 
     ci_out_combined = None
 

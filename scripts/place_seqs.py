@@ -2,7 +2,7 @@
 
 __copyright__ = "Copyright 2018, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.0.0-b.1"
+__version__ = "2.0.0-b.2"
 
 import argparse
 from tempfile import TemporaryDirectory
@@ -14,7 +14,9 @@ parser = argparse.ArgumentParser(
 
     description="Wrapper to prep tree before HSP steps. Requires unaligned " +
                 "FASTA of study sequences. Users can specify a non-default " +
-                "reference fasta and treefile if needed.",
+                "reference fasta and treefile if needed. Note that typically " +
+                "the input study sequences are representive sequences of " +
+                "operational taxonomic units or amplicon sequence variants.",
 
     formatter_class=argparse.RawDescriptionHelpFormatter)
 
@@ -41,7 +43,7 @@ parser.add_argument('--papara_output', metavar='PATH', type=str, default=None,
                     help='Path to PaPaRa output in Phylip format (will skip ' +
                          'PaPaRa step)')
 
-parser.add_argument('--out_dir', metavar='PATH', type=str, default=None,
+parser.add_argument('--intermediate', metavar='PATH', type=str, default=None,
                     help='Output folder for intermediate files (wont be ' +
                          'kept unless this option is set.')
 
@@ -64,9 +66,9 @@ def main():
 
     # If intermediate output directory set then create and output there.
     # Otherwise make a temporary directory for the intermediate files.
-    if args.out_dir:
+    if args.intermediate:
 
-        make_output_dir(args.out_dir)
+        make_output_dir(args.intermediate)
 
         place_seqs_pipeline(study_fasta=args.study_fasta,
                             ref_msa=args.ref_msa,
@@ -74,7 +76,7 @@ def main():
                             out_tree=args.out_tree,
                             threads=args.threads,
                             papara_output=args.papara_output,
-                            out_dir=args.out_dir,
+                            out_dir=args.intermediate,
                             chunk_size=args.chunk_size,
                             print_cmds=args.print_cmds)
 

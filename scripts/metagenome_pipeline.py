@@ -2,7 +2,7 @@
 
 __copyright__ = "Copyright 2018, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.0.0-b.1"
+__version__ = "2.0.0-b.2"
 
 import argparse
 from os import path
@@ -13,7 +13,8 @@ parser = argparse.ArgumentParser(
 
     description="Per-sample metagenome functional profiles are generated " +
                 "based on the predicted functions for each study sequence. " +
-                "The specified sequence abundance table will be normalized " +
+                "Note that typically these sequences correspond to OTUs or " +
+                "ASVs. The specified sequence abundance table will be normalized " +
                 "by the predicted number of marker gene copies. Two main " +
                 "output files will be generated: one stratified and one " +
                 "non-stratified by contributing taxa",
@@ -34,6 +35,10 @@ parser.add_argument('-m', '--marker', metavar='PATH',
                     required=True, type=str,
                     help='Table of predicted marker gene copy numbers ' +
                          '(output of hsp.py, typically for 16S)')
+
+parser.add_argument('--max_nsti', metavar='INT', type=int, default=2,
+                    help='Sequences with NSTI values above this value will ' +
+                         'be excluded (default: %(default)d).')
 
 parser.add_argument('-p', '--proc', metavar='INT', type=int, default=1,
                     help='Number of processes to run in parallel ' +
@@ -60,6 +65,7 @@ def main():
                                                        function=args.function,
                                                        marker=args.marker,
                                                        out_dir=args.out_dir,
+                                                       max_nsti=args.max_nsti,
                                                        proc=args.proc,
                                                        output_normfile=True)
 

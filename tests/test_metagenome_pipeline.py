@@ -2,7 +2,7 @@
 
 __copyright__ = "Copyright 2018, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.0.0-b.1"
+__version__ = "2.0.0-b.2"
 
 import unittest
 from os import path
@@ -11,7 +11,8 @@ import biom
 from tempfile import TemporaryDirectory
 from picrust2.util import get_picrust_project_dir, biom_to_pandas_df
 from picrust2.metagenome_pipeline import (run_metagenome_pipeline,
-                                          norm_by_marker_copies)
+                                          norm_by_marker_copies,
+                                          calc_weighted_nsti)
 
 # Set paths to test files.
 test_dir_path = path.join(get_picrust_project_dir(), "tests", "test_data",
@@ -21,6 +22,8 @@ seqtab_biom = path.join(test_dir_path, "test_input_sequence_abun.biom")
 seqtab_tsv = path.join(test_dir_path, "test_input_sequence_abun.tsv")
 func_predict = path.join(test_dir_path, "test_predicted_func.tsv")
 marker_predict = path.join(test_dir_path, "test_predicted_marker.tsv")
+
+nsti_in_path = path.join(test_dir_path, "test_nsti_in.tsv")
 
 exp_strat = path.join(test_dir_path, "metagenome_out",
                       "pred_metagenome_strat.tsv")
@@ -41,6 +44,7 @@ exp_unstrat_in = pd.read_table(exp_unstrat, sep="\t", index_col="function")
 
 exp_norm_in = pd.read_table(exp_norm, sep="\t", index_col="sequence")
 
+nsti_in = pd.read_table(nsti_in_path, sep="\t", index_col="sequence")
 
 class metagenome_pipeline_test(unittest.TestCase):
 
@@ -51,6 +55,7 @@ class metagenome_pipeline_test(unittest.TestCase):
             strat_out, unstrat_out = run_metagenome_pipeline(input_biom=seqtab_tsv,
                                                              function=func_predict,
                                                              marker=marker_predict,
+                                                             max_nsti=2,
                                                              out_dir=temp_dir)
 
         # Need to reset index names since these aren't in output files.
@@ -65,6 +70,7 @@ class metagenome_pipeline_test(unittest.TestCase):
             strat_out, unstrat_out = run_metagenome_pipeline(input_biom=seqtab_tsv,
                                                              function=func_predict,
                                                              marker=marker_predict,
+                                                             max_nsti=2,
                                                              out_dir=temp_dir)
 
         pd.testing.assert_frame_equal(unstrat_out, exp_unstrat_in)
@@ -77,6 +83,7 @@ class metagenome_pipeline_test(unittest.TestCase):
             strat_out, unstrat_out = run_metagenome_pipeline(input_biom=seqtab_tsv,
                                                              function=func_predict,
                                                              marker=marker_predict,
+                                                             max_nsti=2,
                                                              out_dir=temp_dir,
                                                              proc=2)
 
@@ -92,6 +99,7 @@ class metagenome_pipeline_test(unittest.TestCase):
             strat_out, unstrat_out = run_metagenome_pipeline(input_biom=seqtab_biom,
                                                              function=func_predict,
                                                              marker=marker_predict,
+                                                             max_nsti=2,
                                                              out_dir=temp_dir)
         # Need to reset index names since these aren't in output files.
         strat_out.index = range(30)
@@ -105,6 +113,7 @@ class metagenome_pipeline_test(unittest.TestCase):
             strat_out, unstrat_out = run_metagenome_pipeline(input_biom=seqtab_biom,
                                                              function=func_predict,
                                                              marker=marker_predict,
+                                                             max_nsti=2,
                                                              out_dir=temp_dir)
 
         pd.testing.assert_frame_equal(unstrat_out, exp_unstrat_in)
@@ -123,6 +132,24 @@ class metagenome_pipeline_test(unittest.TestCase):
 
         # Test whether normalized table matches expected table.
         pd.testing.assert_frame_equal(test_norm, exp_norm_in)
+
+    def test_weighted_nsti(self):
+        '''Test that expected weighted NSTI values are calculated.'''
+
+        weighted_nsti_out = calc_weighted_nsti(exp_norm_in, nsti_in)
+
+        expected_weighted_nsti = { "samples": ["sample1", "sample2",
+                                                "sample3"],
+                                   "weighted_NSTI": [0.292857143, 0.348275862, 
+                                                      0.436111111] }
+
+        expected_weighted_nsti_df = pd.DataFrame.from_dict(expected_weighted_nsti)
+
+        expected_weighted_nsti_df.set_index("samples", inplace=True)
+
+        expected_weighted_nsti_df.index.name = None
+
+        pd.testing.assert_frame_equal(weighted_nsti_out, expected_weighted_nsti_df)
 
 
 if __name__ == '__main__':
