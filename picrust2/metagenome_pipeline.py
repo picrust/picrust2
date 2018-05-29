@@ -34,8 +34,8 @@ def run_metagenome_pipeline(input_biom,
     pred_function = pd.read_table(function, sep="\t", index_col="sequence")
     pred_marker = pd.read_table(marker, sep="\t", index_col="sequence")
 
-    # Initialize object to contain nsti values as None
-    nsti_val = None
+    # Initialize empty pandas dataframe to contain NSTI values.
+    nsti_val = pd.DataFrame()
 
     # If NSTI column present then remove all rows with value above specified
     # max value. Also, remove NSTI column (in both dataframes).
@@ -74,10 +74,11 @@ def run_metagenome_pipeline(input_biom,
                                              norm_filename=norm_output)
 
     # If NSTI column input then output weighted NSTI values.
-    weighted_nsti_out = path.join(out_dir, "weighted_nsti.tsv")
-    weighted_nsti = calc_weighted_nsti(seq_counts=study_seq_counts,
-                                       nsti_input=nsti_val,
-                                       outfile=weighted_nsti_out)
+    if not nsti_val.empty:
+        weighted_nsti_out = path.join(out_dir, "weighted_nsti.tsv")
+        weighted_nsti = calc_weighted_nsti(seq_counts=study_seq_counts,
+                                           nsti_input=nsti_val,
+                                           outfile=weighted_nsti_out)
 
     # Get predicted function counts by sample, stratified by contributing
     # genomes and also separately unstratified.
@@ -86,7 +87,7 @@ def run_metagenome_pipeline(input_biom,
                            proc=proc))
 
 
-def calc_weighted_nsti(seq_counts, nsti_input, outfile):
+def calc_weighted_nsti(seq_counts, nsti_input, outfile=None):
     '''Will calculate weighted NSTI values given sequence count table and NSTI
     value for each sequence. Will output these weighted values to a file if
     output file is specified.'''

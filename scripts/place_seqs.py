@@ -16,7 +16,7 @@ parser = argparse.ArgumentParser(
                 "FASTA of study sequences. Users can specify a non-default " +
                 "reference fasta and treefile if needed. Note that typically " +
                 "the input study sequences are representive sequences of " +
-                "operational taxonomic units or amplicon sequence variants."
+                "operational taxonomic units or amplicon sequence variants.",
 
     formatter_class=argparse.RawDescriptionHelpFormatter)
 
