@@ -1,0 +1,7 @@
+Since EPA-NG and GAPPA are currently under rapid development, the source code of compatible versions of these programs is packaged with the PICRUSt2 repository.
+
+The EPA-NG source code corresponds to commit 319795414bb2f8241f93f8dac593ee2006eff829, which was on May 10 2018 (the most recent release was 0.2.1-beta on Apr 11).
+
+The GAPPA source code corresponds to commit c7e3323c429c194e1ab1bc7411b6a44fea23d1b9, which was on June 8 2018.
+
+The PaPaRa source code corresponds to commit 242b717d5e64ff5614dd3f365bcbd809f3d991af, which was on Sept 9, 2016 (and was the last modication as of June 8 2018).

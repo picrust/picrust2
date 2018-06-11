@@ -1,0 +1,12 @@
+[submodule "libs/cereal"]
+	path = libs/cereal
+	url = https://github.com/USCiLab/cereal.git
+[submodule "libs/genesis"]
+	path = libs/genesis
+	url = https://github.com/lczech/genesis.git
+[submodule "libs/pll-modules"]
+	path = libs/pll-modules
+	url = https://github.com/ddarriba/pll-modules.git
+[submodule "libs/CLI11"]
+	path = libs/CLI11
+	url = https://github.com/CLIUtils/CLI11.git

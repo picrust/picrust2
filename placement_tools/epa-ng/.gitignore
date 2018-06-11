@@ -1,0 +1,50 @@
+bin/
+build/
+test/bin/
+test/log/
+test/20k/
+test/lou/
+test/MA-TESTS/
+test/data/lucas/
+test/data/bacvag/
+test/compare_jplace_files
+test/README.txt
+include/
+libs/lib/
+libs/share/
+
+# output files
+*.jplace
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+
+# project files
+*.sublime-project
+*.sublime-workspace
