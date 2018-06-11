@@ -102,7 +102,7 @@ def calc_weighted_nsti(seq_counts, nsti_input, outfile=None):
     # Write to outfile if specified.
     if outfile:
         weighted_nsti.to_csv(path_or_buf=outfile, sep="\t", header=True,
-                             index_label="sequence")
+                             index_label="sample")
 
     return(weighted_nsti)
 
