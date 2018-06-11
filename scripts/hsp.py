@@ -87,7 +87,7 @@ parser.add_argument('-p', '--processes', default=1, type=int,
                     help='Number of processes to run in parallel (default: ' +
                     '%(default)d).')
 
-parser.add_argument('--seed', default=None, type=int,
+parser.add_argument('--seed', default=100, type=int,
                     help='Seed to make output reproducible ' +
                          '(necessary for mp and emp_prob methods)')
 
