@@ -17,8 +17,7 @@ seed_setting <- Args[8]
 
 # Set random seed if integer specified.
 if(seed_setting != "None") {
-  RNGkind("L'Ecuyer-CMRG")
-  set.seed(as.integer(seed_setting))
+    set.seed(as.integer(seed_setting))
 }
 
 # Function to get CIs for certain HSP methods.
