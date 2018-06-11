@@ -5,7 +5,7 @@ from glob import glob
 
 __copyright__ = "Copyright 2018, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.0.0-b.2"
+__version__ = "2.0.0-b.3"
 __maintainer__ = "Gavin Douglas"
 
 long_description = ("Please visit the google group here if you have questions: "
