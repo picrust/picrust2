@@ -34,6 +34,9 @@ def run_metagenome_pipeline(input_biom,
     pred_function = pd.read_table(function, sep="\t", index_col="sequence")
     pred_marker = pd.read_table(marker, sep="\t", index_col="sequence")
 
+    pred_function.index = pred_function.index.astype(str)
+    pred_marker.index = pred_marker.index.astype(str)
+
     # Initialize empty pandas dataframe to contain NSTI values.
     nsti_val = pd.DataFrame()
 
