@@ -122,7 +122,8 @@ def run_epa_ng(tree: str, ref_msa_fastafile: str, study_msa_fastafile: str,
     system_call_check("epa-ng --tree " + tree + " --ref-msa " +
                       ref_msa_fastafile + " --query " + study_msa_fastafile +
                       " --chunk-size " + str(chunk_size) + " -T " +
-                      str(threads) + " -w " + out_dir, print_out=print_cmds)
+                      str(threads) + " -m GTR+G -w " + out_dir,
+                      print_out=print_cmds)
 
 
 def gappa_jplace_to_newick(jplace_file: str, outfile: str, print_cmds=False):
