@@ -119,8 +119,14 @@ def run_epa_ng(tree: str, ref_msa_fastafile: str, study_msa_fastafile: str,
 
     make_output_dir(out_dir)
 
+    system_call_check("epa-ng --bfast " + study_msa_fastafile + " --outdir " +
+                      out_dir,  print_out=print_cmds)
+
+    study_msa_bfast = path.join(out_dir, path.basename(study_msa_fastafile) +
+                                ".bfast")
+
     system_call_check("epa-ng --tree " + tree + " --ref-msa " +
-                      ref_msa_fastafile + " --query " + study_msa_fastafile +
+                      ref_msa_fastafile + " --query " + study_msa_bfast +
                       " --chunk-size " + str(chunk_size) + " -T " +
                       str(threads) + " -m GTR+G -w " + out_dir,
                       print_out=print_cmds)
