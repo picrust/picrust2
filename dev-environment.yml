@@ -13,7 +13,9 @@ dependencies:
 - r-base
 - r-castor
 - glpk
-- pip:
-  - biom-format
-  - pytest
-  - pytest-cov
+- biom-format
+- pytest
+- pytest-cov
+- boost
+- gcc_linux-64
+- gxx_linux-64
