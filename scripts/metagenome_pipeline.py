@@ -40,6 +40,21 @@ parser.add_argument('--max_nsti', metavar='INT', type=int, default=2,
                     help='Sequences with NSTI values above this value will ' +
                          'be excluded (default: %(default)d).')
 
+parser.add_argument('--min_reads', metavar='INT', type=int, default=1,
+                    help='Minimum number of reads across all samples for ' +
+                         'each input ASV. ASVs below this cut-off will be ' +
+                         'counted as part of the \"RARE\" category in the ' +
+                         'stratified output (default: %(default)d).')
+
+parser.add_argument('--min_samples', metavar='INT', type=int, default=1,
+                    help='Minimum number of samples that an ASV needs to be ' +
+                         'identfied within. ASVs below this cut-off will be ' +
+                         'counted as part of the \"RARE\" category in the ' +
+                         'stratified output (default: %(default)d).')
+
+parser.add_argument('--strat_out', default=False, action='store_true',
+                    help='Output table stratified by sequences as well.')
+
 parser.add_argument('-p', '--proc', metavar='INT', type=int, default=1,
                     help='Number of processes to run in parallel ' +
                          '(default: %(default)d).')
@@ -66,16 +81,21 @@ def main():
                                                        marker=args.marker,
                                                        out_dir=args.out_dir,
                                                        max_nsti=args.max_nsti,
+                                                       min_reads=args.min_reads,
+                                                       min_samples=args.min_samples,
+                                                       strat_out=args.strat_out,
                                                        proc=args.proc,
                                                        output_normfile=True)
 
-    # Generate output table filepaths and write out pandas dataframes.
-    strat_outfile = path.join(args.out_dir, "pred_metagenome_strat.tsv")
+    # Generate output table filepaths and write out pandas dataframe.
     unstrat_outfile = path.join(args.out_dir, "pred_metagenome_unstrat.tsv")
+    unstrat_pred.to_csv(path_or_buf=unstrat_outfile, sep="\t", index=True,
+                        index_label="function")
 
-    # Note that no index labels are written for stratified output.
-    strat_pred.to_csv(path_or_buf=strat_outfile, sep="\t", index=False)
-    unstrat_pred.to_csv(path_or_buf=unstrat_outfile, sep="\t")
+    # Write out stratified table only if that option was specified.
+    if args.strat_out:
+        strat_outfile = path.join(args.out_dir, "pred_metagenome_strat.tsv")
+        strat_pred.to_csv(path_or_buf=strat_outfile, sep="\t", index=True)
 
 
 if __name__ == "__main__":
