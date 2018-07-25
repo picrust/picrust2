@@ -4,8 +4,9 @@ from __future__ import division
 
 __copyright__ = "Copyright 2018, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.0.0-b.4"
+__version__ = "2.0.0-b.5"
 
+import sys
 import biom
 import pandas as pd
 from pandas.util.testing import assert_frame_equal
@@ -15,11 +16,13 @@ from joblib import Parallel, delayed
 from picrust2.util import (biom_to_pandas_df, make_output_dir,
                            three_df_index_overlap_sort)
 
-
 def run_metagenome_pipeline(input_biom,
                             function,
                             marker,
                             max_nsti,
+                            min_reads=1,
+                            min_samples=1,
+                            strat_out=False,
                             out_dir='metagenome_out',
                             proc=1,
                             output_normfile=False):
@@ -49,10 +52,9 @@ def run_metagenome_pipeline(input_biom,
         pred_function.drop('metadata_NSTI', axis=1, inplace=True)
 
     if "metadata_NSTI" in pred_marker.columns:
+
         pred_marker = pred_marker[pred_marker['metadata_NSTI'] <= max_nsti]
-
         nsti_val = pred_marker[['metadata_NSTI']]
-
         pred_marker.drop('metadata_NSTI', axis=1, inplace=True)
 
     # Re-order predicted abundance tables to be in same order as study seqs.
@@ -60,6 +62,15 @@ def run_metagenome_pipeline(input_biom,
     study_seq_counts, pred_function, pred_marker = three_df_index_overlap_sort(study_seq_counts,
                                                                                pred_function,
                                                                                pred_marker)
+
+    # Determine which sequences should be in the "RARE" category if getting
+    # stratified table.
+    rare_seqs = []
+
+    if strat_out and (min_reads != 1 or min_samples != 1):
+        rare_seqs = id_rare_seqs(in_counts=study_seq_counts,
+                                 min_reads=min_reads,
+                                 min_samples=min_samples)
 
     # Create output directory if it does not already exist.
     make_output_dir(out_dir)
@@ -87,7 +98,9 @@ def run_metagenome_pipeline(input_biom,
     # genomes and also separately unstratified.
     return(funcs_by_sample(input_seq_counts=study_seq_counts,
                            input_function_num=pred_function,
-                           proc=proc))
+                           rare_seqs=rare_seqs,
+                           proc=proc,
+                           strat_out=strat_out))
 
 
 def calc_weighted_nsti(seq_counts, nsti_input, outfile=None):
@@ -136,11 +149,13 @@ def norm_by_marker_copies(input_seq_counts,
     return(input_seq_counts)
 
 
-def funcs_by_sample(input_seq_counts, input_function_num, proc=1):
+def funcs_by_sample(input_seq_counts, input_function_num, rare_seqs=[],
+                    strat_out=False, proc=1):
     '''Function that reads in study sequence abundances and predicted
     number of gene families per study sequence's predicted genome. Will
-    return abundance of functions contributed by each study sequence per
-    sample in pandas dataframe and another dataframe in unstratified format.'''
+    return abundance of functions in each sample (unstratified format). If 
+    specified then will also return abundances stratified by contributing 
+    sequences.'''
 
     # Sample ids are taken from sequence abundance table.
     sample_ids = input_seq_counts.columns.values
@@ -149,69 +164,103 @@ def funcs_by_sample(input_seq_counts, input_function_num, proc=1):
     # after multiplying each contributing sequence by the abundance in
     # the sequence abundance dataframe.
     if proc > 1:
-        strat_out = Parallel(n_jobs=proc)(delayed(
+
+        sample_funcs = Parallel(n_jobs=proc)(delayed(
                             func_by_seq_abun)(
                             input_seq_counts[sample],
-                            input_function_num)
+                            input_function_num,
+                            rare_seqs,
+                            strat_out)
                             for sample in sample_ids)
     else:
         # Run in basic loop if only 1 processor specified.
-        strat_out = []
+        sample_funcs = []
 
         for sample in sample_ids:
-            strat_out += [func_by_seq_abun(input_seq_counts[sample],
-                                           input_function_num)]
+            sample_funcs += [func_by_seq_abun(input_seq_counts[sample],
+                                              input_function_num, rare_seqs,
+                                              strat_out)]
 
-    # Build dataframe from list of series (one per sample).
-    strat_out_df = pd.DataFrame(strat_out).transpose()
+    # Build dataframe from list of series or dataframes (one per sample).
+    sample_funcs_df = pd.concat(sample_funcs, axis=1)
 
-    # Replace all NaN values with 0s.
-    strat_out_df.fillna(0, inplace=True)
+    # Remove rows that are all 0s.
+    sample_funcs_df = sample_funcs_df.loc[~(sample_funcs_df==0).all(axis=1)]
 
     # Set column names to be sample ids.
-    strat_out_df.columns = sample_ids
+    sample_funcs_df.columns = sample_ids
 
-    strat_out_df.reset_index(inplace=True)
+    if strat_out:
 
-    # Sum rows by function id for unstratified output and set index labels
-    # equal to function ids (remove "sequence" column first).
-    unstrat_out_df = strat_out_df.copy()
+        # Sum rows by function id for unstratified output and set index labels
+        # equal to function ids (remove "sequence" column first) if unstratified
+        # returned above.
+        unstrat_out_df = sample_funcs_df.copy()
 
-    unstrat_out_df = pd.pivot_table(unstrat_out_df.drop('sequence', 1),
-                                    index="function",
-                                    aggfunc=np.sum)
+        unstrat_out_df = pd.pivot_table(unstrat_out_df.reset_index().drop("sequence", axis=1),
+                                        index="function", aggfunc=np.sum)
 
-    return(strat_out_df, unstrat_out_df)
+        return(sample_funcs_df, unstrat_out_df)
+
+    else:
+
+        return(None, sample_funcs_df)
 
 
-def func_by_seq_abun(sample_seq_counts, func_abun):
+def func_by_seq_abun(sample_seq_counts, func_abun, rare_seqs=[],
+                     calc_strat=False):
     '''Given the abundances of sequences in a sample (as a pandas series) and
     the predicted functions of those sequences (as a pandas dataframe), this
     function will return the functional abundances after multiplying the
     abundances of functions contributed by a sequence by that sequence's
-    abundance. Will return a long-form dataframe with 3 columns: function,
+    abundance summed over all sequences (unstratified). If calc_strat=True then
+    instead will return a long-form dataframe with 3 columns: function,
     sequence, and count. Note that this function assumes that the order of the
     sequences is the same in both the input series and the dataframe of
     function abundances.'''
 
     func_abun_depth = func_abun.mul(sample_seq_counts, axis=0)
 
-    # Set index labels (sequence ids) to be new column.
-    func_abun_depth["sequence"] = func_abun_depth.index.values
+    # Identify rows corresponding to rare seqs, remove them and add them back
+    # in as sum of all those rows with new name "RARE".
+    if rare_seqs:
+        rare_subset_sum = func_abun_depth.loc[rare_seqs].sum(axis=0)
+        func_abun_depth.drop(labels=rare_seqs, axis=0, inplace=True)
+        func_abun_depth.loc["RARE"] = rare_subset_sum
 
-    # Convert from wide to long table format (only columns for sequence,
-    # function, and count).
-    func_abun_depth_long = pd.melt(func_abun_depth, id_vars=["sequence"],
-                                   var_name="function", value_name="count")
+    # Generate stratitifed table if option set, otherwise get sum per function.
+    if calc_strat:
+        # Set index labels (sequence ids) to be new column.
+        func_abun_depth["sequence"] = func_abun_depth.index.values
 
-    # Remove all rows with counts of zero.
-    func_abun_depth_long = func_abun_depth_long[func_abun_depth_long['count'] > 0]
+        # Convert from wide to long table format (only columns for sequence,
+        # function, and count).
+        func_abun_depth_long = pd.melt(func_abun_depth, id_vars=["sequence"],
+                                       var_name="function", value_name="count")
 
-    func_abun_depth_long.transpose()
+        func_abun_depth_long.transpose()
 
-    # Set index labels to be sequence and function columns.
-    func_abun_depth_long = func_abun_depth_long.set_index(keys=["function",
-                                                                "sequence"])
+        # Set index labels to be sequence and function columns.
+        func_abun_depth_long = func_abun_depth_long.set_index(keys=["function",
+                                                                    "sequence"])
 
-    # Convert long-form pandas dataframe to series and return.
-    return(func_abun_depth_long["count"])
+        # Convert long-form pandas dataframe to series and return.
+        return(func_abun_depth_long["count"])
+
+    else:
+        return(func_abun_depth.sum(axis=0))
+
+
+def id_rare_seqs(in_counts, min_reads, min_samples):
+    '''Determine which rows of a sequence countfile are below either the 
+    cut-offs of min read counts or min samples present.'''
+
+    # Check if "RARE" is the name of a sequence in this table.
+    if "RARE" in in_counts.index:
+        sys.exit("Stopping: the sequence called \"RARE\" in the sequence " +
+                 "abundance table should be re-named.")
+
+    low_freq_seq = set(in_counts[in_counts.sum(axis=1) < min_reads].index)
+    few_samples_seq = set(in_counts[(in_counts != 0).astype(int).sum(axis=1) < min_samples].index)
+
+    return(list(low_freq_seq.union(few_samples_seq)))

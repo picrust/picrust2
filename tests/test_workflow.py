@@ -2,7 +2,7 @@
 
 __copyright__ = "Copyright 2018, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.0.0-b.4"
+__version__ = "2.0.0-b.5"
 
 import unittest
 from os import path
@@ -73,16 +73,14 @@ class workflow_test(unittest.TestCase):
             metagenome_out = path.join(temp_dir, "meta_out")
 
             system_call_check("metagenome_pipeline.py -i " + test_seq_abun_tsv +\
-                              " -f " + traits_predict + " -m " +
+                              " -f " + traits_predict + " --strat_out -m " +
                               marker_predict + " -o " + metagenome_out)
 
             metagenome_outfile = path.join(metagenome_out,
                                            "pred_metagenome_strat.tsv")
 
-            minpath_out = path.join(temp_dir, "minpath_out")
-
             system_call_check("run_minpath.py -i " + metagenome_outfile +\
-                              " -m " + minpath_map + " -o " + minpath_out)
+                              " -m " + minpath_map + " -o " + temp_dir)
 
     def test_full_pipeline_biom(self):
         '''Test that full pipeline can be run without error with
@@ -116,16 +114,14 @@ class workflow_test(unittest.TestCase):
             metagenome_out = path.join(temp_dir, "meta_out")
 
             system_call_check("metagenome_pipeline.py -i " + test_seq_abun_biom +\
-                              " -f " + traits_predict + " -m " +
+                              " -f " + traits_predict + " --strat_out -m " +
                               marker_predict + " -o " + metagenome_out)
 
             metagenome_outfile = path.join(metagenome_out,
                                            "pred_metagenome_strat.tsv")
 
-            minpath_out = path.join(temp_dir, "minpath_out")
-
             system_call_check("run_minpath.py -i " + metagenome_outfile +\
-                              " -m " + minpath_map + " -o " + minpath_out)
+                              " -m " + minpath_map + " -o " + temp_dir)
 
 
 if __name__ == '__main__':

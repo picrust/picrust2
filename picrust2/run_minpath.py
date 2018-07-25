@@ -1,11 +1,10 @@
 #!/usr/bin/env python
 
-from __future__ import division
-
 __copyright__ = "Copyright 2018, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.0.0-b.4"
+__version__ = "2.0.0-b.5"
 
+import sys
 from collections import defaultdict
 from joblib import Parallel, delayed
 from os import path
@@ -23,68 +22,99 @@ def run_minpath_pipeline(inputfile,
     calls to functions to run MinPath and to return an output table of
     predicted pathway abundances that can be written to a file.'''
 
-    # Read in table of gene family abundances stratified by contributing
-    # seqeunces.
-    strat_in = read_strat_genes(inputfile)
+    # Read in table of gene family abundances and determine if in stratified
+    # format or not.
+    in_metagenome, strat_format = read_metagenome_input(inputfile)
 
     # Get list of sample ids.
-    samples = [col for col in strat_in.columns
+    samples = [col for col in in_metagenome.columns
                if col not in ["function", "sequence"]]
 
-    # Run minpath wrapper on all samples.
-    # Note that input stratified table is subsetted to required columns only.
-    sample_path_abun_raw = Parallel(n_jobs=proc)(delayed(
-                                    minpath_wrapper)(sample_id,
-                                    strat_in[["function", "sequence", sample_id]],
-                                    mapfile, out_dir, print_cmds)
-                                    for sample_id in samples)
+    # Run minpath wrapper on all samples if table is stratified. Note that 
+    # input stratified table is subsetted to required columns only.
+    if strat_format:
 
-    # Split the output into unstratified and stratified.
-    sample_path_abun_raw_unstrat = []
-    sample_path_abun_raw_strat = []
+        sample_path_abun_raw = Parallel(n_jobs=proc)(delayed(
+                                        strat_minpath)(sample_id,
+                                        in_metagenome[["function", "sequence",
+                                                       sample_id]],
+                                        mapfile, out_dir, print_cmds)
+                                        for sample_id in samples)
 
-    for sample_output in sample_path_abun_raw:
-        sample_path_abun_raw_unstrat += [sample_output[0]]
-        sample_path_abun_raw_strat += [sample_output[1]]
+        # Split the output into unstratified and stratified.
+        sample_path_abun_raw_unstrat = []
+        sample_path_abun_raw_strat = []
+
+        for sample_output in sample_path_abun_raw:
+            sample_path_abun_raw_unstrat += [sample_output[0]]
+            sample_path_abun_raw_strat += [sample_output[1]]
+
+        # Prep output dfs.
+        sample_path_abun_unstrat = prep_pathway_df_out(in_abun=sample_path_abun_raw_unstrat)
+        sample_path_abun_strat = prep_pathway_df_out(in_abun=sample_path_abun_raw_strat)
+
+        # Set column labels of unstratified dataframe to be sample names.
+        sample_path_abun_unstrat.columns = samples
+
+        # Add pathway and sequence as columns of stratified table.
+        sample_path_abun_strat.reset_index(inplace=True)
+
+        return(sample_path_abun_unstrat, sample_path_abun_strat)
+
+    # Otherwise the data is in unstratified format, which is more straight-
+    # forward to process.
+    else:
+        sample_path_abun_raw_unstrat = Parallel(n_jobs=proc)(delayed(
+                                                unstrat_minpath)(sample_id,
+                                               in_metagenome[["function", 
+                                                              sample_id]],
+                                               mapfile, out_dir, print_cmds)
+                                               for sample_id in samples)
+
+        # Prep output df.
+        sample_path_abun_unstrat = prep_pathway_df_out(in_abun=sample_path_abun_raw_unstrat)
+
+        # Set column labels of unstratified dataframe to be sample names.
+        sample_path_abun_unstrat.columns = samples
+
+        return(sample_path_abun_unstrat, None)
+
+
+def prep_pathway_df_out(in_abun):
+    '''Takes in list of pathway abundance in series format and converts into
+    pandas dataframe to be output.'''
 
     # Convert these returned lists of series into pandas dataframes.
-    sample_path_abun_unstrat = pd.DataFrame(sample_path_abun_raw_unstrat)
-    sample_path_abun_strat = pd.DataFrame(sample_path_abun_raw_strat)
-
-    # Set index labels of unstratified dataframe to be sample names.
-    sample_path_abun_unstrat.index = samples
+    in_abun_df = pd.DataFrame(in_abun)
 
     # Replace all missing values (NaN) with 0s (i.e. pathway was missing in
     # that sample) and transpose.
-    sample_path_abun_unstrat = sample_path_abun_unstrat.fillna(0).transpose()
-    sample_path_abun_strat = sample_path_abun_strat.fillna(0).transpose()
+    in_abun_df = in_abun_df.fillna(0).transpose()
 
-    # Round each value to 2 decimal places.
-    sample_path_abun_unstrat = sample_path_abun_unstrat.round(decimals=2)
-    sample_path_abun_strat = sample_path_abun_strat.round(decimals=2)
-
-    # Add pathway and sequence as columns of stratified table.
-    sample_path_abun_strat.reset_index(inplace=True)
-
-    return(sample_path_abun_unstrat, sample_path_abun_strat)
+    # Round each value to 2 decimal places and return.
+    return(in_abun_df.round(decimals=2))
 
 
-def read_strat_genes(filename):
-    '''Reads in gene abundancy table stratified by contributing sequences
-    (output of metagenome_pipeline.py). If an unstratified file is input
-    it will return an error.'''
+def read_metagenome_input(filename):
+    '''Reads in gene abundance table which can be either unstratified or
+    stratified by contributing sequences (output of metagenome_pipeline.py).
+    Will return the pandas dataframe of this table and a boolean
+    value for whether the table is in stratified format.'''
 
     # Read in input file as pandas dataframe.
     input_df = pd.read_table(filename, sep="\t")
 
-    # Check that expected columns are in table.
-    if "function" not in input_df.columns or "sequence" not in input_df.columns:
-        raise ValueError("Did not find at least one of the expected " +
-                         "in input file (\"function\" and \"sequence\". " +
-                         "Make sure the stratified metagenome predictions " +
-                         "were input.")
+    # Check that required column is present:
+    if "function" not in input_df.columns:
+        sys.exit("Error: required column \"function\" not found in input " +
+                 "metagenome table")
 
-    return(input_df)
+    strat_tab = False
+    # Check whether table is stratified based on presence of "sequence" column.
+    if "sequence" in input_df.columns:
+        strat_tab = True
+
+    return(input_df, strat_tab)
 
 
 def strat_to_unstrat_counts(strat_df, func_col="function"):
@@ -185,16 +215,11 @@ def path_abun_by_seq(gene_abun, gene_ids, total_sum, path_abun):
     return(np.around((seq_path_abun/total_sum)*path_abun, decimals=2))
 
 
-def minpath_wrapper(sample_id, strat_input, minpath_map, out_dir,
-                    print_opt=False):
-    '''Read in sample_id, gene family table, and out_dir, and run MinPath based
-    on the gene family abundances. Returns both unstratified and stratified
-    pathway abundances as dictionaries in a list.'''
+def minpath_wrapper(sample_id, unstrat_input, minpath_map, out_dir, print_opt):
+    '''Run MinPath based on gene abundances in a single sample. Will return
+    the abundances of gene families within each identified pathway.'''
 
-    # Get gene family abundances summed over all sequences for this sample.
-    unstrat_input = strat_to_unstrat_counts(strat_input)
-
-    # Define MinPath input and outout filenames.
+    # Define MinPath input and output filenames.
     minpath_in = path.join(out_dir, sample_id + "_minpath_in.txt")
     minpath_report = path.join(out_dir, sample_id + "_minpath_report.txt")
     minpath_details = path.join(out_dir, sample_id + "_minpath_details.txt")
@@ -237,7 +262,20 @@ def minpath_wrapper(sample_id, strat_input, minpath_map, out_dir,
     # Now read in details file and take abundance of pathway to be
     # mean of top 1/2 most abundant gene families.
     # Abundances of 0 will be added in for gene families not found.
-    gf_abundances, gf_ids = parse_minpath_details(minpath_details, path_present)
+    return(parse_minpath_details(minpath_details, path_present))
+
+
+def strat_minpath(sample_id, strat_input, minpath_map, out_dir,
+                  print_opt=False):
+    '''Read in sample_id, gene family table, and out_dir, and run MinPath based
+    on the gene family abundances. Returns both unstratified and stratified
+    pathway abundances as dictionaries in a list.'''
+
+    # Get gene family abundances summed over all sequences for this sample.
+    unstrat_input = strat_to_unstrat_counts(strat_input)
+
+    gf_abundances, gf_ids = minpath_wrapper(sample_id, unstrat_input,
+                                            minpath_map, out_dir, print_opt)
 
     # Initialize series and dataframe that will contain pathway abundances.
     unstrat_abun = pd.Series()
@@ -282,6 +320,45 @@ def minpath_wrapper(sample_id, strat_input, minpath_map, out_dir,
 
         strat_abun = pd.concat([strat_abun, strat_path_abun], levels=["pathway", "sequence"])
 
+    # Return unstratified and stratified abundances. Note that the stratified
+    # abundances are converted to a series.
+    return([unstrat_abun, strat_abun[sample_id]])
+
+
+def unstrat_minpath(sample_id, unstrat_input, minpath_map, out_dir,
+                    print_opt=False):
+    '''Read in sample_id, gene family table, and out_dir, and run MinPath based
+    on the gene family abundances. Returns unstratified pathway abundances as
+    dictionaries in a list.'''
+
+    unstrat_input.set_index("function", inplace=True)
+
+    gf_abundances, gf_ids = minpath_wrapper(sample_id, unstrat_input,
+                                            minpath_map, out_dir, print_opt)
+
+    # Initialize series and dataframe that will contain pathway abundances.
+    unstrat_abun = pd.Series()
+
+    # Loop through all pathways present and get mean of 1/2 most abundant.
+    for pathway in gf_abundances.keys():
+
+        # Like HUMAnN2, sort enzyme reactions, take second half, and get
+        # their mean abundance.
+
+        # First get indices of sorted list.
+        sorted_index = list(np.argsort(gf_abundances[pathway]))
+        sorted_gf_abundances = [gf_abundances[pathway][i] for i in sorted_index]
+        sorted_gf_ids = [gf_ids[pathway][i] for i in sorted_index]
+
+        # Take second half of gene family abundances and ids lists.
+        half_i = int(len(sorted_gf_abundances) / 2)
+        gf_abundances_subset = sorted_gf_abundances[half_i:]
+        gf_ids_subset = sorted_gf_ids[half_i:]
+
+        # Take mean for unstratified pathway abundance.
+        unstrat_abun[pathway] = sum(gf_abundances_subset)/len(gf_abundances_subset)
+
     # Return unstratified and stratified abundances.
     # Note that the stratified abundances are converted to a series.
-    return([unstrat_abun, strat_abun[sample_id]])
+    return(unstrat_abun)
+
