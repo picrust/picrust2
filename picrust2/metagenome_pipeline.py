@@ -63,6 +63,15 @@ def run_metagenome_pipeline(input_biom,
                                                                                pred_function,
                                                                                pred_marker)
 
+    # Determine which sequences should be in the "RARE" category if getting
+    # stratified table.
+    rare_seqs = []
+
+    if strat_out and (min_reads != 1 or min_samples != 1):
+        rare_seqs = id_rare_seqs(in_counts=study_seq_counts,
+                                 min_reads=min_reads,
+                                 min_samples=min_samples)
+
     # Create output directory if it does not already exist.
     make_output_dir(out_dir)
 
@@ -89,10 +98,9 @@ def run_metagenome_pipeline(input_biom,
     # genomes and also separately unstratified.
     return(funcs_by_sample(input_seq_counts=study_seq_counts,
                            input_function_num=pred_function,
+                           rare_seqs=rare_seqs,
                            proc=proc,
-                           strat_out=strat_out,
-                           min_reads=min_reads,
-                           min_samples=min_samples))
+                           strat_out=strat_out))
 
 
 def calc_weighted_nsti(seq_counts, nsti_input, outfile=None):
@@ -141,8 +149,8 @@ def norm_by_marker_copies(input_seq_counts,
     return(input_seq_counts)
 
 
-def funcs_by_sample(input_seq_counts, input_function_num, strat_out=False,
-                    proc=1, min_reads=1, min_samples=1):
+def funcs_by_sample(input_seq_counts, input_function_num, rare_seqs=[],
+                    strat_out=False, proc=1):
     '''Function that reads in study sequence abundances and predicted
     number of gene families per study sequence's predicted genome. Will
     return abundance of functions in each sample (unstratified format). If 
@@ -151,15 +159,6 @@ def funcs_by_sample(input_seq_counts, input_function_num, strat_out=False,
 
     # Sample ids are taken from sequence abundance table.
     sample_ids = input_seq_counts.columns.values
-
-    # Determine which sequences should be in the "RARE" category if getting
-    # stratified table.
-    rare_seqs = []
-
-    if strat_out and (min_reads != 1 or min_samples != 1):
-        rare_seqs = id_rare_seqs(in_counts=input_seq_counts,
-                                 min_reads=min_reads,
-                                 min_samples=min_samples)
 
     # Loop through all samples and get predicted functional abundances
     # after multiplying each contributing sequence by the abundance in
@@ -208,7 +207,8 @@ def funcs_by_sample(input_seq_counts, input_function_num, strat_out=False,
         return(None, sample_funcs_df)
 
 
-def func_by_seq_abun(sample_seq_counts, func_abun, rare_seqs, calc_strat=False):
+def func_by_seq_abun(sample_seq_counts, func_abun, rare_seqs=[],
+                     calc_strat=False):
     '''Given the abundances of sequences in a sample (as a pandas series) and
     the predicted functions of those sequences (as a pandas dataframe), this
     function will return the functional abundances after multiplying the
