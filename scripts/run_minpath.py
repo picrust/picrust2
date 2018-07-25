@@ -81,6 +81,8 @@ def main():
                                                               out_dir=temp_dir,
                                                               print_cmds=args.print_cmds)
 
+    make_output_dir(args.out_dir)
+
     # Write output files.
     unstrat_outfile = path.join(args.out_dir, "path_abun_unstrat.tsv")
     unstrat_out.to_csv(path_or_buf=unstrat_outfile,  sep="\t",
