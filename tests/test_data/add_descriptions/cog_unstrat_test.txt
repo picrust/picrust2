@@ -1,0 +1,6 @@
+function	samp1	samp2
+COG0289	0	0
+COG0454	1	4
+COG3104	3	1
+COG1047	3	1
+other	2	1

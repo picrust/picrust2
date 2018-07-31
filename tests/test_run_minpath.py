@@ -2,7 +2,7 @@
 
 __copyright__ = "Copyright 2018, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.0.0-b.5"
+__version__ = "2.0.0-b.6"
 
 import unittest
 import pandas as pd
