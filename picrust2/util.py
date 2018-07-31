@@ -10,6 +10,7 @@ from subprocess import call
 import pandas as pd
 import numpy as np
 import tempfile
+import sys
 
 
 def read_fasta(filename, cut_header=False):
@@ -273,3 +274,31 @@ def check_files_exist(filepaths):
     elif num_nonexist > 1:
         raise ValueError("These input files were not found: " +
                          ", ".join(missing_files))
+
+
+def add_descrip_col(inputfile : str, mapfile : str):
+    '''Takes paths to input table and mapfile of function ids to descriptions.
+    Will read both of these files in as pandas dataframes and will add
+    descriptions as a separate column in a new pandas dataframe, which will be
+    returned. Note that the first column of the input function abundance table
+    is assumed to contain the functions ids.'''
+
+    # Read in input tables.
+    function_tab = pd.read_table(inputfile, sep="\t")
+    map_tab = pd.read_table(mapfile, sep="\t", index_col=0, header=None,
+                            names=["function", "description"])
+
+    # Check to see if any of the mapfile row indices are in the function table
+    # id column and throw an error if not.
+    if not any(map_tab.index.isin(function_tab.iloc[:, 0])):
+        sys.exit("Error: no function ids in input table are found " +
+                 "in the provided mapfile")
+
+    # Reindex mapfile to match order of functions in function table (and for
+    # ids to be duplicated if the table is stratified.
+    map_tab = map_tab.reindex(function_tab.iloc[:, 0], fill_value="not_found")
+
+    function_tab.insert(1, "description", list(map_tab["description"]))
+
+    # Add description column to function table and return.
+    return(function_tab)

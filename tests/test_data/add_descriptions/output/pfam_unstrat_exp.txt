@@ -1,0 +1,6 @@
+function	description	samp1	samp2
+PF03752	Short repeats of unknown function	0	0
+PF14228	Cell morphogenesis central region	1	4
+PF12242	NAD(P)H binding domain of trans-2-enoyl-CoA reductase	3	1
+PF09660	Protein of unknown function (DUF2397)	3	1
+other	not_found	2	1

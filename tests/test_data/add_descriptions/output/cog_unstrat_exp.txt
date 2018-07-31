@@ -1,0 +1,6 @@
+function	description	samp1	samp2
+COG0289	Dihydrodipicolinate reductase	0	0
+COG0454	N-acetyltransferase, GNAT superfamily (includes histone acetyltransferase HPA2)	1	4
+COG3104	Dipeptide/tripeptide permease	3	1
+COG1047	FKBP-type peptidyl-prolyl cis-trans isomerase 2	3	1
+other	not_found	2	1
