@@ -222,6 +222,7 @@ class add_description_tests(unittest.TestCase):
         cog_hash = hashlib.md5()
         pfam_hash = hashlib.md5()
         tigrfam_hash = hashlib.md5()
+        metacyc_hash = hashlib.md5()
 
         with gzip.open(default_map["EC"], 'rt') as ec_in:
             ec_hash.update(ec_in.read().encode())
@@ -238,15 +239,19 @@ class add_description_tests(unittest.TestCase):
         with gzip.open(default_map["TIGRFAM"], 'rt') as tigrfam_in:
             tigrfam_hash.update(tigrfam_in.read().encode())
 
+        with gzip.open(default_map["METACYC"], 'rt') as metacyc_in:
+            metacyc_hash.update(metacyc_in.read().encode())
+
         obs_hash = [ec_hash.hexdigest(), ko_hash.hexdigest(),
                     cog_hash.hexdigest(), pfam_hash.hexdigest(),
-                    tigrfam_hash.hexdigest()]
+                    tigrfam_hash.hexdigest(), metacyc_hash.hexdigest()]
 
         exp_hash = ["61b2fcd300fd53124c4d7f4b8e97b281",
                     "f1cc419051a23bb60d1015762d221deb",
                     "6012eaf8b2f9e336a725cd97af8cf05d",
                     "b24d1f3cae10efd452b964a8589963e1",
-                    "8115f710df156c46908d112bd80def4a"]
+                    "8115f710df156c46908d112bd80def4a",
+                    "d441bce3c19effa1e474711f6c6cdbeb"]
 
         # Check that md5sum values match expected values.
         self.assertEqual(obs_hash, exp_hash)
