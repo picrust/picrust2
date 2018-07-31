@@ -7,6 +7,8 @@ __version__ = "2.0.0-b.3"
 import unittest
 from os import path
 import pandas as pd
+import hashlib
+import gzip
 from tempfile import TemporaryDirectory
 from picrust2.util import (write_fasta, read_fasta, write_phylip, read_phylip,
                            three_df_index_overlap_sort, add_descrip_col,
@@ -212,6 +214,42 @@ class add_description_tests(unittest.TestCase):
 
         pd.testing.assert_frame_equal(obs_out, exp_out, check_like=True)
 
+    def test_default_mapping_md5sum(self):
+        '''Check that md5sum values of default mapfiles match expected values.'''
+
+        ec_hash = hashlib.md5()
+        ko_hash = hashlib.md5()
+        cog_hash = hashlib.md5()
+        pfam_hash = hashlib.md5()
+        tigrfam_hash = hashlib.md5()
+
+        with gzip.open(default_map["EC"], 'rt') as ec_in:
+            ec_hash.update(ec_in.read().encode())
+
+        with gzip.open(default_map["KO"], 'rt') as ko_in:
+            ko_hash.update(ko_in.read().encode())
+
+        with gzip.open(default_map["COG"], 'rt') as cog_in:
+            cog_hash.update(cog_in.read().encode())
+
+        with gzip.open(default_map["PFAM"], 'rt') as pfam_in:
+            pfam_hash.update(pfam_in.read().encode())
+
+        with gzip.open(default_map["TIGRFAM"], 'rt') as tigrfam_in:
+            tigrfam_hash.update(tigrfam_in.read().encode())
+
+        obs_hash = [ec_hash.hexdigest(), ko_hash.hexdigest(),
+                    cog_hash.hexdigest(), pfam_hash.hexdigest(),
+                    tigrfam_hash.hexdigest()]
+
+        exp_hash = ["61b2fcd300fd53124c4d7f4b8e97b281",
+                    "f1cc419051a23bb60d1015762d221deb",
+                    "6012eaf8b2f9e336a725cd97af8cf05d",
+                    "b24d1f3cae10efd452b964a8589963e1",
+                    "8115f710df156c46908d112bd80def4a"]
+
+        # Check that md5sum values match expected values.
+        self.assertEqual(obs_hash, exp_hash)
 
 if __name__ == '__main__':
     unittest.main()

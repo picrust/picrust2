@@ -7,6 +7,9 @@ __version__ = "2.0.0-b.5"
 import unittest
 from os import path
 import pandas as pd
+import hashlib
+import gzip
+from picrust2.default import default_tables
 from picrust2.util import get_picrust_project_dir
 from picrust2.wrap_hsp import (castor_hsp_workflow,
                                castor_hsp_loocv_wrapper,
@@ -45,7 +48,6 @@ hsp_pic_pred_in = pd.read_table(hsp_pic_pred, sep="\t", index_col="sequence")
 hsp_scp_pred_in = pd.read_table(hsp_scp_pred, sep="\t", index_col="sequence")
 hsp_subtree_average_pred_in = pd.read_table(hsp_subtree_average_pred, sep="\t",
                                             index_col="sequence")
-
 
 class castor_hsp_workflow_tests(unittest.TestCase):
     """Tests for castor hsp workflow."""
@@ -146,6 +148,45 @@ class castor_hsp_workflow_tests(unittest.TestCase):
 
         pd.testing.assert_frame_equal(nsti_out, hsp_mp_pred_in_nsti_subset, check_like=True)
 
+
+class table_mdf5sum_tests(unittest.TestCase):
+    '''Check that md5sum values of default tables match expected values.'''
+
+    def test_default_table_md5sum(self):
+
+        ec_hash = hashlib.md5()
+        ko_hash = hashlib.md5()
+        cog_hash = hashlib.md5()
+        pfam_hash = hashlib.md5()
+        tigrfam_hash = hashlib.md5()
+
+        with gzip.open(default_tables["EC"], 'rt') as ec_in:
+            ec_hash.update(ec_in.read().encode())
+
+        with gzip.open(default_tables["KO"], 'rt') as ko_in:
+            ko_hash.update(ko_in.read().encode())
+
+        with gzip.open(default_tables["COG"], 'rt') as cog_in:
+            cog_hash.update(cog_in.read().encode())
+
+        with gzip.open(default_tables["PFAM"], 'rt') as pfam_in:
+            pfam_hash.update(pfam_in.read().encode())
+
+        with gzip.open(default_tables["TIGRFAM"], 'rt') as tigrfam_in:
+            tigrfam_hash.update(tigrfam_in.read().encode())
+
+        obs_hash = [ec_hash.hexdigest(), ko_hash.hexdigest(),
+                    cog_hash.hexdigest(), pfam_hash.hexdigest(),
+                    tigrfam_hash.hexdigest()]
+
+        exp_hash = ["eee9858e8d299606b46501d5429079d6",
+                    "4571265528069628a25aacf4063d1126",
+                    "96f7c0156fdb7ec1581f5c11a5ac0c8c",
+                    "7dd50a28bef5c9b3a6e234553b32720d",
+                    "19e39fa1cec079d8fd94b12b368a931f"]
+
+        # Check that md5sum values match expected values.
+        self.assertEqual(obs_hash, exp_hash)
 
 if __name__ == '__main__':
     unittest.main()
