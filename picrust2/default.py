@@ -16,6 +16,13 @@ default_fasta = path.join(project_dir, "default_files", "prokaryotic",
 default_tree = path.join(project_dir, "default_files", "prokaryotic",
                          "img_centroid_16S_aligned.tree")
 
+default_regroup_map = path.join(project_dir, "default_files",
+                                "pathway_mapfiles",
+                                "ec_level4_to_metacyc_rxn.tsv")
+
+default_pathway_map = path.join(project_dir, "default_files",
+                                "pathway_mapfiles",
+                                "metacyc_path2rxn_struc_filt_pro.txt")
 
 # Inititalize default trait table files for hsp.py.
 prokaryotic_dir = path.join(project_dir, "default_files", "prokaryotic")
@@ -39,7 +46,7 @@ default_tables = {"16S": path.join(prokaryotic_dir,
                                        "tigrfam_counts_mean_round_var.txt.gz")}
 
 # Initialize default mapfiles to be used with add_descriptions.py
-map_dir = path.join(project_dir, "default_files", "mapfiles")
+map_dir = path.join(project_dir, "default_files", "description_mapfiles")
 
 default_map =    {"METACYC": path.join(map_dir, "metacyc_pathways_info_prokaryotes.txt.gz"),
 
