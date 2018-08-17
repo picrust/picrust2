@@ -12,38 +12,68 @@ import gzip
 from tempfile import TemporaryDirectory
 from picrust2.util import (write_fasta, read_fasta, write_phylip, read_phylip,
                            three_df_index_overlap_sort, add_descrip_col,
-                           get_picrust_project_dir)
+                           get_picrust_project_dir,
+                           convert_humann2_to_picrust2,
+                           convert_picrust2_to_humann2,
+                           convert_picrust2_to_humann2_merged)
 
 from picrust2.default import default_map
 
-test_dir_path = path.join(get_picrust_project_dir(), "tests", "test_data",
+descrip_test_dir_path = path.join(get_picrust_project_dir(), "tests", "test_data",
                           "add_descriptions")
 
-test_dir_out_path = path.join(test_dir_path, "output")
+descrip_test_dir_out_path = path.join(descrip_test_dir_path, "output")
 
 # Set paths to test input and output files for add_descriptions.py tests.
-ec_unstrat_in = path.join(test_dir_path, "ec_unstrat_test.txt")
-ec_unstrat_exp = path.join(test_dir_out_path, "ec_unstrat_exp.txt")
+ec_unstrat_in = path.join(descrip_test_dir_path, "ec_unstrat_test.txt")
+ec_unstrat_exp = path.join(descrip_test_dir_out_path, "ec_unstrat_exp.txt")
 
-ec_strat_in = path.join(test_dir_path, "ec_strat_test.txt")
-ec_strat_exp = path.join(test_dir_out_path, "ec_strat_exp.txt")
+ec_strat_in = path.join(descrip_test_dir_path, "ec_strat_test.txt")
+ec_strat_exp = path.join(descrip_test_dir_out_path, "ec_strat_exp.txt")
 
-ec_nomatch_in = path.join(test_dir_path, "ec_nomatch_test.txt")
+ec_nomatch_in = path.join(descrip_test_dir_path, "ec_nomatch_test.txt")
 
-metacyc_unstrat_in = path.join(test_dir_path, "metacyc_unstrat_test.txt")
-metacyc_unstrat_exp = path.join(test_dir_out_path, "metacyc_unstrat_exp.txt")
+metacyc_unstrat_in = path.join(descrip_test_dir_path, "metacyc_unstrat_test.txt")
+metacyc_unstrat_exp = path.join(descrip_test_dir_out_path, "metacyc_unstrat_exp.txt")
 
-cog_unstrat_in = path.join(test_dir_path, "cog_unstrat_test.txt")
-cog_unstrat_exp = path.join(test_dir_out_path, "cog_unstrat_exp.txt")
+cog_unstrat_in = path.join(descrip_test_dir_path, "cog_unstrat_test.txt")
+cog_unstrat_exp = path.join(descrip_test_dir_out_path, "cog_unstrat_exp.txt")
 
-ko_unstrat_in = path.join(test_dir_path, "ko_unstrat_test.txt")
-ko_unstrat_exp = path.join(test_dir_out_path, "ko_unstrat_exp.txt")
+ko_unstrat_in = path.join(descrip_test_dir_path, "ko_unstrat_test.txt")
+ko_unstrat_exp = path.join(descrip_test_dir_out_path, "ko_unstrat_exp.txt")
 
-pfam_unstrat_in = path.join(test_dir_path, "pfam_unstrat_test.txt")
-pfam_unstrat_exp = path.join(test_dir_out_path, "pfam_unstrat_exp.txt")
+pfam_unstrat_in = path.join(descrip_test_dir_path, "pfam_unstrat_test.txt")
+pfam_unstrat_exp = path.join(descrip_test_dir_out_path, "pfam_unstrat_exp.txt")
 
-tigrfam_unstrat_in = path.join(test_dir_path, "tigrfam_unstrat_test.txt")
-tigrfam_unstrat_exp = path.join(test_dir_out_path, "tigrfam_unstrat_exp.txt")
+tigrfam_unstrat_in = path.join(descrip_test_dir_path, "tigrfam_unstrat_test.txt")
+tigrfam_unstrat_exp = path.join(descrip_test_dir_out_path, "tigrfam_unstrat_exp.txt")
+
+# Set paths to input and output files for convert_table.py tests.
+convert_test_dir_path = path.join(get_picrust_project_dir(), "tests", "test_data",
+                          "convert_table")
+
+convert_test_dir_out_path = path.join(convert_test_dir_path, "expected_out")
+
+humann2_strat_in = path.join(convert_test_dir_path, "humann2_strat_example.tsv")
+humann2_strat_exp = path.join(convert_test_dir_out_path, "humann2_strat_example_picrust2.tsv")
+
+humann2_unstrat_in = path.join(convert_test_dir_path, "humann2_unstrat_example.tsv")
+humann2_unstrat_exp = path.join(convert_test_dir_out_path, "humann2_unstrat_example_picrust2.tsv")
+
+humann2_strat_in_split1 = path.join(convert_test_dir_path, "humann2_path_test_A1.tsv")
+humann2_strat_in_split2 = path.join(convert_test_dir_path, "humann2_path_test_D2.tsv")
+humann2_strat_in_split3 = path.join(convert_test_dir_path, "humann2_path_test_PD3.tsv")
+humann2_strat_split_exp = path.join(convert_test_dir_out_path, "humann2_path_test_picrust2.tsv")
+
+picrust2_strat_in = path.join(convert_test_dir_path, "picrust2_strat_tmp.tsv")
+
+picrust2_strat_exp1 = path.join(convert_test_dir_out_path, "picrust2_strat_to_humann2_split", "s1_split.tsv")
+picrust2_strat_exp2 = path.join(convert_test_dir_out_path, "picrust2_strat_to_humann2_split", "s2_split.tsv")
+picrust2_strat_exp3 = path.join(convert_test_dir_out_path, "picrust2_strat_to_humann2_split", "s3_split.tsv")
+
+picrust2_unstrat_in1 = path.join(convert_test_dir_path, "picrust2_unstrat_tmp1.tsv")
+picrust2_unstrat_in2 = path.join(convert_test_dir_path, "picrust2_unstrat_tmp2.tsv")
+picrust2_unstrat_exp = path.join(convert_test_dir_out_path, "picrust2_unstrat_tmp1_tmp2_humann2-format.tsv")
 
 # Inititalize 3 test pandas dataframes.
 test1 = pd.DataFrame.from_dict({"a": [1, 2, 3],
@@ -255,6 +285,81 @@ class add_description_tests(unittest.TestCase):
 
         # Check that md5sum values match expected values.
         self.assertEqual(obs_hash, exp_hash)
+
+class convert_table_tests(unittest.TestCase):
+
+    def test_picrust2_to_humann2_merged(self):
+
+        with TemporaryDirectory() as temp_dir:
+            outfile = path.join(temp_dir, "test_out")
+            convert_picrust2_to_humann2_merged([picrust2_unstrat_in1,
+                                                picrust2_unstrat_in2],
+                                               outfile)
+            obs_out = pd.read_table(outfile, sep="\t", index_col=0)
+
+        exp_out = pd.read_table(picrust2_unstrat_exp, sep="\t", index_col=0)
+
+        pd.testing.assert_frame_equal(obs_out, exp_out, check_like=True)
+
+    def test_picrust2_strat_to_humann2_split(self):
+
+        with TemporaryDirectory() as temp_dir:
+            outfolder = path.join(temp_dir, "outfiles")
+            convert_picrust2_to_humann2([picrust2_strat_in,
+                                         picrust2_unstrat_in1], outfolder, True)
+            obs_out1 = pd.read_table(path.join(outfolder, "sample1_humann2-format.tsv"), sep="\t", index_col=0)
+            obs_out2 = pd.read_table(path.join(outfolder, "sample2_humann2-format.tsv"), sep="\t", index_col=0)
+            obs_out3 = pd.read_table(path.join(outfolder, "sample3_humann2-format.tsv"), sep="\t", index_col=0)
+
+        exp_out1 = pd.read_table(picrust2_strat_exp1, sep="\t", index_col=0)
+        exp_out2 = pd.read_table(picrust2_strat_exp2, sep="\t", index_col=0)
+        exp_out3 = pd.read_table(picrust2_strat_exp3, sep="\t", index_col=0)
+
+        pd.testing.assert_frame_equal(obs_out1, exp_out1, check_like=True)
+        pd.testing.assert_frame_equal(obs_out2, exp_out2, check_like=True)
+        pd.testing.assert_frame_equal(obs_out3, exp_out3, check_like=True)
+
+    def test_humann2_unstrat_to_picrust2(self):
+
+        with TemporaryDirectory() as temp_dir:
+
+            outfile = path.join(temp_dir, "test_out")
+            convert_humann2_to_picrust2([humann2_unstrat_in], outfile, False)
+
+            obs_out = pd.read_table(outfile, sep="\t", index_col=0)
+
+        exp_out = pd.read_table(humann2_unstrat_exp, sep="\t", index_col=0)
+
+        pd.testing.assert_frame_equal(obs_out, exp_out, check_like=True)
+
+    def test_humann2_strat_to_picrust2(self):
+
+        with TemporaryDirectory() as temp_dir:
+
+            outfile = path.join(temp_dir, "test_out")
+            convert_humann2_to_picrust2([humann2_strat_in], outfile, True)
+
+            obs_out = pd.read_table(outfile, sep="\t", index_col=[0, 1])
+
+        exp_out = pd.read_table(humann2_strat_exp, sep="\t", index_col=[0, 1])
+
+        pd.testing.assert_frame_equal(obs_out, exp_out, check_like=True)
+
+    def test_humann2_strat_split_to_picrust2(self):
+
+        with TemporaryDirectory() as temp_dir:
+
+            outfile = path.join(temp_dir, "test_out")
+            convert_humann2_to_picrust2([humann2_strat_in_split1,
+                                         humann2_strat_in_split2,
+                                         humann2_strat_in_split3],
+                                        outfile, True)
+
+            obs_out = pd.read_table(outfile, sep="\t", index_col=[0, 1])
+
+        exp_out = pd.read_table(humann2_strat_split_exp, sep="\t", index_col=[0, 1])
+
+        pd.testing.assert_frame_equal(obs_out, exp_out, check_like=True)
 
 if __name__ == '__main__':
     unittest.main()
