@@ -8,168 +8,154 @@ import unittest
 import pandas as pd
 from os import path
 from tempfile import TemporaryDirectory
+from picrust2.default import default_regroup_map, default_pathway_map
 from picrust2.run_minpath import (minpath_wrapper, run_minpath_pipeline,
                                   read_metagenome_input, unstrat_minpath,
-                                  strat_minpath, strat_to_unstrat_counts)
+                                  strat_minpath, strat_to_unstrat_counts,
+                                  PathwaysDatabase, regroup_func_ids)
 from picrust2.util import get_picrust_project_dir
 
 # Path to test directory.
-test_dir_path = path.join(get_picrust_project_dir(), "tests")
+test_dir_path = path.join(get_picrust_project_dir(), "tests", "test_data",
+                          "run_minpath")
 
-in_metagenome_strat = path.join(test_dir_path, "test_data", "run_minpath",
-                                "test_metagenome_out.tsv")
+# Paths to input files and expected outputs.
+in_metagenome_strat = path.join(test_dir_path, "test_input_ec_strat.tsv")
+in_metagenome_strat2 = path.join(test_dir_path, "test_input_ec_strat2.tsv")
+in_metagenome_unstrat = path.join(test_dir_path, "test_input_ec_unstrat.tsv")
 
-in_metagenome_unstrat = path.join(test_dir_path, "test_data", "run_minpath",
-                                  "test_metagenome_unstrat_out.tsv")
+exp_minpath_abun_strat = path.join(test_dir_path, "exp_path_abun_strat.tsv")
+exp_minpath_abun_strat_per_genome = path.join(test_dir_path, "exp_path_abun_strat_per-genome.tsv")
+exp_minpath_abun_unstrat = path.join(test_dir_path, "exp_path_abun_unstrat.tsv")
+exp_minpath_cov_strat_per_genome = path.join(test_dir_path, "exp_path_cov_strat_per-genome.tsv")
+exp_minpath_cov_unstrat = path.join(test_dir_path, "exp_path_cov_unstrat.tsv")
 
-exp_minpath_out_strat = path.join(test_dir_path, "test_data", "run_minpath",
-                                  "expected_out_strat_path.tsv")
-
-exp_minpath_out_unstrat = path.join(test_dir_path, "test_data", "run_minpath",
-                                    "expected_out_unstrat_path.tsv")
-
-map_ec2path_prokaryotic = path.join(get_picrust_project_dir(), "MinPath",
-                                    "ec2metacyc_picrust_prokaryotic.txt")
-
-
-class minpath_wrapper_tests(unittest.TestCase):
+class run_minpath_tests(unittest.TestCase):
     """Tests for running MinPath on stratified and unstratified tables."""
 
-    def test_strat_minpath_single_sample(self):
-        '''Test running strat_minpath on single sample.'''
-
-        strat_in, strat_tab = read_metagenome_input(in_metagenome_strat)
+    def test_strat_default_pipeline(self):
+        '''Test running strat_minpath default pipeline. Make sure that
+        community wide stratified abundances are calculated correctly and
+        that unstratified abundances are right.'''
 
         with TemporaryDirectory() as temp_dir:
-            path_abun = strat_minpath(sample_id="sample2",
-                                      strat_input=strat_in[["function",
-                                                            "sequence",
-                                                            "sample2"]],
-                                      minpath_map=map_ec2path_prokaryotic,
-                                      out_dir=temp_dir)
+            unstrat_path_abun_df, unstrat_path_cov_df, strat_path_abun_df, strat_cov = run_minpath_pipeline(in_metagenome_strat2,
+                                                                                                 default_pathway_map,
+                                                                                                 proc=1,
+                                                                                                 out_dir=temp_dir,
+                                                                                                 regroup_mapfile=default_regroup_map,
+                                                                                                 gap_fill=True,
+                                                                                                 per_sequence_contrib=False,
+                                                                                                 print_cmds=False)
 
-        # Convert to pandas dataframe.
-        unstrat_path_abun_df = pd.DataFrame([path_abun[0]]).transpose()
-        strat_path_abun_df = pd.DataFrame([path_abun[1]]).transpose()
 
-        # Set index title and column name.
-        unstrat_path_abun_df.index.name = "pathway"
-        unstrat_path_abun_df.columns = ["sample2"]
+        # Compare these predicted tables to expected tables.
+        exp_abun_unstrat = pd.read_csv(exp_minpath_abun_unstrat, sep="\t",
+                                       index_col="pathway")
 
-        strat_path_abun_df.reset_index(inplace=True)
+        exp_cov_unstrat = pd.read_csv(exp_minpath_cov_unstrat, sep="\t",
+                                       index_col="pathway")
 
-        # Compare this predicted column to expected (after removing rows that
-        # are 0).
-        exp_path_unstrat = pd.read_csv(exp_minpath_out_unstrat, sep="\t",
-                                    index_col="pathway")
 
-        exp_path_unstrat_s2 = exp_path_unstrat[["sample2"]]
-
-        exp_path_strat = pd.read_csv(exp_minpath_out_strat, sep="\t")
+        exp_abun_strat = pd.read_csv(exp_minpath_abun_strat, sep="\t")
 
         # Sort stratified files (different versions can sort the output
         # slightly differently).
         strat_path_abun_df.sort_values(['pathway', 'sequence'], inplace=True)
-        exp_path_strat.sort_values(['pathway', 'sequence'], inplace=True)
+        exp_abun_strat.sort_values(['pathway', 'sequence'], inplace=True)
 
         # Reset index labels.
-        strat_path_abun_df.reset_index(inplace=True, drop=True)
-        exp_path_strat.reset_index(inplace=True, drop=True)
+        exp_abun_strat.reset_index(drop=True, inplace=True)
+        strat_path_abun_df.reset_index(drop=True, inplace=True)
 
-        exp_path_strat_s2 = exp_path_strat[["pathway", "sequence", "sample2"]]
+        pd.testing.assert_frame_equal(exp_abun_unstrat, unstrat_path_abun_df,
+                                      check_like=True, check_less_precise=True)
 
-        pd.testing.assert_frame_equal(exp_path_unstrat_s2, unstrat_path_abun_df,
-                                      check_like=True)
+        pd.testing.assert_frame_equal(exp_cov_unstrat, unstrat_path_cov_df,
+                                      check_like=True, check_less_precise=True)
 
-        pd.testing.assert_frame_equal(exp_path_strat_s2, strat_path_abun_df,
-                                      check_like=True)
+        # Check with less precision here since the HUMAnN2 output that is used
+        # as expected abundances are not rounded.
+        pd.testing.assert_frame_equal(exp_abun_strat, strat_path_abun_df,
+                                      check_like=True, check_less_precise=True)
 
 
-    def test_unstrat_minpath_3_samples(self):
-        '''Test running unstrat_minpath on single sample.'''
-
-        strat_in, strat_tab = read_metagenome_input(in_metagenome_strat)
-
-        unstrat_in = strat_to_unstrat_counts(strat_in)
-        unstrat_in["function"] = unstrat_in.index
+    def test_unstrat_default_pipeline(self):
+        '''Test running default pipeline on unstratified input table.'''
 
         with TemporaryDirectory() as temp_dir:
+            unstrat_path_abun_df, unstrat_path_cov_df, strat_abun, strat_cov = run_minpath_pipeline(in_metagenome_unstrat,
+                                                                                                 default_pathway_map,
+                                                                                                 proc=1,
+                                                                                                 out_dir=temp_dir,
+                                                                                                 regroup_mapfile=default_regroup_map,
+                                                                                                 gap_fill=True,
+                                                                                                 per_sequence_contrib=False,
+                                                                                                 print_cmds=False)
 
-            path_abun = []
+        # Compare these predicted tables to expected tables.
+        exp_abun_unstrat = pd.read_csv(exp_minpath_abun_unstrat, sep="\t",
+                                       index_col="pathway")
 
-            for samp in ["sample1", "sample2", "sample3"]:
-                path_abun += [unstrat_minpath(sample_id=samp,
-                                              unstrat_input=unstrat_in[["function",
-                                                                  samp]],
-                                              minpath_map=map_ec2path_prokaryotic,
-                                              out_dir=temp_dir)]
+        exp_cov_unstrat = pd.read_csv(exp_minpath_cov_unstrat, sep="\t",
+                                       index_col="pathway")
 
-        # Convert to pandas dataframe.
-        unstrat_path_abun_df = pd.DataFrame(path_abun).fillna(0).transpose()
-        unstrat_path_abun_df.index.name = "pathway"
-        unstrat_path_abun_df.columns = ["sample1", "sample2", "sample3"]
+        pd.testing.assert_frame_equal(exp_abun_unstrat, unstrat_path_abun_df,
+                                      check_like=True, check_less_precise=True)
 
-        # Compare this predicted column to expected (after removing rows that
-        # are 0).
-        exp_path_abun_unstrat = pd.read_csv(exp_minpath_out_unstrat, sep="\t",
-                                    index_col="pathway")
-
-        pd.testing.assert_frame_equal(exp_path_abun_unstrat,
-                                      unstrat_path_abun_df,
-                                      check_like=True)
+        pd.testing.assert_frame_equal(exp_cov_unstrat, unstrat_path_cov_df,
+                                      check_like=True, check_less_precise=True)
 
 
-class run_minpath_pipeline_tests(unittest.TestCase):
-    """Tests for run_minpath_pipeline function."""
-
-    def test_strat_pipeline_2_proc(self):
-        '''Test running full pipeline over 2 processes.'''
+    def test_strat_per_genome_pipeline(self):
+        '''Test running strat_minpath default pipeline. Make sure that
+        per genome contributions are correct (per_sequence_contrib set).'''
 
         with TemporaryDirectory() as temp_dir:
-            test_unstrat, test_strat = run_minpath_pipeline(inputfile=in_metagenome_strat,
-                                                            mapfile=map_ec2path_prokaryotic,
-                                                            proc=2,
-                                                            out_dir=temp_dir)
+            unstrat_path_abun_df, unstrat_path_cov_df, strat_path_abun_df, strat_path_cov_df = run_minpath_pipeline(in_metagenome_strat,
+                                                                                                 default_pathway_map,
+                                                                                                 proc=1,
+                                                                                                 out_dir=temp_dir,
+                                                                                                 regroup_mapfile=default_regroup_map,
+                                                                                                 gap_fill=True,
+                                                                                                 per_sequence_contrib=True,
+                                                                                                 print_cmds=False)
 
-        # Compare to expected pathway abundances.
-        exp_path_abun_strat = pd.read_csv(exp_minpath_out_strat, sep="\t")
 
-        exp_path_abun_unstrat = pd.read_csv(exp_minpath_out_unstrat, sep="\t",
-                                            index_col="pathway")
+        # Compare these predicted tables to expected tables.
+        exp_abun_unstrat = pd.read_csv(exp_minpath_abun_unstrat, sep="\t",
+                                       index_col="pathway")
 
-        test_unstrat.index.name = "pathway"
+        exp_cov_unstrat = pd.read_csv(exp_minpath_cov_unstrat, sep="\t",
+                                       index_col="pathway")
+        exp_abun_strat = pd.read_csv(exp_minpath_abun_strat_per_genome, sep="\t")
+        exp_cov_strat = pd.read_csv(exp_minpath_cov_strat_per_genome, sep="\t")
 
-        # Sort stratified files (different versions can sort the output slightly differently).
-        test_strat.sort_values(['pathway', 'sequence'], inplace=True)
-        exp_path_abun_strat.sort_values(['pathway', 'sequence'], inplace=True)
+        # Sort stratified files (different versions can sort the output
+        # slightly differently).
+        strat_path_abun_df.sort_values(['pathway', 'sequence'], inplace=True)
+        exp_abun_strat.sort_values(['pathway', 'sequence'], inplace=True)
+        strat_path_cov_df.sort_values(['pathway', 'sequence'], inplace=True)
+        exp_cov_strat.sort_values(['pathway', 'sequence'], inplace=True)
 
         # Reset index labels.
-        test_strat.reset_index(inplace=True, drop=True)
-        exp_path_abun_strat.reset_index(inplace=True, drop=True)
+        exp_abun_strat.reset_index(drop=True, inplace=True)
+        strat_path_abun_df.reset_index(drop=True, inplace=True)
 
-        pd.testing.assert_frame_equal(exp_path_abun_unstrat, test_unstrat,
-                                      check_like=True)
-        pd.testing.assert_frame_equal(exp_path_abun_strat, test_strat,
-                                      check_like=True)
+        exp_cov_strat.reset_index(drop=True, inplace=True)
+        strat_path_cov_df.reset_index(drop=True, inplace=True)
 
-    def test_unstrat_pipeline_2_proc(self):
-        '''Test running full pipeline with unstratified table over 2
-        processes.'''
+        pd.testing.assert_frame_equal(exp_abun_unstrat, unstrat_path_abun_df,
+                                      check_like=True, check_less_precise=True)
 
-        with TemporaryDirectory() as temp_dir:
-            test_unstrat, test_strat = run_minpath_pipeline(inputfile=in_metagenome_unstrat,
-                                                            mapfile=map_ec2path_prokaryotic,
-                                                            proc=2,
-                                                            out_dir=temp_dir)
+        pd.testing.assert_frame_equal(exp_cov_unstrat, unstrat_path_cov_df,
+                                      check_like=True, check_less_precise=True)
 
-        # Compare to expected pathway abundances.
-        exp_path_abun_unstrat = pd.read_csv(exp_minpath_out_unstrat, sep="\t",
-                                            index_col="pathway")
+        pd.testing.assert_frame_equal(exp_abun_strat, strat_path_abun_df,
+                                      check_like=True, check_less_precise=True)
 
-        test_unstrat.index.name = "pathway"
-
-        pd.testing.assert_frame_equal(exp_path_abun_unstrat, test_unstrat,
-                                      check_like=True)
+        pd.testing.assert_frame_equal(exp_cov_strat, strat_path_cov_df,
+                                      check_like=True, check_less_precise=True)
 
 
 if __name__ == '__main__':

@@ -145,7 +145,7 @@ class PathwaysDatabase:
                 self.__reactions_to_pathways[reaction]=self.__reactions_to_pathways.get(
                     reaction, []) + [pathway]
 
-    def __init__(self, database=None, reaction_names=None):
+    def __init__(self, database=None, reaction_names=[]):
         '''Load in the pathways data from the database file.'''
 
         self.__pathways_to_reactions={}
@@ -269,8 +269,8 @@ class PathwaysDatabase:
 
 def run_minpath_pipeline(inputfile,
                          mapfile,
+                         out_dir,
                          proc=1,
-                         out_dir=None,
                          regroup_mapfile=None,
                          gap_fill=True,
                          per_sequence_contrib=False,
@@ -290,7 +290,7 @@ def run_minpath_pipeline(inputfile,
                if col not in ["function", "sequence"]]
 
     # Initialize reactions to be empty unless regroup mapfile given.
-    reactions = None
+    reactions = []
 
     # Regroup functions in input table to different ids if regroup mapfile is
     # provided.
