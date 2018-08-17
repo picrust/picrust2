@@ -302,3 +302,237 @@ def add_descrip_col(inputfile : str, mapfile : str):
 
     # Add description column to function table and return.
     return(function_tab)
+
+
+def convert_humann2_to_picrust2(infiles, outfile, stratified):
+    '''Reads in HUMAnN2 gene tables and will convert them to PICRUSt2
+    format.'''
+
+    humann2_samples = []
+
+    # Loop over all sample infiles and add their data to this list.
+    for infile in infiles:
+        humann2_samples.append(pd.read_table(infile, sep="\t", index_col=0))
+
+    # Get the index name for each table and make sure they are identical.
+    infile_index_names = []
+    for sample_df in humann2_samples:
+        infile_index_names.append(sample_df.index.name)
+
+    infile_index_names_set = set(infile_index_names)
+
+    if len(infile_index_names_set) > 1:
+        sys.exit('Error input HUMAnN2 tables are not all for the same '
+                 'datatype. The datatypes of the input files are: ' +
+                 ', '.join(list(infile_index_names_set)))
+
+    index_name = infile_index_names[0]
+
+    # Concatenate all sample dfs into a single table.
+    humann2_combined = pd.concat(humann2_samples, sort=False, axis=1)
+
+    # Fill in zeros for missing data.
+    humann2_combined = humann2_combined.fillna(0)
+
+    # Determine name of first column of output table.
+    if index_name == "# Pathway":
+        first_col = "pathway"
+    elif index_name == "# Gene Family":
+        first_col = "function"
+    else:
+        sys.exit('Error: first column of input HUMAnN2 files is \"' +
+                 index_name + '\". Either \"# Pathway\" or ' +
+                 '\"# Gene Family\" was expected.')
+
+    # Output table with current index if table isn't stratified.
+    if not stratified:
+        humann2_combined.to_csv(path_or_buf=outfile,  sep="\t",
+                                index_label=first_col)
+
+    # Otherwise if the table is stratified remove all rows that are in
+    # unstratified format and split index into two columns.
+    else:
+        humann2_combined = humann2_combined[humann2_combined.index.str.contains('\\|')]
+
+        original_col = list(humann2_combined.columns)
+
+        humann2_combined[first_col], humann2_combined['sequence'] = humann2_combined.index.str.split('\\|', 1).str
+
+        # Reorder columns.
+        humann2_combined = humann2_combined.loc[:, [first_col, 'sequence'] +
+                                                original_col]
+
+        humann2_combined.to_csv(path_or_buf=outfile,  sep="\t", index=False)
+
+
+def convert_picrust2_to_humann2(infiles, outfolder, stratified):
+    '''Reads in a PICRUSt2 table(s) and splits each sample into different
+    file as compatible with HUMAnN2.'''
+
+    # If not stratified then read in single table.
+    if not stratified:
+
+        if len(infiles) > 1:
+            sys.exit('Stopping - only expected one input file when converting '
+                     'from PICRUSt2 unstratified table to HUMAnN2 format')
+
+        in_tab = pd.read_table(infiles[0], sep="\t", index_col=0)
+
+        # Double-check that this table isn't stratified.
+        if 'sequence' in in_tab.columns:
+            sys.exit('Stopping - column named sequence was found in the input '
+                     'table, but the unstratified conversion option was set.')
+
+        index_name = in_tab.index.name
+
+    # Otherwise read in stratified and unstratified tables.
+    else:
+
+        if len(infiles) != 2:
+
+            sys.exit('Stopping - expected two input files (stratified and '
+                     'unstratified PICRUSt2 tables) when converting to '
+                     'HUMAnN2 stratified format')
+
+        # Read in both input tables.
+        in_tab1 = pd.read_table(infiles[0], sep="\t")
+        in_tab2 = pd.read_table(infiles[1], sep="\t")
+
+        # Make sure that only 1 input table is stratified.
+        strat_table_count = 0
+
+        if 'sequence' in in_tab1.columns:
+            strat_table_count += 1
+
+        if 'sequence' in in_tab2.columns:
+            strat_table_count += 1
+
+        if strat_table_count != 1:
+            sys.exit('Stopping - exactly one stratified table should have been '
+                     'input - found ' + str(strat_table_count) + '.')
+
+
+        # Check that the first column labels are the same across both tables.
+        if in_tab1.columns[0] != in_tab2.columns[0]:
+            sys.exit('Stopping - label of first column does not match between '
+                     'the two input tables: \"' + in_tab1.columns[0] +
+                     '\" and \"' + in_tab2.columns[0] + '\".')
+
+        index_name = in_tab1.columns[0]
+
+        # Set index labels for each table appropriately and concatenate
+        # together. First define convenience fucntion to set index labels
+        # correctly.
+        def set_picrust2_tab_index(in_table):
+
+            if 'sequence' in in_table.columns:
+                in_table.index = in_table.loc[:, in_table.columns[0]].str.cat(others=in_table.loc[:, in_table.columns[1]],
+                                                                              sep='|')
+                in_table.drop(in_table.columns[0:2], axis=1, inplace=True)
+            else:
+                in_table.index = in_table[in_table.columns[0]]
+                in_table.drop(in_table.columns[0], axis=1, inplace=True)
+
+            in_table.index.name = "combined"
+
+            return(in_table)
+
+        in_tab1 = set_picrust2_tab_index(in_tab1)
+        in_tab2 = set_picrust2_tab_index(in_tab2)
+
+        # Concatenate these tables.
+        in_tab = pd.concat([in_tab1, in_tab2], sort=False)
+
+    # Determine name of first column of output table.
+    if index_name == 'pathway':
+        first_col = '# Pathway'
+    elif index_name == 'gene' or index_name == 'function':
+        first_col = '# Gene Family'
+    else:
+        sys.exit('Error: first column of input PICRUSt2 tables is \"' +
+                 index_name + '\". One of \"pathway\", \"gene\" or '
+                 '\"function\" were expected.')
+
+    # Remove description column if it is present.
+    if 'description' in in_tab.columns:
+        in_tab.drop('description', axis=1, inplace=True)
+
+    # Sort index labels.
+    in_tab.sort_index(axis=0, inplace=True)
+
+    # Make output directory.
+    make_output_dir(outfolder)
+
+    # Write each sample to a different file in the output folder.
+    for sample_id in in_tab.columns:
+        outfile = join(outfolder, sample_id + "_humann2-format.tsv")
+        
+        # Subset to this sample only and remove all rows that are 0.
+        tab_subset = in_tab[[sample_id]]
+        tab_subset = tab_subset.loc[~(tab_subset == 0).all(axis=1)]
+
+        tab_subset.to_csv(path_or_buf=outfile,  sep="\t",
+                          index_label=first_col)
+
+
+def convert_picrust2_to_humann2_merged(infiles, outfile):
+    '''Reads in a PICRUSt2 table(s), combines them, and outputs in HUMAnN2
+    tabular format.'''
+
+    # Initialize empty object.
+    new_tab = None
+
+    # List for keeping track name of first column in each file.
+    infile_index_names = []
+        
+    for infile in infiles:
+
+        in_table = pd.read_table(infile, sep="\t")
+
+        infile_index_names.append(in_table.columns[0])
+
+        # If sequence is a column then set the first 2 columns to be the index
+        # labels. Otherwise just take the first column to be the index labels.
+        if 'sequence' in in_table.columns:
+            in_table.index = in_table.loc[:, in_table.columns[0]].str.cat(others=in_table.loc[:, in_table.columns[1]],
+                                                                          sep='|')
+            in_table.drop(in_table.columns[0:2], axis=1, inplace=True)
+        else:
+            in_table.index = in_table[in_table.columns[0]]
+            in_table.drop(in_table.columns[0], axis=1, inplace=True)
+
+        # Remove description column if it is present.
+        if 'description' in in_table.columns:
+            in_table.drop('description', axis=1, inplace=True)
+
+        # Concantenate into new table if it exists already.
+        if new_tab is not None:
+            new_tab = pd.concat([new_tab, in_table], axis=1, sort=False)
+        else:
+            new_tab = in_table
+
+    # Check for what first column name should be.
+    infile_index_names_set = set(infile_index_names)
+
+    if len(infile_index_names_set) > 1:
+        sys.exit('Error input PICRUSt2 tables are not all for the same '
+                 'datatype. The datatypes of the input files are: ' +
+                 ', '.join(list(infile_index_names_set)))
+
+    index_name = infile_index_names[0]
+
+    # Fill in zeros for missing data.
+    new_tab = new_tab.fillna(0)
+
+    # Determine name of first column of output table.
+    if index_name == "pathway":
+        first_col = "# Pathway"
+    elif index_name == "gene" or index_name == "function":
+        first_col = "# Gene Family"
+    else:
+        sys.exit('Error: first column of input HUMAnN2 files is \"' +
+                 index_name + '\". Either \"# Pathway\" or ' +
+                 '\"# Gene Family\" was expected.')
+
+    # Write out.
+    new_tab.to_csv(path_or_buf=outfile,  sep="\t", index_label=first_col)
