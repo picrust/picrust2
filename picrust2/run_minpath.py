@@ -15,7 +15,6 @@ import copy
 from picrust2.util import (system_call_check, get_picrust_project_dir,
                            check_files_exist, make_output_dir)
 
-
 class PathwaysDatabase:
     '''Holds all of the reactions/pathways data from the file provided.
     This class was taken from HUMAnN2 v0.11.1 and was modified only slightly so
@@ -317,7 +316,6 @@ def run_minpath_pipeline(inputfile,
     # Run minpath wrapper on all samples if table is stratified. Note that 
     # input stratified table is subsetted to required columns only.
     if strat_format:
-
         
         if per_sequence_contrib:
             # If running MinPath on each sequence individually then that will be
@@ -430,8 +428,12 @@ def prep_pathway_df_out(in_tab, strat_index=False, num_digits=4):
     if strat_index:
         orig_col = list(in_tab_df.columns)
 
-        # Split stratified index into 2 new columns.
-        in_tab_df['pathway'], in_tab_df['sequence'] = in_tab_df.index.str.split('\\|\\|\\|', 1).str
+        if not in_tab_df.empty:
+            # Split stratified index into 2 new columns.
+            in_tab_df['pathway'], in_tab_df['sequence'] = in_tab_df.index.str.split('\\|\\|\\|', 1).str
+
+        else:
+            in_tab_df['pathway'], in_tab_df['sequence'] = "", ""
 
         # Add these columns to be first.
         in_tab_df = in_tab_df[['pathway', 'sequence'] + orig_col]
@@ -1031,15 +1033,21 @@ def gap_fill(key_reactions, reaction_abun):
 
     return reaction_abun_gap_filled
 
-def harmonic_mean(values):
-    '''Returns harmonic mean of input list of numbers. Modified from
-    HUMAnN2 v0.11.1.'''
-
-    # Return 0 if no input values or if any values are 0 (since 1/0 is
-    # undefined).
+def harmonic_mean(values, decimal_points=16):
+    '''Returns harmonic mean of input list of numbers. Will round to specified
+    number of decimal points first. Modified from HUMAnN2 v0.11.1.'''
 
     hmean = 0
-    if values and min(values) > 0:
+
+    # Return 0 if values is empty.
+    if not values:
+        return(hmean)
+
+    values = list(np.around(values, decimals=decimal_points))
+
+    # Return 0 if any values are 0 (since 1/0 is undefined).
+
+    if min(values) > 0:
         reciprocal_sum = sum((1.0 / v) for v in values)
         hmean = len(values) / reciprocal_sum
 

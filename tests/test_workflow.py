@@ -33,9 +33,6 @@ test_seq_abun_tsv = path.join(test_dir_path, "test_data", "workflow",
 test_seq_abun_biom = path.join(test_dir_path, "test_data", "workflow",
                                "workflow_seq_abun.biom")
 
-minpath_map = path.join(get_picrust_project_dir(), "MinPath",
-                        "ec2metacyc_picrust_prokaryotic.txt")
-
 class workflow_test(unittest.TestCase):
     '''Test for whether full pipeline runs without error. This is intended to
     catch incompatabilities between the different scripts that the other tests
@@ -49,80 +46,38 @@ class workflow_test(unittest.TestCase):
 
             out_tree = path.join(temp_dir, "out.tre")
 
-            system_call_check("place_seqs.py -s " + test_study_seqs + " -r " +\
-                              test_msa + " -t " + test_tree + " -o " +\
+            system_call_check("place_seqs.py -s " + test_study_seqs + " -r " +
+                              test_msa + " -t " + test_tree + " -o " +
                               out_tree)
 
             hsp_out_prefix = path.join(temp_dir, "hsp_out")
             hsp_out_prefix_marker = path.join(temp_dir, "hsp_out_marker")
 
-            system_call_check("hsp.py -t " + out_tree +\
-                " --observed_trait_table " + test_known_traits + " -n -c " +\
+            system_call_check("hsp.py -t " + out_tree +
+                " --observed_trait_table " + test_known_traits + " -n -c " +
                 "-o " + hsp_out_prefix)
 
-            system_call_check("hsp.py -t " + out_tree +\
-                " --observed_trait_table " + test_known_marker + " -n -c " +\
+            system_call_check("hsp.py -t " + out_tree +
+                " --observed_trait_table " + test_known_marker + " -n -c " +
                 "-o " + hsp_out_prefix_marker)
 
-            traits_predict = path.join(temp_dir, hsp_out_prefix +\
+            traits_predict = path.join(temp_dir, hsp_out_prefix +
                                        ".tsv")
 
-            marker_predict = path.join(temp_dir, hsp_out_prefix_marker +\
+            marker_predict = path.join(temp_dir, hsp_out_prefix_marker +
                                        ".tsv")
 
             metagenome_out = path.join(temp_dir, "meta_out")
 
-            system_call_check("metagenome_pipeline.py -i " + test_seq_abun_tsv +\
+            system_call_check("metagenome_pipeline.py -i " + test_seq_abun_tsv +
                               " -f " + traits_predict + " --strat_out -m " +
                               marker_predict + " -o " + metagenome_out)
 
             metagenome_outfile = path.join(metagenome_out,
                                            "pred_metagenome_strat.tsv")
 
-            system_call_check("run_minpath.py -i " + metagenome_outfile +\
-                              " -m " + minpath_map + " -o " + temp_dir)
-
-    def test_full_pipeline_biom(self):
-        '''Test that full pipeline can be run without error with
-        BIOM sequence abundance table.'''
-
-        with TemporaryDirectory() as temp_dir:
-
-            out_tree = path.join(temp_dir, "out.tre")
-
-            system_call_check("place_seqs.py -s " + test_study_seqs + " -r " +\
-                              test_msa + " -t " + test_tree + " -o " +\
-                              out_tree)
-
-            hsp_out_prefix = path.join(temp_dir, "hsp_out")
-            hsp_out_prefix_marker = path.join(temp_dir, "hsp_out_marker")
-
-            system_call_check("hsp.py -t " + out_tree +\
-                " --observed_trait_table " + test_known_traits + " -n -c " +\
-                "-o " + hsp_out_prefix)
-
-            system_call_check("hsp.py -t " + out_tree +\
-                " --observed_trait_table " + test_known_marker + " -n -c " +\
-                "-o " + hsp_out_prefix_marker)
-
-            traits_predict = path.join(temp_dir, hsp_out_prefix +\
-                                       ".tsv")
-
-            marker_predict = path.join(temp_dir, hsp_out_prefix_marker +\
-                                       ".tsv")
-
-            metagenome_out = path.join(temp_dir, "meta_out")
-
-            system_call_check("metagenome_pipeline.py -i " + test_seq_abun_biom +\
-                              " -f " + traits_predict + " --strat_out -m " +
-                              marker_predict + " -o " + metagenome_out)
-
-            metagenome_outfile = path.join(metagenome_out,
-                                           "pred_metagenome_strat.tsv")
-
-            system_call_check("run_minpath.py -i " + metagenome_outfile +\
-                              " -m " + minpath_map + " -o " + temp_dir)
-
+            system_call_check("run_minpath.py -i " + metagenome_outfile +
+                              " -o " + temp_dir)
 
 if __name__ == '__main__':
     unittest.main()

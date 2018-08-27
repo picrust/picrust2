@@ -59,7 +59,7 @@ get_sorted_prob <- function(in_likelihood, study_tips_i, tree_tips) {
 }
 
 
-### Function to wrap hsp_max_parsimony  and return probabilities for 
+### Function to wrap hsp_max_parsimony and return probabilities for 
 ### study sequences only (and for non-zero states only).
 mp_study_probs <- function(in_trait, in_tree ,unknown_i, check_input) {
 
@@ -67,6 +67,7 @@ mp_study_probs <- function(in_trait, in_tree ,unknown_i, check_input) {
                                   tip_states = in_trait,
                                   check_input=check_input,
                                   transition_costs = "proportional",
+                                  edge_exponent=0.5,
                                   weight_by_scenarios = TRUE)
   
   return(get_sorted_prob(mp_hsp_out$likelihoods,

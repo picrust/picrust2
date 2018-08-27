@@ -88,8 +88,9 @@ parser.add_argument('-p', '--processes', default=1, type=int,
                     '%(default)d).')
 
 parser.add_argument('--seed', default=100, type=int,
-                    help='Seed to make output reproducible ' +
-                         '(necessary for mp and emp_prob methods)')
+                    help='Seed to make output reproducible, which is ' +
+                         'necessary for the mp and emp_prob methods ' +
+                         '(default: %(default)d).')
 
 parser.add_argument('-v', '--version', default=False, action='version',
                     version="%(prog)s " + __version__)
