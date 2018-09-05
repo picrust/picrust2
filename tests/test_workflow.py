@@ -79,5 +79,18 @@ class workflow_test(unittest.TestCase):
             system_call_check("run_minpath.py -i " + metagenome_outfile +
                               " -o " + temp_dir)
 
+    def test_picrust2_pipeline_script(self):
+        '''Test that full pipeline can be run successfully with
+        picrust2_pipeline.py'''
+
+        with TemporaryDirectory() as temp_dir:
+
+            system_call_check("picrust2_pipeline.py -s " + test_study_seqs +
+                              " -i " + test_seq_abun_tsv + " -o " + temp_dir +
+                              " -r " + test_msa + " -t " + test_tree + 
+                              " --custom_trait_tables " + test_known_traits +
+                              " --marker_gene_table " + test_known_marker +
+                              " -o " + temp_dir)
+
 if __name__ == '__main__':
     unittest.main()
