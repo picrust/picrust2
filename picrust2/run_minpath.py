@@ -284,6 +284,10 @@ def run_minpath_pipeline(inputfile,
     # format or not.
     in_metagenome, strat_format = read_metagenome_input(inputfile)
 
+    # Remove 'description' column if it exists.
+    if "description" in in_metagenome.columns:
+        in_metagenome.drop("description", axis=1, inplace=True)
+
     # Get list of sample ids.
     samples = [col for col in in_metagenome.columns
                if col not in ["function", "sequence"]]

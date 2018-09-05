@@ -38,7 +38,7 @@ def place_seqs_pipeline(study_fasta,
     study_msa_fastafile = path.join(out_dir, "study_seqs_papara.fasta")
     ref_msa_fastafile = path.join(out_dir, "ref_seqs_papara.fasta")
 
-    # Split PaPaRa output into two FASTA files containging study and reference
+    # Split PaPaRa output into two FASTA files containing study and reference
     # sequences respectively.
     split_ref_study_papara(papara_out=papara_out,
                            ref_seqnames=set(list(ref_msa.keys())),
