@@ -6,6 +6,7 @@ __version__ = "2.0.0-b.6"
 
 from os import makedirs
 from os.path import abspath, dirname, isdir, join, exists
+from collections import defaultdict
 from subprocess import call
 import pandas as pd
 import numpy as np
@@ -113,6 +114,9 @@ def read_phylip(filename, check_input=True):
 
 
 def write_phylip(seq, outfile):
+    '''Will write a dictionary containing id, sequence pairs in Phylip
+    format. Originally written to run PaPaRa.'''
+
     out_phylip = open(outfile, "w")
 
     seq_count = 0
@@ -140,9 +144,52 @@ def write_phylip(seq, outfile):
     out_phylip.close()
 
 
+def read_stockholm(filename):
+    '''Reads in Stockholm formatted multiple sequence alignment and returns
+    dictionary with ids as keys and full concatenated sequences as values.
+    This was originally written for converting hmmalign output files.'''
+
+    # Intitialize defaultdict that will contain strings.
+    seq = defaultdict(str)
+
+    line_count = 0
+
+    # Read in file line-by-line.
+    with open(filename, "r") as stockholm:
+
+        for line in stockholm:
+
+            line = line.rstrip()
+
+            # Header-line - check that it starts with "# STOCKHOLM".
+            if line_count == 0 and "# STOCKHOLM" not in line:
+                sys.exit("Error - stockholm format multiple-sequence "
+                         "alignments should have \"# STOCKHOLM\" (and the "
+                         "version number) on the first line")
+
+            line_count += 1
+
+            # Skip blank lines, lines that start with comment, and lines that
+            # start with "//".
+            if not line or line[0] == "#" or line[0:2] == "//":
+                continue
+
+            line_split = line.split()
+
+            # Add sequence to dictionary.
+            seq[line_split[0]] += line_split[1]
+
+    # Double-check that last line was "//"
+    if line[0:2] != "//":
+        sys.exit("Error - last line of stockholm file should have been "
+                 "\"//\".")
+
+    return seq
+
+
 def system_call_check(cmd, print_out=False, stdout=None, stderr=None):
-    """Run system command and throw and error if return is not 0. Input command
-    can be a list containing the command or a string."""
+    '''Run system command and throw and error if return is not 0. Input command
+    can be a list containing the command or a string.'''
 
     # Print command out if option set.
     if print_out:
@@ -276,15 +323,21 @@ def check_files_exist(filepaths):
                          ", ".join(missing_files))
 
 
-def add_descrip_col(inputfile : str, mapfile : str):
+def add_descrip_col(inputfile, mapfile, in_df=False):
     '''Takes paths to input table and mapfile of function ids to descriptions.
     Will read both of these files in as pandas dataframes and will add
     descriptions as a separate column in a new pandas dataframe, which will be
     returned. Note that the first column of the input function abundance table
-    is assumed to contain the functions ids.'''
+    is assumed to contain the functions ids. An input dataframe rather than
+    path to file can also be passed as the "inputfile", in which case in_df
+    should be set to True.'''
 
     # Read in input tables.
-    function_tab = pd.read_table(inputfile, sep="\t")
+    if in_df:
+        function_tab = inputfile
+    else:
+        function_tab = pd.read_table(inputfile, sep="\t")
+    
     map_tab = pd.read_table(mapfile, sep="\t", index_col=0, header=None,
                             names=["function", "description"])
 
