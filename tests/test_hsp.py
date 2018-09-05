@@ -2,7 +2,7 @@
 
 __copyright__ = "Copyright 2018, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.0.0-b.6"
+__version__ = "2.0.0-b.7"
 
 import unittest
 from os import path
@@ -60,10 +60,6 @@ class castor_hsp_workflow_tests(unittest.TestCase):
                                                  trait_table_path=in_traits1,
                                                  hsp_method="mp",
                                                  ran_seed=10)
-	
-	# Since values can differ depending on exact dependency versions, just comparing dimension and names.
-        predict_out[:] = 0
-        hsp_mp_pred_in[:] = 0
 
         pd.testing.assert_frame_equal(predict_out, hsp_mp_pred_in, check_like=True)
 
@@ -127,10 +123,6 @@ class castor_hsp_workflow_tests(unittest.TestCase):
                                                  ran_seed=10,
                                                  calc_ci=True)
 
-       	# Since values can differ depending on exact dependency versions, just comparing dimension and names.
-        #predict_out[:] = 0
-        #hsp_mp_pred_in_ci[:] = 0
-
         pd.testing.assert_frame_equal(ci_out, hsp_mp_pred_in_ci, check_like=True)
 
     def test_nsti(self):
@@ -179,11 +171,11 @@ class table_mdf5sum_tests(unittest.TestCase):
                     cog_hash.hexdigest(), pfam_hash.hexdigest(),
                     tigrfam_hash.hexdigest()]
 
-        exp_hash = ["eee9858e8d299606b46501d5429079d6",
-                    "4571265528069628a25aacf4063d1126",
-                    "96f7c0156fdb7ec1581f5c11a5ac0c8c",
-                    "7dd50a28bef5c9b3a6e234553b32720d",
-                    "19e39fa1cec079d8fd94b12b368a931f"]
+        exp_hash = ["16a6b6a6b31cdc7c333ad6316dddef6e",
+                    "8a2797c478140e66507dc5ead75ea0b6",
+                    "dc78e8b7293b26d5d9a7252fdc86c452",
+                    "0669a8afd69b082469bf3075234963f3",
+                    "fac62e419863cc8a0f8257d63bd49fb9"]
 
         # Check that md5sum values match expected values.
         self.assertEqual(obs_hash, exp_hash)

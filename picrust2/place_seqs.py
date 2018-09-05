@@ -2,7 +2,7 @@
 
 __copyright__ = "Copyright 2018, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.0.0-b.6"
+__version__ = "2.0.0-b.7"
 
 from os import path, chdir, getcwd
 from picrust2.util import (system_call_check, make_output_dir, read_fasta,
@@ -38,7 +38,7 @@ def place_seqs_pipeline(study_fasta,
     study_msa_fastafile = path.join(out_dir, "study_seqs_papara.fasta")
     ref_msa_fastafile = path.join(out_dir, "ref_seqs_papara.fasta")
 
-    # Split PaPaRa output into two FASTA files containging study and reference
+    # Split PaPaRa output into two FASTA files containing study and reference
     # sequences respectively.
     split_ref_study_papara(papara_out=papara_out,
                            ref_seqnames=set(list(ref_msa.keys())),

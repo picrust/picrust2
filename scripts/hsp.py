@@ -2,7 +2,7 @@
 
 __copyright__ = "Copyright 2018, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.0.0-b.6"
+__version__ = "2.0.0-b.7"
 
 import argparse
 from picrust2.wrap_hsp import castor_hsp_workflow
@@ -88,8 +88,9 @@ parser.add_argument('-p', '--processes', default=1, type=int,
                     '%(default)d).')
 
 parser.add_argument('--seed', default=100, type=int,
-                    help='Seed to make output reproducible ' +
-                         '(necessary for mp and emp_prob methods)')
+                    help='Seed to make output reproducible, which is ' +
+                         'necessary for the mp and emp_prob methods ' +
+                         '(default: %(default)d).')
 
 parser.add_argument('-v', '--version', default=False, action='version',
                     version="%(prog)s " + __version__)
