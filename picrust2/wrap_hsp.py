@@ -177,30 +177,3 @@ def castor_nsti(tree_path,
 
     return(nsti_out)
 
-
-def castor_hsp_loocv_wrapper(tree_path,
-                             trait_table_path,
-                             tips_path,
-                             hsp_method,
-                             expected_out_path,
-                             predicted_out_path,
-                             metrics_out_path,
-                             num_cores=1):
-    '''Runs the castor_hsp_loocv.R Rscript and writes out result tables'''
-    castor_loocv_hsp_script_fp = path.join(get_picrust_project_dir(),
-                                           'picrust2', 'Rscripts',
-                                           'castor_hsp_loocv.R')
-
-    loocv_cmd = " ".join(["Rscript",
-                          castor_loocv_hsp_script_fp,
-                          tree_path,
-                          trait_table_path,
-                          tips_path,
-                          hsp_method,
-                          expected_out_path,
-                          predicted_out_path,
-                          metrics_out_path,
-                          str(num_cores)])
-
-    # Run castor_hsp_loocv.R here
-    system_call_check(loocv_cmd)
