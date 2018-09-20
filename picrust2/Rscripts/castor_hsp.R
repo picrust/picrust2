@@ -29,8 +29,8 @@ ci_95_states2values <- function(state_probs) {
     state_prob_cumsum <- state_probs
   }
   
-  ci_5 <- apply(state_prob_cumsum, 1, function(x) { min(which(x >= 0.05)) })
-  ci_95 <- apply(state_prob_cumsum, 1, function(x) { min(which(x >= 0.95)) })
+  ci_5 <- apply(state_prob_cumsum, 1, function(x) {  as.numeric(colnames(state_probs)[min(which(x >= 0.05))]) })
+  ci_95 <- apply(state_prob_cumsum, 1, function(x) {  as.numeric(colnames(state_probs)[min(which(x >= 0.95))]) })
   
   return(c(ci_5, ci_95))
 }
@@ -169,7 +169,7 @@ if (hsp_method == "pic" | hsp_method == "scp" | hsp_method == "subtree_average")
 
   # Get state with highest probability in each case.
   predicted_values <- lapply(hsp_out_models_unknown_lik,
-                               function(x) { colnames(x)[max.col(x)] })
+                               function(x) { as.numeric(colnames(x)[max.col(x)]) })
 
   # If calc_ci set then figure out what the assigned trait would be at the 95% CI and output resulting matrix.
   if(calc_ci) {
