@@ -421,7 +421,7 @@ def prep_pathway_df_out(in_tab, strat_index=False, num_digits=4):
     stratified format then convert them to columns.'''
 
     # Convert these returned lists of series into pandas dataframes.
-    in_tab_df = pd.concat(in_tab, axis=1, sort=False)
+    in_tab_df = pd.concat(in_tab, axis=1)
 
     # Replace all missing values (NaN)
     in_tab_df = in_tab_df.fillna(0)

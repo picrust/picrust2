@@ -286,7 +286,7 @@ def three_df_index_overlap_sort(df1, df2, df3):
     overlap across all dataframes and will subset the labels to this set and
     then will sort the dataframes to be in the same order'''
 
-    label_overlap = df1.index.intersection(df2.index.intersection(df3.index))
+    label_overlap = df1.index.intersection(df2.index.intersection(df3.index)).sort_values()
 
     # If there are no overlapping labels then throw error.
     if len(label_overlap) == 0:
@@ -382,7 +382,7 @@ def convert_humann2_to_picrust2(infiles, outfile, stratified):
     index_name = infile_index_names[0]
 
     # Concatenate all sample dfs into a single table.
-    humann2_combined = pd.concat(humann2_samples, sort=False, axis=1)
+    humann2_combined = pd.concat(humann2_samples, axis=1)
 
     # Fill in zeros for missing data.
     humann2_combined = humann2_combined.fillna(0)
@@ -494,7 +494,7 @@ def convert_picrust2_to_humann2(infiles, outfolder, stratified):
         in_tab2 = set_picrust2_tab_index(in_tab2)
 
         # Concatenate these tables.
-        in_tab = pd.concat([in_tab1, in_tab2], sort=False)
+        in_tab = pd.concat([in_tab1, in_tab2])
 
     # Determine name of first column of output table.
     if index_name == 'pathway':
@@ -560,7 +560,7 @@ def convert_picrust2_to_humann2_merged(infiles, outfile):
 
         # Concantenate into new table if it exists already.
         if new_tab is not None:
-            new_tab = pd.concat([new_tab, in_table], axis=1, sort=False)
+            new_tab = pd.concat([new_tab, in_table], axis=1)
         else:
             new_tab = in_table
 

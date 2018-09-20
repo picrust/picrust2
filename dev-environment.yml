@@ -8,8 +8,8 @@ channels:
 dependencies:
 - h5py
 - joblib
-- numpy=1.13
-- python=3.6.5
+- numpy
+- python=3
 - r-base
 - r-castor
 - glpk

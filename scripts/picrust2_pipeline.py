@@ -8,16 +8,11 @@ import argparse
 from os import path
 import sys
 import time
-from tempfile import TemporaryDirectory
-from picrust2.place_seqs import place_seqs_pipeline
-from picrust2.wrap_hsp import castor_hsp_workflow
 from picrust2.default import (default_fasta, default_tree, default_tables,
                               default_map, default_regroup_map,
                               default_pathway_map)
-from picrust2.run_minpath import run_minpath_pipeline
-from picrust2.metagenome_pipeline import run_metagenome_pipeline
-from picrust2.util import (make_output_dir, check_files_exist,
-                           add_descrip_col)
+from picrust2.util import make_output_dir
+from picrust2.pipeline import full_pipeline
 
 HSP_METHODS = ['mp', 'emp_prob', 'pic', 'scp', 'subtree_average']
 
@@ -168,7 +163,10 @@ parser.add_argument('--per_sequence_contrib', default=False, action="store_true"
                     'sequence will also be output when this option is set '
                     '(default: %(default)d).')
 
-parser.add_argument('--print_cmds', default=False, action='store_true',
+parser.add_argument('--no_descrip', default=False, action='store_true',
+                    help='Do not add function descriptions to output tables.')
+
+parser.add_argument('--verbose', default=False, action='store_true',
                     help='If specified, print out wrapped commands to screen')
 
 parser.add_argument('-v', '--version', default=False, action='version',
@@ -177,264 +175,79 @@ parser.add_argument('-v', '--version', default=False, action='version',
 
 def main():
 
-    args = parser.parse_args()
-
     # Get start time.
     start_time = time.time()
 
-    # Check that input files exist.
-    check_files_exist([args.study_fasta, args.input])
+    args = parser.parse_args()
+    
+    func_dfs, unstrat_abun, unstrat_cov, strat_abun, strat_cov = full_pipeline(study_fasta=args.study_fasta,
+                                                                              input_table=args.input,
+                                                                              output_folder=args.output,
+                                                                              threads=args.threads,
+                                                                              ref_msa=args.ref_msa,
+                                                                              tree=args.tree,
+                                                                              in_traits=args.in_traits,
+                                                                              custom_trait_tables=args.custom_trait_tables,
+                                                                              marker_gene_table=args.marker_gene_table,
+                                                                              pathway_map=args.pathway_map,
+                                                                              no_pathways=args.no_pathways,
+                                                                              regroup_map=args.regroup_map,
+                                                                              no_regroup=args.no_regroup,
+                                                                              stratified=args.stratified,
+                                                                              max_nsti=args.max_nsti,
+                                                                              min_reads=args.min_reads,
+                                                                              min_samples=args.min_samples,
+                                                                              hsp_method=args.hsp_method,
+                                                                              calculate_NSTI=args.calculate_NSTI,
+                                                                              confidence=args.confidence,
+                                                                              seed=args.seed,
+                                                                              no_gap_fill=args.no_gap_fill,
+                                                                              per_sequence_contrib=args.per_sequence_contrib,
+                                                                              no_descrip=args.no_descrip,
+                                                                              verbose=args.verbose)
 
-    # Make output folder.
-    make_output_dir(args.output)
-
-    out_tree = path.join(args.output, "out.tre")
-
-    if args.custom_trait_tables is None:
-
-        # Check that specified functional categories are allowed.
-        FUNC_TRAIT_OPTIONS = ['COG', 'EC', 'KO', 'PFAM', 'TIGRFAM']
-        funcs = args.in_traits.split(",")
-        for func in funcs:
-            if func not in FUNC_TRAIT_OPTIONS:
-                sys.exit("Error - specified category " + func + " is not one of "
-                         "the default categories.")
-
-        # Add EC to this set if pathways are to be predicted.
-        if "EC" not in funcs and not args.no_pathways:
-            funcs.append("EC")
-
-        rxn_func = "EC"
-
-        func_tables = default_tables
-
-    else:
-        funcs = []
-        func_tables = {}
-
-        table_i = 0
-
-        for custom in args.custom_trait_tables.split(","):
-
-            func_id = path.splitext(path.basename(custom))[0]
-            funcs.append(func_id)
-            func_tables[func_id] = custom
-
-            if table_i == 0:
-                rxn_func = func_id
-                table_i += 1
-
-    # Append marker as well, since this also needs to be run.
-    funcs.append("marker")
-    func_tables["marker"] = args.marker_gene_table
-
-    # Methods for discrete trait prediction with CI enabled.
-    discrete_set = set(['emp_prob', 'mp'])
-
-    if args.confidence and args.hsp_method in discrete_set:
-        ci_setting = True
-    else:
-        ci_setting = False
-
-    gap_fill_opt = not args.no_gap_fill
-
-    with TemporaryDirectory() as temp_dir:
-
-        print("Placing sequences onto reference tree.")
-
-        place_seqs_pipeline(study_fasta=args.study_fasta,
-                            ref_msa=args.ref_msa,
-                            tree=args.tree,
-                            out_tree=out_tree,
-                            threads=args.threads,
-                            papara_output=None,
-                            out_dir=temp_dir,
-                            chunk_size=5000,
-                            print_cmds=args.print_cmds)
-
-        print("Finished placing sequences on output tree: " + out_tree)
-
-    # Get predictions for all specified functions and keep track of outfiles.
-    predicted_funcs = {}
-
-    for func in funcs:
-
-        # Only output NSTI in 16S table.
-        nsti_setting = False
-        if func == "marker" and args.calculate_NSTI:
-            nsti_setting = True
-
-        print("Running hidden-state prediction for " + func)
-
-        hsp_table, ci_table = castor_hsp_workflow(tree_path=out_tree,
-                                                  trait_table_path=func_tables[func],
-                                                  hsp_method=args.hsp_method,
-                                                  calc_nsti=nsti_setting,
-                                                  calc_ci=ci_setting,
-                                                  check_input=False,
-                                                  num_proc=args.threads,
-                                                  ran_seed=args.seed)
-
-        count_outfile = path.join(args.output, func + "_predicted.tsv")
-
-        # Add "_nsti" to filename if output.
-        if nsti_setting:
-            count_outfile = path.join(args.output, func + "_nsti_predicted.tsv")
-
-        # Keep track of output file name for next step of pipeline.
-        predicted_funcs[func] = count_outfile
-
-        print("Writing out predicted gene family abundances to " + count_outfile)
-
-        hsp_table.to_csv(path_or_buf=count_outfile, index_label="sequence", sep="\t")
-
-        # Output the CI file as well if option set.
-        if ci_setting:
-            ci_outfile = path.join(args.output, func + "_predicted_ci.tsv")
-            print("Writing out predicted gene family CIs to " + ci_outfile)
-            ci_table.to_csv(path_or_buf=ci_outfile, index_label="sequence",
-                            sep="\t")
-
-    marker_infile = predicted_funcs["marker"]
-
-    # Loop over each function again and run metagenome pipeline.
-    for func in funcs:
-
-        if func == "marker":
-            continue
-
-        func_infile = predicted_funcs[func]
+    for func in func_dfs.keys():
 
         func_output_dir = path.join(args.output, func + "_metagenome_out")
 
-        print("Running metagenome pipeline for " + func)
+        print("Writing metagenome output files for " + func + " to: " + func_output_dir)
 
-        # Infer metagenome abundances per-sample.
-        with TemporaryDirectory() as temp_dir:
+        unstrat_outfile = path.join(func_output_dir, "pred_metagenome_unstrat.tsv")
+        func_dfs[func][0].to_csv(path_or_buf=unstrat_outfile, sep="\t", index=False)    
+    
+        if func_dfs[func][1] is not None:
+            strat_outfile = path.join(func_output_dir, "pred_metagenome_strat.tsv")
+            func_dfs[func][1].to_csv(path_or_buf=strat_outfile, sep="\t", index=False)
 
-            # Pass arguments to key function and get predicted functions
-            # stratified and unstratified by genomes.
-            strat_pred, unstrat_pred = run_metagenome_pipeline(input_biom=args.input,
-                                                               function=func_infile,
-                                                               marker=marker_infile,
-                                                               out_dir=func_output_dir,
-                                                               max_nsti=args.max_nsti,
-                                                               min_reads=args.min_reads,
-                                                               min_samples=args.min_samples,
-                                                               strat_out=args.stratified,
-                                                               proc=args.threads,
-                                                               output_normfile=True)
-
-            print("Writing metagenome output files for " + func + " to: " +
-                  func_output_dir)
-
-            # Generate output table filepaths and write out pandas dataframe.
-            unstrat_outfile = path.join(func_output_dir, "pred_metagenome_unstrat.tsv")
-
-            unstrat_pred.index.name = "function"
-            unstrat_pred.reset_index(inplace=True)
-
-            if args.custom_trait_tables is None:
-                unstrat_pred = add_descrip_col(inputfile=unstrat_pred,
-                                               mapfile=default_map[func],
-                                               in_df=True)
-
-            unstrat_pred.to_csv(path_or_buf=unstrat_outfile, sep="\t", index=False)
-
-            # Write out stratified table only if that option was specified.
-            if args.stratified:
-                strat_outfile = path.join(func_output_dir, "pred_metagenome_strat.tsv")
-                strat_pred.reset_index(inplace=True)
-
-                if args.custom_trait_tables is None:
-                    strat_pred = add_descrip_col(inputfile=strat_pred,
-                                                 mapfile=default_map[func],
-                                                 in_df=True)
-
-                strat_pred.to_csv(path_or_buf=strat_outfile, sep="\t", index=False)
-
-    # Infer pathway abundances and coverages unless --no_pathways set.
     if not args.no_pathways:
-
-        if args.stratified:
-            in_metagenome = path.join(args.output,
-                                      rxn_func + "_metagenome_out",
-                                      "pred_metagenome_strat.tsv")
-        else:
-            in_metagenome = path.join(args.output,
-                                      rxn_func + "_metagenome_out",
-                                      "pred_metagenome_unstrat.tsv")
-
-        print("Inferring MetaCyc pathways from predicted functions in this "
-              "file: " + in_metagenome)
-
-        with TemporaryDirectory() as temp_dir:
-            unstrat_abun, unstrat_cov, strat_abun, strat_cov = run_minpath_pipeline(
-                                                            inputfile=in_metagenome,
-                                                            mapfile=default_pathway_map,
-                                                            regroup_mapfile=default_regroup_map,
-                                                            proc=args.threads,
-                                                            out_dir=temp_dir,
-                                                            gap_fill=gap_fill_opt,
-                                                            per_sequence_contrib=args.per_sequence_contrib,
-                                                            print_cmds=args.print_cmds)
-
         pathways_out = path.join(args.output, "pathways_out")
+
+        print("Writing predicted pathway abundances and coverages to " + pathways_out)
 
         make_output_dir(pathways_out)
 
-        print("Writing predicted pathway abundances and coverages to " +
-              pathways_out)
-
-        # Write output files.
         unstrat_abun_outfile = path.join(pathways_out, "path_abun_unstrat.tsv")
-        unstrat_abun.reset_index(inplace=True)
-
-        if args.custom_trait_tables is None:
-            unstrat_abun = add_descrip_col(inputfile=unstrat_abun,
-                                           mapfile=default_map["METACYC"],
-                                           in_df=True)
+        unstrat_cov_outfile = path.join(pathways_out, "path_cov_unstrat.tsv")
+        strat_abun_outfile = path.join(pathways_out, "path_abun_strat.tsv")
+        strat_cov_outfile = path.join(pathways_out, "path_cov_strat.tsv")
 
         unstrat_abun.to_csv(path_or_buf=unstrat_abun_outfile,  sep="\t",
                             index=False)
 
-        unstrat_cov_outfile = path.join(pathways_out, "path_cov_unstrat.tsv")
-        unstrat_cov.reset_index(inplace=True)
-
-        if args.custom_trait_tables is None:
-            unstrat_cov = add_descrip_col(inputfile=unstrat_cov,
-                                        mapfile=default_map["METACYC"],
-                                        in_df=True)
-
         unstrat_cov.to_csv(path_or_buf=unstrat_cov_outfile,  sep="\t",
                            index=False)
 
-        # Write stratified output only if something besides None was returned.
         if strat_abun is not None:
-            strat_abun_outfile = path.join(pathways_out, "path_abun_strat.tsv")
-
-            if args.custom_trait_tables is None:
-                strat_abun = add_descrip_col(inputfile=strat_abun,
-                                             mapfile=default_map["METACYC"],
-                                             in_df=True)
             strat_abun.to_csv(path_or_buf=strat_abun_outfile,  sep="\t",
                               index=False)
 
         if strat_cov is not None:
-            strat_cov_outfile = path.join(pathways_out, "path_cov_strat.tsv")
-
-            if args.custom_trait_tables is None:
-                strat_cov = add_descrip_col(inputfile=strat_cov,
-                                            mapfile=default_map["METACYC"],
-                                            in_df=True)
-
             strat_cov.to_csv(path_or_buf=strat_cov_outfile,  sep="\t",
                              index=False)
 
     # Print out elapsed time.
     elapsed_time = time.time() - start_time
     print("Completed PICRUSt2 pipeline in " + "%.2f" % elapsed_time + " seconds.")
-
 
 if __name__ == "__main__":
     main()
