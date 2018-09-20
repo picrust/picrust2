@@ -24,7 +24,7 @@ in_tree1 = path.join(test_dir_path, "tree.tre")
 hsp_mp_pred = path.join(test_dir_path, "hsp_output", "mp_pred_out.tsv")
 hsp_mp_pred_nsti = path.join(test_dir_path, "hsp_output",
                              "mp_pred_out_nsti.tsv")
-hsp_mp_pred_ci = path.join(test_dir_path, "hsp_output", "mp_pred_out_ci.tsv")
+hsp_emp_prob_pred_ci = path.join(test_dir_path, "hsp_output", "emp_prob_pred_out_ci.tsv")
 
 hsp_emp_prob_pred = path.join(test_dir_path, "hsp_output",
                               "emp_prob_pred_out.tsv")
@@ -38,7 +38,7 @@ hsp_mp_pred_in = pd.read_table(hsp_mp_pred, sep="\t", index_col="sequence")
 hsp_mp_pred_in_nsti = pd.read_table(hsp_mp_pred_nsti, sep="\t",
                                     index_col="sequence")
 
-hsp_mp_pred_in_ci = pd.read_table(hsp_mp_pred_ci, sep="\t",
+hsp_emp_prob_pred_in_ci = pd.read_table(hsp_emp_prob_pred_ci, sep="\t",
                                   index_col="sequence")
 
 hsp_emp_prob_pred_in = pd.read_table(hsp_emp_prob_pred, sep="\t",
@@ -114,15 +114,15 @@ class castor_hsp_workflow_tests(unittest.TestCase):
 
         pd.testing.assert_frame_equal(predict_out, hsp_subtree_average_pred_in, check_like=True)
 
-    def test_mp_ci(self):
-        '''Test that MP confidence intervals calculated correctly.'''
+    def test_emp_prob_ci(self):
+        '''Test that Emp Prob confidence intervals calculated correctly.'''
         predict_out, ci_out = castor_hsp_workflow(tree_path=in_tree1,
                                                  trait_table_path=in_traits1,
-                                                 hsp_method="mp",
+                                                 hsp_method="emp_prob",
                                                  ran_seed=10,
                                                  calc_ci=True)
 
-        pd.testing.assert_frame_equal(ci_out, hsp_mp_pred_in_ci, check_like=True)
+        pd.testing.assert_frame_equal(ci_out, hsp_emp_prob_pred_in_ci, check_like=True)
 
     def test_nsti(self):
         '''Test that calculated NSTI values match expected.'''

@@ -77,8 +77,7 @@ parser.add_argument('-n', '--calculate_NSTI', default=False,
 
 parser.add_argument('-c', '--confidence', default=False, action='store_true',
                     help='Output 95 percent confidence ' +
-                         'intervals (only possible for mk_model, emp_prob, ' +
-                         'and mp settings)')
+                         'intervals (only possible when used with \"emp_prob\" method currently).')
 
 parser.add_argument('--check', default=False, action='store_true',
                     help='Check input trait table before HSP')
@@ -115,10 +114,8 @@ def main():
     # Check that input filenames exist.
     check_files_exist([args.tree, trait_table])
 
-    # Methods for discrete trait prediction with CI enabled.
-    discrete_set = set(['emp_prob', 'mp'])
-
-    if args.confidence and args.hsp_method in discrete_set:
+    # Only calculate CIs if method is "emp_prob".
+    if args.confidence and args.hsp_method in "emp_prob":
         ci_setting = True
     else:
         ci_setting = False
