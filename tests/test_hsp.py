@@ -12,7 +12,6 @@ import gzip
 from picrust2.default import default_tables
 from picrust2.util import get_picrust_project_dir
 from picrust2.wrap_hsp import (castor_hsp_workflow,
-                               castor_hsp_loocv_wrapper,
                                castor_nsti)
 
 # Read in expected output files.
@@ -146,11 +145,15 @@ class table_mdf5sum_tests(unittest.TestCase):
 
     def test_default_table_md5sum(self):
 
+        16S_hash = hashlib.md5()
         ec_hash = hashlib.md5()
         ko_hash = hashlib.md5()
         cog_hash = hashlib.md5()
         pfam_hash = hashlib.md5()
         tigrfam_hash = hashlib.md5()
+
+        with gzip.open(default_tables["16S"], 'rt') as 16S_in:
+            16S_hash.update(16S_in.read().encode())
 
         with gzip.open(default_tables["EC"], 'rt') as ec_in:
             ec_hash.update(ec_in.read().encode())
@@ -167,15 +170,16 @@ class table_mdf5sum_tests(unittest.TestCase):
         with gzip.open(default_tables["TIGRFAM"], 'rt') as tigrfam_in:
             tigrfam_hash.update(tigrfam_in.read().encode())
 
-        obs_hash = [ec_hash.hexdigest(), ko_hash.hexdigest(),
-                    cog_hash.hexdigest(), pfam_hash.hexdigest(),
-                    tigrfam_hash.hexdigest()]
+        obs_hash = [16S_hash.hexdigest(), ec_hash.hexdigest(),
+                    ko_hash.hexdigest(), cog_hash.hexdigest(),
+                    pfam_hash.hexdigest(), tigrfam_hash.hexdigest()]
 
-        exp_hash = ["16a6b6a6b31cdc7c333ad6316dddef6e",
-                    "8a2797c478140e66507dc5ead75ea0b6",
-                    "dc78e8b7293b26d5d9a7252fdc86c452",
-                    "0669a8afd69b082469bf3075234963f3",
-                    "fac62e419863cc8a0f8257d63bd49fb9"]
+        exp_hash = ["fb642b02faf0969f97a2c530324f748d",
+                    "27dc66038e6b9515d3e78f21584b1060",
+                    "5730a78767df66929de5b975663053f1",
+                    "3271835a37b72cfdd4f2edee712cb38e",
+                    "6d95eb41f79d4e96fdede67ae5d1c89e",
+                    "4d6f541143065ae930a55a5d323109d8"]
 
         # Check that md5sum values match expected values.
         self.assertEqual(obs_hash, exp_hash)

@@ -36,7 +36,7 @@ parser.add_argument('-m', '--marker', metavar='PATH',
                     help='Table of predicted marker gene copy numbers ' +
                          '(output of hsp.py, typically for 16S)')
 
-parser.add_argument('--max_nsti', metavar='INT', type=int, default=2,
+parser.add_argument('--max_nsti', metavar='FLOAT', type=float, default=2.0,
                     help='Sequences with NSTI values above this value will ' +
                          'be excluded (default: %(default)d).')
 

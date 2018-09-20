@@ -66,8 +66,8 @@ class place_seqs_tests(unittest.TestCase):
 
         # Check that md5sum values match expected values.
         self.assertEqual([fasta_hash.hexdigest(), tree_hash.hexdigest()],
-                         ['18077098382e8f2bfc6c1d0ca39bafc9',
-                          '41c4186f1fdda359c67dc15916b15058'])
+                         ['5e6db5a9521ff4d2b8ac48d73fdbb4f9',
+                          '366924e57d2c2a9f650c0ff837c25359'])
 
     def test_run_papara(self):
         '''Basic test for run_papara function.'''

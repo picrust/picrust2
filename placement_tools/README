@@ -1,7 +1,8 @@
 Since EPA-NG and GAPPA are currently under rapid development, the source code of compatible versions of these programs are packaged with the PICRUSt2 repository.
 
-The EPA-NG source code corresponds to commit 296df568fc90beb68c553e2a6deb4d2697542017, which was on 12 July 2018 (the most recent release was 0.2.1-beta on Apr 11).
+I created forks of these development repos to ensure the compatible version with PICRUSt2 would be straight-forward to download - however note that these are not official releases by the authors (except in the case of PaPaRa)!
 
-The GAPPA source code corresponds to commit 697030962c9f1469309d0ec477b484c5d375ba0f, which was on 10 July 2018.
-
-The PaPaRa source code corresponds to v2.5 downloaded from: https://sco.h-its.org/exelixis/resource/download/software/papara_nt-2.5-source.tar.gz
+The tarballs in this folder were downloaded from these links:
+EPA-NG: https://github.com/gavinmdouglas/epa-ng/archive/0.2.1-beta-dev.tar.gz
+GAPPA: https://github.com/gavinmdouglas/gappa/archive/v0.0.0-dev.tar.gz
+PaPaRa: https://github.com/gavinmdouglas/papara_nt/archive/2.5-dev.tar.gz
