@@ -2,7 +2,7 @@
 
 __copyright__ = "Copyright 2018, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.0.0-b.7"
+__version__ = "2.0.0-b.8"
 
 import argparse
 from tempfile import TemporaryDirectory
