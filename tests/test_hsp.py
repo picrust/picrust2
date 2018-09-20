@@ -145,15 +145,15 @@ class table_mdf5sum_tests(unittest.TestCase):
 
     def test_default_table_md5sum(self):
 
-        16S_hash = hashlib.md5()
+        marker_16S_hash = hashlib.md5()
         ec_hash = hashlib.md5()
         ko_hash = hashlib.md5()
         cog_hash = hashlib.md5()
         pfam_hash = hashlib.md5()
         tigrfam_hash = hashlib.md5()
 
-        with gzip.open(default_tables["16S"], 'rt') as 16S_in:
-            16S_hash.update(16S_in.read().encode())
+        with gzip.open(default_tables["16S"], 'rt') as marker_16S_in:
+            marker_16S_hash.update(marker_16S_in.read().encode())
 
         with gzip.open(default_tables["EC"], 'rt') as ec_in:
             ec_hash.update(ec_in.read().encode())
@@ -170,7 +170,7 @@ class table_mdf5sum_tests(unittest.TestCase):
         with gzip.open(default_tables["TIGRFAM"], 'rt') as tigrfam_in:
             tigrfam_hash.update(tigrfam_in.read().encode())
 
-        obs_hash = [16S_hash.hexdigest(), ec_hash.hexdigest(),
+        obs_hash = [marker_16S_hash.hexdigest(), ec_hash.hexdigest(),
                     ko_hash.hexdigest(), cog_hash.hexdigest(),
                     pfam_hash.hexdigest(), tigrfam_hash.hexdigest()]
 
