@@ -7,3 +7,4 @@ precalculated/prokaryotic/*_counts_mean_round_var.txt
 tutorial_files/tutorial_out/
 testing_datasets/
 .pytest_cache/
+default_files/prokaryotic/reference_unaligned.fna

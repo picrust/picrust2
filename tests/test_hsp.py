@@ -12,7 +12,6 @@ import gzip
 from picrust2.default import default_tables
 from picrust2.util import get_picrust_project_dir
 from picrust2.wrap_hsp import (castor_hsp_workflow,
-                               castor_hsp_loocv_wrapper,
                                castor_nsti)
 
 # Read in expected output files.
@@ -25,7 +24,7 @@ in_tree1 = path.join(test_dir_path, "tree.tre")
 hsp_mp_pred = path.join(test_dir_path, "hsp_output", "mp_pred_out.tsv")
 hsp_mp_pred_nsti = path.join(test_dir_path, "hsp_output",
                              "mp_pred_out_nsti.tsv")
-hsp_mp_pred_ci = path.join(test_dir_path, "hsp_output", "mp_pred_out_ci.tsv")
+hsp_emp_prob_pred_ci = path.join(test_dir_path, "hsp_output", "emp_prob_pred_out_ci.tsv")
 
 hsp_emp_prob_pred = path.join(test_dir_path, "hsp_output",
                               "emp_prob_pred_out.tsv")
@@ -39,7 +38,7 @@ hsp_mp_pred_in = pd.read_table(hsp_mp_pred, sep="\t", index_col="sequence")
 hsp_mp_pred_in_nsti = pd.read_table(hsp_mp_pred_nsti, sep="\t",
                                     index_col="sequence")
 
-hsp_mp_pred_in_ci = pd.read_table(hsp_mp_pred_ci, sep="\t",
+hsp_emp_prob_pred_in_ci = pd.read_table(hsp_emp_prob_pred_ci, sep="\t",
                                   index_col="sequence")
 
 hsp_emp_prob_pred_in = pd.read_table(hsp_emp_prob_pred, sep="\t",
@@ -115,15 +114,15 @@ class castor_hsp_workflow_tests(unittest.TestCase):
 
         pd.testing.assert_frame_equal(predict_out, hsp_subtree_average_pred_in, check_like=True)
 
-    def test_mp_ci(self):
-        '''Test that MP confidence intervals calculated correctly.'''
+    def test_emp_prob_ci(self):
+        '''Test that Emp Prob confidence intervals calculated correctly.'''
         predict_out, ci_out = castor_hsp_workflow(tree_path=in_tree1,
                                                  trait_table_path=in_traits1,
-                                                 hsp_method="mp",
+                                                 hsp_method="emp_prob",
                                                  ran_seed=10,
                                                  calc_ci=True)
 
-        pd.testing.assert_frame_equal(ci_out, hsp_mp_pred_in_ci, check_like=True)
+        pd.testing.assert_frame_equal(ci_out, hsp_emp_prob_pred_in_ci, check_like=True)
 
     def test_nsti(self):
         '''Test that calculated NSTI values match expected.'''
@@ -146,11 +145,15 @@ class table_mdf5sum_tests(unittest.TestCase):
 
     def test_default_table_md5sum(self):
 
+        marker_16S_hash = hashlib.md5()
         ec_hash = hashlib.md5()
         ko_hash = hashlib.md5()
         cog_hash = hashlib.md5()
         pfam_hash = hashlib.md5()
         tigrfam_hash = hashlib.md5()
+
+        with gzip.open(default_tables["16S"], 'rt') as marker_16S_in:
+            marker_16S_hash.update(marker_16S_in.read().encode())
 
         with gzip.open(default_tables["EC"], 'rt') as ec_in:
             ec_hash.update(ec_in.read().encode())
@@ -167,15 +170,16 @@ class table_mdf5sum_tests(unittest.TestCase):
         with gzip.open(default_tables["TIGRFAM"], 'rt') as tigrfam_in:
             tigrfam_hash.update(tigrfam_in.read().encode())
 
-        obs_hash = [ec_hash.hexdigest(), ko_hash.hexdigest(),
-                    cog_hash.hexdigest(), pfam_hash.hexdigest(),
-                    tigrfam_hash.hexdigest()]
+        obs_hash = [marker_16S_hash.hexdigest(), ec_hash.hexdigest(),
+                    ko_hash.hexdigest(), cog_hash.hexdigest(),
+                    pfam_hash.hexdigest(), tigrfam_hash.hexdigest()]
 
-        exp_hash = ["16a6b6a6b31cdc7c333ad6316dddef6e",
-                    "8a2797c478140e66507dc5ead75ea0b6",
-                    "dc78e8b7293b26d5d9a7252fdc86c452",
-                    "0669a8afd69b082469bf3075234963f3",
-                    "fac62e419863cc8a0f8257d63bd49fb9"]
+        exp_hash = ["fb642b02faf0969f97a2c530324f748d",
+                    "27dc66038e6b9515d3e78f21584b1060",
+                    "5730a78767df66929de5b975663053f1",
+                    "3271835a37b72cfdd4f2edee712cb38e",
+                    "6d95eb41f79d4e96fdede67ae5d1c89e",
+                    "4d6f541143065ae930a55a5d323109d8"]
 
         # Check that md5sum values match expected values.
         self.assertEqual(obs_hash, exp_hash)
