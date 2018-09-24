@@ -2,7 +2,7 @@
 
 __copyright__ = "Copyright 2018, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.0.0-b.8"
+__version__ = "2.0.0-b.9"
 
 import sys
 from collections import defaultdict
@@ -521,7 +521,7 @@ def path_abun_weighted_by_seq(reaction_abun, func_ids, total_sum, path_abun,
     strat_path_abun = strat_path_abun.loc[strat_path_abun[strat_path_abun.columns[0]] > 0 , :]
 
     # Rename index labels to be "pathway|||sequence".
-    strat_path_abun.index = ["|||".join([pathway, seq]) for seq in strat_path_abun.index]
+    strat_path_abun.index = ["|||".join([pathway, str(seq)]) for seq in strat_path_abun.index]
 
     # Return as series.
     return(strat_path_abun.iloc[:, 0])
@@ -724,8 +724,8 @@ def unstrat_minpath_for_seq(seq, sample_id, in_tab, minpath_map, out_dir,
 
     # Add sequence as part of index to returned abundance and coverage
     # tables.
-    seq_path_abun.index = ["|||".join([pathway, seq]) for pathway in seq_path_abun.index]
-    seq_path_cov.index = ["|||".join([pathway, seq]) for pathway in seq_path_cov.index]
+    seq_path_abun.index = ["|||".join([pathway, str(seq)]) for pathway in seq_path_abun.index]
+    seq_path_cov.index = ["|||".join([pathway, str(seq)]) for pathway in seq_path_cov.index]
 
     return([seq_path_abun, seq_path_cov])
 
