@@ -190,6 +190,7 @@ def main():
                                                     threads=args.threads,
                                                     ref_msa=args.ref_msa,
                                                     tree=args.tree,
+                                                    hmm=args.hmm,
                                                     in_traits=args.in_traits,
                                                     custom_trait_tables=args.custom_trait_tables,
                                                     marker_gene_table=args.marker_gene_table,
