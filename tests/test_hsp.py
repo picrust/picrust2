@@ -175,11 +175,11 @@ class table_mdf5sum_tests(unittest.TestCase):
                     pfam_hash.hexdigest(), tigrfam_hash.hexdigest()]
 
         exp_hash = ["fb642b02faf0969f97a2c530324f748d",
-                    "27dc66038e6b9515d3e78f21584b1060",
-                    "5730a78767df66929de5b975663053f1",
-                    "3271835a37b72cfdd4f2edee712cb38e",
-                    "6d95eb41f79d4e96fdede67ae5d1c89e",
-                    "4d6f541143065ae930a55a5d323109d8"]
+                    "29063ec84684b44b00a2e4409155bc88",
+                    "b419766cf245a87491f85544296c0ee6",
+                    "37bfcfeabf36364d06e63637946618ac",
+                    "2bd7b51ccd77fcdbc6846addfbdfac7d",
+                    "c7fb8e9e0e32495f23a59617dba077c5"]
 
         # Check that md5sum values match expected values.
         self.assertEqual(obs_hash, exp_hash)

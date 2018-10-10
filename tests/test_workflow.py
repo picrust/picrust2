@@ -21,6 +21,9 @@ test_tree = path.join(test_dir_path, "test_data", "place_seqs",
 test_msa = path.join(test_dir_path, "test_data", "place_seqs",
                      "img_centroid_16S_aligned_head30.fna")
 
+test_hmm = path.join(test_dir_path, "test_data", "place_seqs",
+                     "img_centroid_16S_aligned_head30.hmm")
+
 test_known_marker = path.join(test_dir_path, "test_data", "workflow",
                               "workflow_known_marker.tsv")
 
@@ -47,8 +50,8 @@ class workflow_test(unittest.TestCase):
             out_tree = path.join(temp_dir, "out.tre")
 
             system_call_check("place_seqs.py -s " + test_study_seqs + " -r " +
-                              test_msa + " -t " + test_tree + " -o " +
-                              out_tree)
+                              test_msa + " -t " + test_tree + " --hmm " +
+                              test_hmm + " -o " + out_tree)
 
             hsp_out_prefix = path.join(temp_dir, "hsp_out")
             hsp_out_prefix_marker = path.join(temp_dir, "hsp_out_marker")
@@ -85,12 +88,14 @@ class workflow_test(unittest.TestCase):
 
         with TemporaryDirectory() as temp_dir:
 
+            out_dir = path.join(temp_dir, "pipeline_out")
+
             system_call_check("picrust2_pipeline.py -s " + test_study_seqs +
-                              " -i " + test_seq_abun_tsv + " -o " + temp_dir +
-                              " -r " + test_msa + " -t " + test_tree + 
+                              " -i " + test_seq_abun_tsv + " -o " + out_dir +
+                              " -r " + test_msa + " -t " + test_tree +
+                              " --hmm " + test_hmm +
                               " --custom_trait_tables " + test_known_traits +
-                              " --marker_gene_table " + test_known_marker +
-                              " -o " + temp_dir)
+                              " --marker_gene_table " + test_known_marker)
 
 if __name__ == '__main__':
     unittest.main()
