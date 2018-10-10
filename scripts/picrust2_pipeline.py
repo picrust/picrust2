@@ -8,8 +8,8 @@ import argparse
 from os import path
 import sys
 import time
-from picrust2.default import (default_fasta, default_tree, default_tables,
-                              default_map, default_regroup_map,
+from picrust2.default import (default_fasta, default_tree, default_hmm,
+                              default_tables, default_map, default_regroup_map,
                               default_pathway_map)
 from picrust2.util import make_output_dir
 from picrust2.pipeline import full_pipeline
@@ -49,6 +49,10 @@ parser.add_argument('-t', '--tree', metavar='PATH', type=str,
                     default=default_tree,
                     help='Input tree based on aligned reference sequences. '
                          '(default: %(default)s).')
+
+parser.add_argument('--hmm', metavar='PATH', type=str,
+                    default=default_hmm,
+                    help='Hidden markov model of reference MSA (default: %(default)s).')
 
 parser.add_argument('--in_traits', type=str.upper, default='EC,KO',
                     help='Comma-delimited list (with no spaces) of which gene '
@@ -179,71 +183,32 @@ def main():
     start_time = time.time()
 
     args = parser.parse_args()
-    
-    func_dfs, unstrat_abun, unstrat_cov, strat_abun, strat_cov = full_pipeline(study_fasta=args.study_fasta,
-                                                                              input_table=args.input,
-                                                                              output_folder=args.output,
-                                                                              threads=args.threads,
-                                                                              ref_msa=args.ref_msa,
-                                                                              tree=args.tree,
-                                                                              in_traits=args.in_traits,
-                                                                              custom_trait_tables=args.custom_trait_tables,
-                                                                              marker_gene_table=args.marker_gene_table,
-                                                                              pathway_map=args.pathway_map,
-                                                                              no_pathways=args.no_pathways,
-                                                                              regroup_map=args.regroup_map,
-                                                                              no_regroup=args.no_regroup,
-                                                                              stratified=args.stratified,
-                                                                              max_nsti=args.max_nsti,
-                                                                              min_reads=args.min_reads,
-                                                                              min_samples=args.min_samples,
-                                                                              hsp_method=args.hsp_method,
-                                                                              calculate_NSTI=args.calculate_NSTI,
-                                                                              confidence=args.confidence,
-                                                                              seed=args.seed,
-                                                                              no_gap_fill=args.no_gap_fill,
-                                                                              per_sequence_contrib=args.per_sequence_contrib,
-                                                                              no_descrip=args.no_descrip,
-                                                                              verbose=args.verbose)
 
-    for func in func_dfs.keys():
-
-        func_output_dir = path.join(args.output, func + "_metagenome_out")
-
-        print("Writing metagenome output files for " + func + " to: " + func_output_dir)
-
-        unstrat_outfile = path.join(func_output_dir, "pred_metagenome_unstrat.tsv")
-        func_dfs[func][0].to_csv(path_or_buf=unstrat_outfile, sep="\t", index=False)    
-    
-        if func_dfs[func][1] is not None:
-            strat_outfile = path.join(func_output_dir, "pred_metagenome_strat.tsv")
-            func_dfs[func][1].to_csv(path_or_buf=strat_outfile, sep="\t", index=False)
-
-    if not args.no_pathways:
-        pathways_out = path.join(args.output, "pathways_out")
-
-        print("Writing predicted pathway abundances and coverages to " + pathways_out)
-
-        make_output_dir(pathways_out)
-
-        unstrat_abun_outfile = path.join(pathways_out, "path_abun_unstrat.tsv")
-        unstrat_cov_outfile = path.join(pathways_out, "path_cov_unstrat.tsv")
-        strat_abun_outfile = path.join(pathways_out, "path_abun_strat.tsv")
-        strat_cov_outfile = path.join(pathways_out, "path_cov_strat.tsv")
-
-        unstrat_abun.to_csv(path_or_buf=unstrat_abun_outfile,  sep="\t",
-                            index=False)
-
-        unstrat_cov.to_csv(path_or_buf=unstrat_cov_outfile,  sep="\t",
-                           index=False)
-
-        if strat_abun is not None:
-            strat_abun.to_csv(path_or_buf=strat_abun_outfile,  sep="\t",
-                              index=False)
-
-        if strat_cov is not None:
-            strat_cov.to_csv(path_or_buf=strat_cov_outfile,  sep="\t",
-                             index=False)
+    func_outfiles, pathway_outfiles = full_pipeline(study_fasta=args.study_fasta,
+                                                    input_table=args.input,
+                                                    output_folder=args.output,
+                                                    threads=args.threads,
+                                                    ref_msa=args.ref_msa,
+                                                    tree=args.tree,
+                                                    in_traits=args.in_traits,
+                                                    custom_trait_tables=args.custom_trait_tables,
+                                                    marker_gene_table=args.marker_gene_table,
+                                                    pathway_map=args.pathway_map,
+                                                    no_pathways=args.no_pathways,
+                                                    regroup_map=args.regroup_map,
+                                                    no_regroup=args.no_regroup,
+                                                    stratified=args.stratified,
+                                                    max_nsti=args.max_nsti,
+                                                    min_reads=args.min_reads,
+                                                    min_samples=args.min_samples,
+                                                    hsp_method=args.hsp_method,
+                                                    calculate_NSTI=args.calculate_NSTI,
+                                                    confidence=args.confidence,
+                                                    seed=args.seed,
+                                                    no_gap_fill=args.no_gap_fill,
+                                                    per_sequence_contrib=args.per_sequence_contrib,
+                                                    no_descrip=args.no_descrip,
+                                                    verbose=args.verbose)
 
     # Print out elapsed time.
     elapsed_time = time.time() - start_time

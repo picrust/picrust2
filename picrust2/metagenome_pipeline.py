@@ -102,7 +102,6 @@ def run_metagenome_pipeline(input_biom,
                            proc=proc,
                            strat_out=strat_out))
 
-
 def calc_weighted_nsti(seq_counts, nsti_input, outfile=None):
     '''Will calculate weighted NSTI values given sequence count table and NSTI
     value for each sequence. Will output these weighted values to a file if
