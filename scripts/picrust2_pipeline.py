@@ -15,16 +15,17 @@ from picrust2.util import make_output_dir
 from picrust2.pipeline import full_pipeline
 
 HSP_METHODS = ['mp', 'emp_prob', 'pic', 'scp', 'subtree_average']
+ALIGN_CHOICES = ["hmmalign", "papara"]
 
 parser = argparse.ArgumentParser(
 
-    description="Wrapper for full 16S PICRUSt2 pipeline. Will output "
+    description="Wrapper for full PICRUSt2 pipeline. Will output "
                 "predictions for E.C. numbers, KEGG orthologs, and MetaCyc "
                 "pathway abundances and coverages by default. Note that this "
-                "is a convenience script, but you can also run each step "
+                "is a convenience script and you can also run each step "
                 "individually. Descriptions of gene families and pathways "
                 "will be added automatically to output files unless custom "
-                "trait tables are input. Please note that currently THIS SCRIPT IS EXPERIMENTAL.",
+                "trait tables are input.",
 
     formatter_class=argparse.RawDescriptionHelpFormatter)
 
@@ -106,6 +107,12 @@ parser.add_argument('--no_regroup', default=False, action="store_true",
 parser.add_argument('--stratified', default=False, action='store_true',
                     help='Flag to indicate that stratified tables should be '
                          'generated at all steps (will increase run-time)')
+
+parser.add_argument('-a', '--alignment_tool', type=str.lower,
+                    default="hmmalign", choices=ALIGN_CHOICES,
+                    help='Which program to use for aligning query sequences ' +
+                         'to reference MSA prior to EPA-NG step (default: ' +
+                         '%(default)s).')
 
 parser.add_argument('--max_nsti', metavar='INT', type=int, default=2,
                     help='Sequences with NSTI values above this value will '
@@ -199,6 +206,7 @@ def main():
                                                     regroup_map=args.regroup_map,
                                                     no_regroup=args.no_regroup,
                                                     stratified=args.stratified,
+                                                    alignment_tool=args.alignment_tool,
                                                     max_nsti=args.max_nsti,
                                                     min_reads=args.min_reads,
                                                     min_samples=args.min_samples,

@@ -33,6 +33,7 @@ def full_pipeline(study_fasta,
                   regroup_map,
                   no_regroup,
                   stratified,
+                  alignment_tool,
                   max_nsti,
                   min_reads,
                   min_samples,
@@ -126,7 +127,7 @@ def full_pipeline(study_fasta,
                         tree=tree,
                         hmm=hmm,
                         out_tree=out_tree,
-                        alignment_tool="hmmalign",
+                        alignment_tool=alignment_tool,
                         threads=threads,
                         out_dir=place_seqs_intermediate,
                         chunk_size=5000,
@@ -227,7 +228,10 @@ def full_pipeline(study_fasta,
 
         pathways_out = path.join(output_folder, "pathways_out")
 
+        unstrat_abun.index.name = 'pathway'
+        unstrat_cov.index.name = 'pathway'
         unstrat_abun.reset_index(inplace=True)
+        unstrat_cov.reset_index(inplace=True)
 
         pathway_outfiles = {}
 
@@ -235,9 +239,6 @@ def full_pipeline(study_fasta,
             unstrat_abun = add_descrip_col(inputfile=unstrat_abun,
                                            mapfile=default_map["METACYC"],
                                            in_df=True)
-
-        unstrat_cov.reset_index(inplace=True)
-
         if not no_descrip:
             unstrat_cov = add_descrip_col(inputfile=unstrat_cov,
                                           mapfile=default_map["METACYC"],
