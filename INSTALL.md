@@ -1,29 +1,27 @@
-# Contributing
+# Quick Install
 
-To help other PICRUSt2 users with the software, see the [picrust-users](https://groups.google.com/forum/?#!forum/picrust-users) mailing list. If you'd like to contribute code and/or documentation, this document will outline how to get started.
+All installation instructions are in more detail [here](https://github.com/picrust/picrust2/wiki/Installation).
 
-## Getting Started
-
-First, [fork](https://help.github.com/articles/fork-a-repo/) the repository and clone it (replace `<your-username>` with your Github username:
+First, clone the repository and enter the directory:
 
 ```
-$ git clone git@github.com:<your-username>/picrust2.git
-$ cd picrust2/
+git clone https://github.com/picrust/picrust2.git
+cd
 ```
 
 Next, install the required dependencies listed [here](https://github.com/picrust/picrust2/wiki/Installation#pre-requisites).
 
 
-Then, set up a development environment using [`conda`](https://conda.io/miniconda.html):
+Install PICRUSt2 into it's own environment using [`conda`](https://conda.io/miniconda.html):
 
 ```
-$ conda env create -f dev-environment.yml
-$ source activate picrust2-dev
-$ pip install --no-deps --editable .
+conda env create -f picrust2-env.yaml
+source activate picrust2
+pip install --no-deps --editable .
 ```
 
-Run the tests to verify:
+Finally, run the tests to verify the install was successful:
 
 ```
-$ pytest
+pytest
 ```

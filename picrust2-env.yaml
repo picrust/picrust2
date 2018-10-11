@@ -1,4 +1,4 @@
-name: picrust2-dev
+name: picrust2
 channels:
 - conda-forge
 - r
@@ -13,6 +13,7 @@ dependencies:
 - r-base
 - r-castor
 - glpk
+- hmmer
 - pip:
   - biom-format
   - pytest
