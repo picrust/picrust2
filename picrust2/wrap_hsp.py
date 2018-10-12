@@ -4,7 +4,7 @@ from __future__ import division
 
 __copyright__ = "Copyright 2018, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.0.0-b.9"
+__version__ = "2.0.1-b"
 
 from os import path
 import pandas as pd

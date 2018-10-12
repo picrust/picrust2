@@ -2,7 +2,7 @@
 
 __copyright__ = "Copyright 2018, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.0.0-b.9"
+__version__ = "2.0.1-b"
 
 from picrust2.util import get_picrust_project_dir
 from os import path
@@ -15,6 +15,9 @@ default_fasta = path.join(project_dir, "default_files", "prokaryotic",
 
 default_tree = path.join(project_dir, "default_files", "prokaryotic",
                          "reference.tre")
+
+default_hmm = path.join(project_dir, "default_files", "prokaryotic",
+                        "reference.hmm")
 
 default_regroup_map = path.join(project_dir, "default_files",
                                 "pathway_mapfiles",

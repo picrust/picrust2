@@ -2,7 +2,7 @@
 
 __copyright__ = "Copyright 2018, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.0.0-b.9"
+__version__ = "2.0.1-b"
 
 from os import makedirs
 from os.path import abspath, dirname, isdir, join, exists
@@ -144,10 +144,12 @@ def write_phylip(seq, outfile):
     out_phylip.close()
 
 
-def read_stockholm(filename):
+def read_stockholm(filename, clean_char=True):
     '''Reads in Stockholm formatted multiple sequence alignment and returns
-    dictionary with ids as keys and full concatenated sequences as values.
-    This was originally written for converting hmmalign output files.'''
+    dictionary with ids as keys and full concatenated sequences as values. When
+    clean_char=True this function will convert all characters to uppercase and
+    convert "." characters to "-". This was originally written for converting
+    hmmalign output files.'''
 
     # Intitialize defaultdict that will contain strings.
     seq = defaultdict(str)
@@ -175,6 +177,10 @@ def read_stockholm(filename):
                 continue
 
             line_split = line.split()
+
+            if clean_char:
+                line_split[1] = line_split[1].upper()
+                line_split[1] = line_split[1].replace(".", "-")
 
             # Add sequence to dictionary.
             seq[line_split[0]] += line_split[1]

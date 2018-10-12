@@ -2,48 +2,71 @@
 
 __copyright__ = "Copyright 2018, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.0.0-b.9"
+__version__ = "2.0.1-b"
 
 from os import path, chdir, getcwd
 from picrust2.util import (system_call_check, make_output_dir, read_fasta,
-                           read_phylip, write_fasta, write_phylip)
+                           read_phylip, write_fasta, write_phylip,
+                           read_stockholm)
 
 
 def place_seqs_pipeline(study_fasta,
                         ref_msa,
                         tree,
+                        hmm,
                         out_tree,
+                        alignment_tool,
                         threads,
-                        papara_output,
                         out_dir,
                         chunk_size,
                         print_cmds):
     '''Full pipeline for running sequence placement.'''
 
-    # Read in ref seqs FASTA as a dict.
-    ref_msa = read_fasta(ref_msa)
+    if alignment_tool == "hmmalign":
 
-    # Either read in PaPaRa output or run it.
-    if papara_output:
-        # Read in PaPaRa output if already done.
-        papara_out = read_phylip(papara_output, check_input=True)
+        out_stockholm = path.join(out_dir, "query_align.stockholm")
 
-    else:
+        system_call_check("hmmalign  --trim --dna --mapali " + ref_msa + " --informat FASTA -o " +
+                          out_stockholm + " " + hmm + " " + study_fasta,
+                          print_out=print_cmds)
+
+
+        hmmalign_out = read_stockholm(out_stockholm, clean_char=True)
+
+        # Specify split FASTA files to be created.
+        study_msa_fastafile = path.join(out_dir, "study_seqs_hmmalign.fasta")
+        ref_msa_fastafile = path.join(out_dir, "ref_seqs_hmmalign.fasta")
+
+        ref_seqnames = set(list(read_fasta(ref_msa).keys()))
+
+        study_seqnames = set(read_fasta(study_fasta).keys())
+
+        ref_hmmalign_subset = {seq: hmmalign_out[seq] for seq in ref_seqnames}
+        study_hmmalign_subset = {seq: hmmalign_out[seq] for seq in study_seqnames}
+
+        write_fasta(ref_hmmalign_subset, ref_msa_fastafile)
+        write_fasta(study_hmmalign_subset, study_msa_fastafile)
+
+    elif alignment_tool == "papara":
+
+        # Read in ref seqs FASTA as a dict.
+        ref_msa = read_fasta(ref_msa)
+
         # Run PaPaRa to place study sequences and read in Phylip file.
         papara_out = run_papara(tree=tree, ref_msa=ref_msa,
                                 study_fasta=study_fasta, out_dir=out_dir,
                                 threads=threads, print_cmds=print_cmds)
 
-    # Specify split FASTA files to be created.
-    study_msa_fastafile = path.join(out_dir, "study_seqs_papara.fasta")
-    ref_msa_fastafile = path.join(out_dir, "ref_seqs_papara.fasta")
+        # Specify split FASTA files to be created.
+        study_msa_fastafile = path.join(out_dir, "study_seqs_papara.fasta")
+        ref_msa_fastafile = path.join(out_dir, "ref_seqs_papara.fasta")
 
-    # Split PaPaRa output into two FASTA files containing study and reference
-    # sequences respectively.
-    split_ref_study_papara(papara_out=papara_out,
-                           ref_seqnames=set(list(ref_msa.keys())),
-                           study_fasta=study_msa_fastafile,
-                           ref_fasta=ref_msa_fastafile)
+        # Split PaPaRa output into two FASTA files containing study and reference
+        # sequences respectively.
+        split_ref_study_papara(papara_out=papara_out,
+                               ref_seqnames=set(list(ref_msa.keys())),
+                               study_fasta=study_msa_fastafile,
+                               ref_fasta=ref_msa_fastafile)
 
     # Run EPA-NG to output .jplace file.
     epa_out_dir = path.join(out_dir, "epa_out")
