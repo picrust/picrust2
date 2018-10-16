@@ -2,7 +2,7 @@
 
 __copyright__ = "Copyright 2018, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.0.2-b"
+__version__ = "2.0.3-b"
 
 import unittest
 from os import path
@@ -174,12 +174,12 @@ class table_mdf5sum_tests(unittest.TestCase):
                     ko_hash.hexdigest(), cog_hash.hexdigest(),
                     pfam_hash.hexdigest(), tigrfam_hash.hexdigest()]
 
-        exp_hash = ["fb642b02faf0969f97a2c530324f748d",
-                    "29063ec84684b44b00a2e4409155bc88",
-                    "b419766cf245a87491f85544296c0ee6",
-                    "37bfcfeabf36364d06e63637946618ac",
-                    "2bd7b51ccd77fcdbc6846addfbdfac7d",
-                    "c7fb8e9e0e32495f23a59617dba077c5"]
+        exp_hash = ["a0acd4dbc3501b271ade941bf308643e",
+                    "85fcd6ac08ba324c6c14699fcee92725",
+                    "46540c1eb6e7f22feaa50893dc74a6d7",
+                    "c50eaa4565804b6fe880e81044d33276",
+                    "420605c3afe98a585f4f006f8aa8c4f3",
+                    "ca5871bac44593c009b5f7838efb2772"]
 
         # Check that md5sum values match expected values.
         self.assertEqual(obs_hash, exp_hash)

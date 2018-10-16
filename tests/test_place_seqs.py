@@ -2,7 +2,7 @@
 
 __copyright__ = "Copyright 2018, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.0.2-b"
+__version__ = "2.0.3-b"
 
 import unittest
 from os import path
@@ -74,8 +74,8 @@ class place_seqs_tests(unittest.TestCase):
         # Check that md5sum values match expected values.
         self.assertEqual([fasta_hash.hexdigest(), tree_hash.hexdigest(),
                           hmm_hash.hexdigest()],
-                         ['5e6db5a9521ff4d2b8ac48d73fdbb4f9',
-                          '366924e57d2c2a9f650c0ff837c25359',
+                         ['a1675a5c0a2c1941ff2e71c63049a7b4',
+                          'f247071837f74c156dc530736cb6d453',
                           'd50b0dac445b5243e86816dbdeadf898'])
 
     # def test_run_papara(self):
