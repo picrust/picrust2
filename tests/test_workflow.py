@@ -95,7 +95,8 @@ class workflow_test(unittest.TestCase):
                               " -r " + test_msa + " -t " + test_tree +
                               " --hmm " + test_hmm +
                               " --custom_trait_tables " + test_known_traits +
-                              " --marker_gene_table " + test_known_marker)
+                              " --marker_gene_table " + test_known_marker +
+                              " --verbose")
 
 if __name__ == '__main__':
     unittest.main()

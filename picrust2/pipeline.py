@@ -373,7 +373,7 @@ def metagenome_pipeline_steps(input_table, func_infile, marker_infile,
                                          in_df=True)
 
     if verbose:
-        print("Writing metagenome output files for " + func + " to: " +
+        print("Writing metagenome output files for genome predictions in " + func_infile + " to: " +
               func_output_dir)
 
     unstrat_outfile = path.join(func_output_dir, "pred_metagenome_unstrat.tsv")
