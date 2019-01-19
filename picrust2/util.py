@@ -2,7 +2,7 @@
 
 __copyright__ = "Copyright 2018, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.0.3-b"
+__version__ = "2.0.4-b"
 
 from os import makedirs
 from os.path import abspath, dirname, isdir, join, exists

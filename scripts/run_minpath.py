@@ -2,7 +2,7 @@
 
 __copyright__ = "Copyright 2018, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.0.3-b"
+__version__ = "2.0.4-b"
 
 import argparse
 from picrust2.run_minpath import run_minpath_pipeline
