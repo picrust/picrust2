@@ -9,7 +9,8 @@ dependencies:
 - h5py
 - joblib
 - numpy
-- python < 3.7
+- pandas=0.22.0
+- python >=3.5 < 3.7
 - r-base
 - r-castor
 - glpk
