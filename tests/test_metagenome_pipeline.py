@@ -9,14 +9,14 @@ from os import path
 import pandas as pd
 import biom
 from tempfile import TemporaryDirectory
-from picrust2.util import get_picrust_project_dir, biom_to_pandas_df
+from picrust2.util import biom_to_pandas_df
 from picrust2.metagenome_pipeline import (run_metagenome_pipeline,
                                           norm_by_marker_copies,
                                           calc_weighted_nsti,
                                           id_rare_seqs)
 
 # Set paths to test files.
-test_dir_path = path.join(get_picrust_project_dir(), "tests", "test_data",
+test_dir_path = path.join(path.dirname(path.abspath(__file__)), "test_data",
                           "metagenome_pipeline")
 
 seqtab_biom = path.join(test_dir_path, "test_input_sequence_abun.biom")

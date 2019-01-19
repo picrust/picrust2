@@ -7,44 +7,40 @@ __version__ = "2.0.3-b"
 import unittest
 from os import path
 from tempfile import TemporaryDirectory
-from picrust2.util import get_picrust_project_dir, read_phylip, read_fasta
+from picrust2.util import read_phylip, read_fasta
 from picrust2.place_seqs import (place_seqs_pipeline, run_papara,
                                  split_ref_study_papara, run_epa_ng,
                                  gappa_jplace_to_newick)
 
 # Set paths to test files.
-test_dir_path = path.join(get_picrust_project_dir(), "tests")
+test_dir_path = path.join(path.dirname(path.abspath(__file__)), "test_data",
+                          "place_seqs")
 
-test_study_seqs = path.join(test_dir_path, "test_data", "place_seqs",
-                            "study_seqs_test.fasta")
+test_study_seqs = path.join(test_dir_path, "study_seqs_test.fasta")
 
-test_tree = path.join(test_dir_path, "test_data", "place_seqs",
-                      "img_centroid_16S_aligned_head30.tre")
+test_tree = path.join(test_dir_path, "img_centroid_16S_aligned_head30.tre")
 
-test_msa = path.join(test_dir_path, "test_data", "place_seqs",
-                     "img_centroid_16S_aligned_head30.fna")
+test_msa = path.join(test_dir_path, "img_centroid_16S_aligned_head30.fna")
 
-test_hmm = path.join(test_dir_path, "test_data", "place_seqs",
-                     "img_centroid_16S_aligned_head30.hmm")
+test_hmm = path.join(test_dir_path, "img_centroid_16S_aligned_head30.hmm")
 
-exp_papara_phylip = path.join(test_dir_path, "test_data", "place_seqs",
-                              "place_seqs_output", "place_seqs_working",
+exp_papara_phylip = path.join(test_dir_path, "place_seqs_output",
+                              "place_seqs_working",
                               "papara_alignment.out")
 
-exp_study_fasta = path.join(test_dir_path, "test_data", "place_seqs",
-                            "place_seqs_output", "place_seqs_working",
+exp_study_fasta = path.join(test_dir_path, "place_seqs_output",
+                            "place_seqs_working",
                             "study_seqs_papara.fasta")
 
-exp_ref_fasta = path.join(test_dir_path, "test_data", "place_seqs",
-                          "place_seqs_output", "place_seqs_working",
+exp_ref_fasta = path.join(test_dir_path, "place_seqs_output",
+                          "place_seqs_working",
                           "ref_seqs_papara.fasta")
 
-exp_newick = path.join(test_dir_path, "test_data", "place_seqs",
-                       "place_seqs_output",
+exp_newick = path.join(test_dir_path, "place_seqs_output",
                        "img_centroid_16S_aligned_head30_placed.tre")
 
-exp_jplace = path.join(test_dir_path, "test_data", "place_seqs",
-                       "place_seqs_output", "place_seqs_working",
+exp_jplace = path.join(test_dir_path, "place_seqs_output",
+                       "place_seqs_working",
                        "epa_out", "epa_result.jplace")
 
 
