@@ -7,7 +7,7 @@ __version__ = "2.0.4-b"
 import unittest
 from os import path
 from tempfile import TemporaryDirectory
-from picrust2.util import get_picrust_project_dir, system_call_check
+from picrust2.util import system_call_check
 
 # Paths to input files.
 test_dir_path = path.join(path.dirname(path.abspath(__file__)))

@@ -12,8 +12,7 @@ import scipy.stats
 import pandas as pd
 import numpy as np
 import copy
-from picrust2.util import (system_call_check, get_picrust_project_dir,
-                           check_files_exist, make_output_dir)
+from picrust2.util import (system_call_check, check_files_exist, make_output_dir)
 
 class PathwaysDatabase:
     '''Holds all of the reactions/pathways data from the file provided.
@@ -574,7 +573,7 @@ def minpath_wrapper(sample_id, unstrat_input, minpath_map, out_dir,
     id_minpath_fh.close()
 
     # Run MinPath on this sample.
-    path2minpath = path.join(get_picrust_project_dir(), 'picrust2', 'MinPath',
+    path2minpath = path.join(path.dirname(path.abspath(__file__)), 'MinPath',
                              'MinPath12hmp.py')
 
     minpath_cmd = path2minpath + " -any " + minpath_in + " -map " +\
