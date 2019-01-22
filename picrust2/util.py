@@ -2,7 +2,7 @@
 
 __copyright__ = "Copyright 2018, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.0.3-b"
+__version__ = "2.0.4-b"
 
 from os import makedirs
 from os.path import abspath, dirname, isdir, join, exists
@@ -215,18 +215,6 @@ def system_call_check(cmd, print_out=False, stdout=None, stderr=None):
         raise SystemExit("Error running this command:\n" + " ".join(cmd))
     else:
         return(return_value)
-
-
-def get_picrust_project_dir():
-    """ Returns the top-level PICRUST directory
-    """
-    # Get the full path of util.py
-    current_file_path = abspath(__file__)
-    # Get the directory containing util.py
-    current_dir_path = dirname(current_file_path)
-    # Return the directory containing the directory containing util.py
-    return dirname(current_dir_path)
-
 
 def make_output_dir(dirpath, strict=False):
     """Make an output directory if it doesn't exist

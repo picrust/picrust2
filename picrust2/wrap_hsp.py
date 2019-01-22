@@ -4,14 +4,14 @@ from __future__ import division
 
 __copyright__ = "Copyright 2018, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.0.3-b"
+__version__ = "2.0.4-b"
 
 from os import path
 import pandas as pd
 from math import ceil
 from joblib import Parallel, delayed
 from tempfile import TemporaryDirectory
-from picrust2.util import (system_call_check, get_picrust_project_dir)
+from picrust2.util import system_call_check
 
 def castor_hsp_workflow(tree_path,
                         trait_table_path,
@@ -91,7 +91,7 @@ def castor_hsp_wrapper(tree_path, trait_tab, hsp_method, calc_ci=False,
                        check_input=False, ran_seed=None):
     '''Wrapper for making system calls to castor_hsp.py Rscript.'''
 
-    castor_hsp_script = path.join(get_picrust_project_dir(), 'picrust2',
+    castor_hsp_script = path.join(path.dirname(path.abspath(__file__)),
                                   'Rscripts', 'castor_hsp.R')
 
     # Need to format boolean setting as string for R to read in as argument.
@@ -148,7 +148,7 @@ def castor_nsti(tree_path,
     '''Will calculate distance from each study sequence to the closest
     reference sequence. Takes in the path to treefile and the known tips
     (i.e. the rownames in the trait table - the reference genome ids).'''
-    castor_nsti_script = path.join(get_picrust_project_dir(), 'picrust2',
+    castor_nsti_script = path.join(path.dirname(path.abspath(__file__)),
                                    'Rscripts', 'castor_nsti.R')
 
     # Create temporary directory for working in.

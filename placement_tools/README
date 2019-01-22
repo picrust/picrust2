@@ -1,8 +1,0 @@
-Since EPA-NG and GAPPA are currently under rapid development, the source code of compatible versions of these programs are packaged with the PICRUSt2 repository.
-
-I created forks of these development repos to ensure the compatible version with PICRUSt2 would be straight-forward to download - however note that these are not official releases by the authors (except in the case of PaPaRa)!
-
-The tarballs in this folder were downloaded from these links:
-EPA-NG: https://github.com/gavinmdouglas/epa-ng/archive/0.2.1-beta-dev.tar.gz
-GAPPA: https://github.com/gavinmdouglas/gappa/archive/v0.0.0-dev.tar.gz
-PaPaRa: https://github.com/gavinmdouglas/papara_nt/archive/2.5-dev.tar.gz

@@ -2,13 +2,13 @@
 
 __copyright__ = "Copyright 2018, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.0.3-b"
+__version__ = "2.0.4-b"
 
-from picrust2.util import get_picrust_project_dir
 from os import path
 
 # Default support files packaged with PICRUSt2.
-project_dir = get_picrust_project_dir()
+    
+project_dir = path.dirname(path.abspath(__file__))
 
 default_fasta = path.join(project_dir, "default_files", "prokaryotic",
                           "reference.fna")

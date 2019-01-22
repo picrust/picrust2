@@ -12,15 +12,15 @@ import gzip
 from tempfile import TemporaryDirectory
 from picrust2.util import (write_fasta, read_fasta, write_phylip, read_phylip,
                            three_df_index_overlap_sort, add_descrip_col,
-                           get_picrust_project_dir,
                            convert_humann2_to_picrust2,
                            convert_picrust2_to_humann2,
                            convert_picrust2_to_humann2_merged)
 
 from picrust2.default import default_map
 
-descrip_test_dir_path = path.join(get_picrust_project_dir(), "tests", "test_data",
-                          "add_descriptions")
+descrip_test_dir_path = path.join(path.dirname(path.abspath(__file__)),
+                                  "test_data",
+                                  "add_descriptions")
 
 descrip_test_dir_out_path = path.join(descrip_test_dir_path, "output")
 
@@ -49,8 +49,8 @@ tigrfam_unstrat_in = path.join(descrip_test_dir_path, "tigrfam_unstrat_test.txt"
 tigrfam_unstrat_exp = path.join(descrip_test_dir_out_path, "tigrfam_unstrat_exp.txt")
 
 # Set paths to input and output files for convert_table.py tests.
-convert_test_dir_path = path.join(get_picrust_project_dir(), "tests", "test_data",
-                          "convert_table")
+convert_test_dir_path = path.join(path.dirname(path.abspath(__file__)), "test_data",
+                                  "convert_table")
 
 convert_test_dir_out_path = path.join(convert_test_dir_path, "expected_out")
 

@@ -2,7 +2,7 @@
 
 __copyright__ = "Copyright 2018, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.0.3-b"
+__version__ = "2.0.4-b"
 
 import unittest
 import pandas as pd
@@ -13,10 +13,9 @@ from picrust2.run_minpath import (minpath_wrapper, run_minpath_pipeline,
                                   read_metagenome_input, unstrat_minpath,
                                   strat_minpath, strat_to_unstrat_counts,
                                   PathwaysDatabase, regroup_func_ids)
-from picrust2.util import get_picrust_project_dir
 
 # Path to test directory.
-test_dir_path = path.join(get_picrust_project_dir(), "tests", "test_data",
+test_dir_path = path.join(path.dirname(path.abspath(__file__)), "test_data",
                           "run_minpath")
 
 # Paths to input files and expected outputs.

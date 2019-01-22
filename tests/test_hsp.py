@@ -2,7 +2,7 @@
 
 __copyright__ = "Copyright 2018, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.0.3-b"
+__version__ = "2.0.4-b"
 
 import unittest
 from os import path
@@ -10,12 +10,12 @@ import pandas as pd
 import hashlib
 import gzip
 from picrust2.default import default_tables
-from picrust2.util import get_picrust_project_dir
 from picrust2.wrap_hsp import (castor_hsp_workflow,
                                castor_nsti)
 
 # Read in expected output files.
-test_dir_path = path.join(get_picrust_project_dir(), "tests", "test_data",
+
+test_dir_path = path.join(path.dirname(path.abspath(__file__)), "test_data",
                           "hsp")
 
 in_traits1 = path.join(test_dir_path, "known_traits.tsv.gz")

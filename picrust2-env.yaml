@@ -6,14 +6,19 @@ channels:
 - defaults
 
 dependencies:
+- epa-ng=0.3.4
+- gappa=0.1.0
+- glpk
 - h5py
+- hmmer
 - joblib
 - numpy
-- python < 3.7
+- pandas=0.22.0
+- python >=3.5,<3.7
 - r-base
 - r-castor
-- glpk
-- hmmer
+- scipy=0.19.1
+
 - pip:
   - biom-format
   - pytest

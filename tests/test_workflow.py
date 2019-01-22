@@ -2,15 +2,15 @@
 
 __copyright__ = "Copyright 2018, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.0.3-b"
+__version__ = "2.0.4-b"
 
 import unittest
 from os import path
 from tempfile import TemporaryDirectory
-from picrust2.util import get_picrust_project_dir, system_call_check
+from picrust2.util import system_call_check
 
 # Paths to input files.
-test_dir_path = path.join(get_picrust_project_dir(), "tests")
+test_dir_path = path.join(path.dirname(path.abspath(__file__)))
 
 test_study_seqs = path.join(test_dir_path, "test_data", "place_seqs",
                             "study_seqs_test.fasta")
@@ -35,6 +35,7 @@ test_seq_abun_tsv = path.join(test_dir_path, "test_data", "workflow",
 
 test_seq_abun_biom = path.join(test_dir_path, "test_data", "workflow",
                                "workflow_seq_abun.biom")
+
 
 class workflow_test(unittest.TestCase):
     '''Test for whether full pipeline runs without error. This is intended to
