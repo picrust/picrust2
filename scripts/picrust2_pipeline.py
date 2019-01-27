@@ -8,7 +8,7 @@ import argparse
 from os import path
 import sys
 import time
-from picrust2.default import (default_fasta, default_tree, default_hmm,
+from picrust2.default import (default_fasta, default_tree, default_hmm, default_model,
                               default_tables, default_map, default_regroup_map,
                               default_pathway_map)
 from picrust2.util import make_output_dir
@@ -54,6 +54,11 @@ parser.add_argument('-t', '--tree', metavar='PATH', type=str,
 parser.add_argument('--hmm', metavar='PATH', type=str,
                     default=default_hmm,
                     help='Hidden markov model of reference MSA (default: %(default)s).')
+
+parser.add_argument('--model', metavar='PATH', type=str, default=default_model,
+                    help='File containing model parameters used to create phylogenetic '
+                         'tree (default: %(default)s).')
+
 
 parser.add_argument('--in_traits', type=str.upper, default='EC,KO',
                     help='Comma-delimited list (with no spaces) of which gene '
@@ -198,6 +203,7 @@ def main():
                                                     ref_msa=args.ref_msa,
                                                     tree=args.tree,
                                                     hmm=args.hmm,
+                                                    model=args.model,
                                                     in_traits=args.in_traits,
                                                     custom_trait_tables=args.custom_trait_tables,
                                                     marker_gene_table=args.marker_gene_table,

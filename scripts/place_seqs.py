@@ -7,7 +7,7 @@ __version__ = "2.0.4-b"
 import argparse
 from tempfile import TemporaryDirectory
 from picrust2.place_seqs import place_seqs_pipeline
-from picrust2.default import default_fasta, default_tree, default_hmm
+from picrust2.default import default_fasta, default_tree, default_hmm, default_model
 from picrust2.util import make_output_dir, check_files_exist
 
 ALIGN_CHOICES = ["hmmalign", "papara"]
@@ -38,6 +38,9 @@ parser.add_argument('-t', '--tree', metavar='PATH', type=str,
                     default=default_tree,
                     help='Input tree based on aligned reference sequences. ' +
                          '(default: %(default)s).')
+
+parser.add_argument('--model', metavar='PATH', type=str, default=default_model,
+                    help='File containing model parameters used to create phylogenetic tree'.)
 
 parser.add_argument('-o', '--out_tree', metavar='PATH', required=True,
                     type=str, help='Name of final output tree')
@@ -82,6 +85,7 @@ def main():
                             ref_msa=args.ref_msa,
                             tree=args.tree,
                             hmm=args.hmm,
+                            model=args.model,
                             out_tree=args.out_tree,
                             alignment_tool=args.alignment_tool,
                             threads=args.threads,
@@ -95,6 +99,7 @@ def main():
                                     ref_msa=args.ref_msa,
                                     tree=args.tree,
                                     hmm=args.hmm,
+                                    model=args.model,
                                     out_tree=args.out_tree,
                                     alignment_tool=args.alignment_tool,
                                     threads=args.threads,
