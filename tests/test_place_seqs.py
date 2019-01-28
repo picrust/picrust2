@@ -11,9 +11,9 @@ from tempfile import TemporaryDirectory
 from picrust2.util import read_phylip, read_fasta
 from picrust2.default import (default_ref_dir, default_fasta, default_tree,
                               default_hmm, default_model) 
-from picrust2.place_seqs import (place_seqs_pipeline, run_papara,
-                                 split_ref_study_papara, run_epa_ng,
-                                 gappa_jplace_to_newick, identify_ref_files)
+from picrust2.place_seqs import (place_seqs_pipeline, split_ref_study_papara,
+                                 run_epa_ng, gappa_jplace_to_newick,
+                                 identify_ref_files)
 
 # Set paths to test files.
 test_dir_path = path.join(path.dirname(path.abspath(__file__)), "test_data",
@@ -26,10 +26,6 @@ test_tree = path.join(test_ref_dir, "img_centroid_16S_aligned_head30.tre")
 test_msa = path.join(test_ref_dir, "img_centroid_16S_aligned_head30.fna.gz")
 test_hmm = path.join(test_ref_dir, "img_centroid_16S_aligned_head30.hmm")
 test_model = path.join(test_ref_dir, "img_centroid_16S_aligned_head30.model")
-
-exp_papara_phylip = path.join(test_dir_path, "place_seqs_output",
-                              "place_seqs_working",
-                              "papara_alignment.out")
 
 exp_study_fasta = path.join(test_dir_path, "place_seqs_output",
                             "place_seqs_working",
@@ -123,7 +119,6 @@ class place_seqs_tests(unittest.TestCase):
             place_seqs_pipeline(study_fasta=test_study_seqs,
                                 ref_dir=test_ref_dir,
                                 out_tree=tmp_tree,
-                                alignment_tool="hmmalign",
                                 threads=1,
                                 out_dir=temp_dir,
                                 chunk_size=5000,

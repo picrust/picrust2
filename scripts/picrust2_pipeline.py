@@ -14,7 +14,6 @@ from picrust2.util import make_output_dir
 from picrust2.pipeline import full_pipeline
 
 HSP_METHODS = ['mp', 'emp_prob', 'pic', 'scp', 'subtree_average']
-ALIGN_CHOICES = ["hmmalign", "papara"]
 
 parser = argparse.ArgumentParser(
 
@@ -101,12 +100,6 @@ parser.add_argument('--stratified', default=False, action='store_true',
                     help='Flag to indicate that stratified tables should be '
                          'generated at all steps (will increase run-time)')
 
-parser.add_argument('-a', '--alignment_tool', type=str.lower,
-                    default="hmmalign", choices=ALIGN_CHOICES,
-                    help='Which program to use for aligning query sequences ' +
-                         'to reference MSA prior to EPA-NG step (default: ' +
-                         '%(default)s).')
-
 parser.add_argument('--max_nsti', metavar='FLOAT', type=float, default=2.0,
                     help='Sequences with NSTI values above this value will '
                          'be excluded (default: %(default)d).')
@@ -189,7 +182,6 @@ def main():
                                                     regroup_map=args.regroup_map,
                                                     no_regroup=args.no_regroup,
                                                     stratified=args.stratified,
-                                                    alignment_tool=args.alignment_tool,
                                                     max_nsti=args.max_nsti,
                                                     min_reads=args.min_reads,
                                                     min_samples=args.min_samples,

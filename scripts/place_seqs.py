@@ -10,8 +10,6 @@ from picrust2.place_seqs import place_seqs_pipeline
 from picrust2.default import default_ref_dir
 from picrust2.util import make_output_dir
 
-ALIGN_CHOICES = ["hmmalign", "papara"]
-
 parser = argparse.ArgumentParser(
 
     description="Wrapper to prep tree before HSP steps. Requires unaligned " +
@@ -35,12 +33,6 @@ parser.add_argument('-r', '--ref_dir', metavar='PATH', type=str,
 
 parser.add_argument('-o', '--out_tree', metavar='PATH', required=True,
                     type=str, help='Name of final output tree')
-
-parser.add_argument('-a', '--alignment_tool', type=str.lower,
-                    default="hmmalign", choices=ALIGN_CHOICES,
-                    help='Which program to use for aligning query sequences ' +
-                         'to reference MSA prior to EPA-NG step (default: ' +
-                         '%(default)s).')
 
 parser.add_argument('--threads', type=int, default=1,
                     help='Number of threads to use (default: %(default)d).')
@@ -72,7 +64,6 @@ def main():
         place_seqs_pipeline(study_fasta=args.study_fasta,
                             ref_dir=args.ref_dir,
                             out_tree=args.out_tree,
-                            alignment_tool=args.alignment_tool,
                             threads=args.threads,
                             out_dir=args.intermediate,
                             chunk_size=args.chunk_size,
@@ -83,7 +74,6 @@ def main():
                 place_seqs_pipeline(study_fasta=args.study_fasta,
                                     ref_dir=args.ref_dir,
                                     out_tree=args.out_tree,
-                                    alignment_tool=args.alignment_tool,
                                     threads=args.threads,
                                     out_dir=temp_dir,
                                     chunk_size=args.chunk_size,
