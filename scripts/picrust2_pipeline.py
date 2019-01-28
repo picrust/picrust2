@@ -59,7 +59,6 @@ parser.add_argument('--model', metavar='PATH', type=str, default=default_model,
                     help='File containing model parameters used to create phylogenetic '
                          'tree (default: %(default)s).')
 
-
 parser.add_argument('--in_traits', type=str.upper, default='EC,KO',
                     help='Comma-delimited list (with no spaces) of which gene '
                          'families to predict from this set: COG, EC, KO, '
@@ -179,9 +178,6 @@ parser.add_argument('--per_sequence_contrib', default=False, action="store_true"
                     'sequence will also be output when this option is set '
                     '(default: %(default)d).')
 
-parser.add_argument('--no_descrip', default=False, action='store_true',
-                    help='Do not add function descriptions to output tables.')
-
 parser.add_argument('--verbose', default=False, action='store_true',
                     help='If specified, print out wrapped commands to screen')
 
@@ -222,7 +218,6 @@ def main():
                                                     seed=args.seed,
                                                     no_gap_fill=args.no_gap_fill,
                                                     per_sequence_contrib=args.per_sequence_contrib,
-                                                    no_descrip=args.no_descrip,
                                                     verbose=args.verbose)
 
     # Print out elapsed time.
