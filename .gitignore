@@ -5,5 +5,5 @@ tests/__pycache__/
 tutorial_files/tutorial_out/
 testing_datasets/
 .pytest_cache/
-picrust2/default_files/prokaryotic/reference_unaligned.fna
+picrust2/default_files/prokaryotic/prokaryotic_align/reference_unaligned.fna
 example_files/old/
