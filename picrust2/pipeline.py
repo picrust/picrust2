@@ -39,12 +39,6 @@ def full_pipeline(study_fasta,
     Descriptions of all of these input arguments/options are given in the
     picrust2_pipeline.py script.'''
 
-    # Check that input files exist.
-    check_files_exist([study_fasta, input_table])
-
-    # Check that sequence names in FASTA overlap with input table.
-    check_overlapping_seqs(study_fasta, input_table)
-
     if path.exists(output_folder):
         sys.exit("Stopping since output directory " + output_folder +
                  " already exists.")
@@ -95,7 +89,8 @@ def full_pipeline(study_fasta,
 
     # Check that all input files exist. 
     ref_msa, tree, hmm, model = identify_ref_files(ref_dir)
-    files2check = [ref_msa, tree, hmm, model] + list(func_tables.values())
+    files2check = [study_fasta, input_table, ref_msa, tree, hmm, model] +
+                  list(func_tables.values())
 
     if not no_pathways:
         files2check.append(pathway_map)
@@ -105,6 +100,9 @@ def full_pipeline(study_fasta,
 
     # This will throw an error if any input files are not found.
     check_files_exist(files2check)
+
+    # Check that sequence names in FASTA overlap with input table.
+    check_overlapping_seqs(study_fasta, input_table)
 
     if verbose:
         print("Placing sequences onto reference tree", file=sys.stderr)
