@@ -1,0 +1,16 @@
+language: python
+
+python:
+  - "3.5"
+  - "3.5-dev"  # 3.5 development branch
+  - "3.6"
+  - "3.6-dev"  # 3.6 development branch
+
+install:
+  - pip install conda
+  - conda env create -f  picrust2-env.yaml
+  - source activate picrust2
+  - pip install --editable .
+
+script:
+  - pytest
