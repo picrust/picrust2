@@ -8,6 +8,7 @@ import unittest
 from os import path
 from tempfile import TemporaryDirectory
 from picrust2.util import system_call_check
+from picrust2.default import default_model
 
 # Paths to input files.
 test_dir_path = path.join(path.dirname(path.abspath(__file__)))
@@ -52,7 +53,8 @@ class workflow_test(unittest.TestCase):
 
             system_call_check("place_seqs.py -s " + test_study_seqs + " -r " +
                               test_msa + " -t " + test_tree + " --hmm " +
-                              test_hmm + " -o " + out_tree)
+                              test_hmm + " --model " + default_model + " -o " +
+                              out_tree)
 
             hsp_out_prefix = path.join(temp_dir, "hsp_out")
             hsp_out_prefix_marker = path.join(temp_dir, "hsp_out_marker")
@@ -94,7 +96,7 @@ class workflow_test(unittest.TestCase):
             system_call_check("picrust2_pipeline.py -s " + test_study_seqs +
                               " -i " + test_seq_abun_tsv + " -o " + out_dir +
                               " -r " + test_msa + " -t " + test_tree +
-                              " --hmm " + test_hmm +
+                              " --hmm " + test_hmm + " --model " + default_model +
                               " --custom_trait_tables " + test_known_traits +
                               " --marker_gene_table " + test_known_marker +
                               " --verbose")

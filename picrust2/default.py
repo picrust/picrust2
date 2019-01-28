@@ -20,7 +20,7 @@ default_hmm = path.join(project_dir, "default_files", "prokaryotic",
                         "reference.hmm")
 
 default_model = path.join(project_dir, "default_files", "prokaryotic",
-                          "reference.bestModel")
+                          "reference.model")
 
 default_regroup_map = path.join(project_dir, "default_files",
                                 "pathway_mapfiles",

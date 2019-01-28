@@ -8,6 +8,7 @@ import unittest
 from os import path
 from tempfile import TemporaryDirectory
 from picrust2.util import read_phylip, read_fasta
+from picrust2.default import default_model
 from picrust2.place_seqs import (place_seqs_pipeline, run_papara,
                                  split_ref_study_papara, run_epa_ng,
                                  gappa_jplace_to_newick)
@@ -50,13 +51,15 @@ class place_seqs_tests(unittest.TestCase):
     def test_default_md5sum(self):
         '''Test that default files match expected md5sum values.'''
 
-        from picrust2.default import default_fasta, default_tree, default_hmm
+        from picrust2.default import (default_fasta, default_tree, default_hmm,
+                                      default_model)
         import hashlib
 
         # Calculate md5sum for fasta and treefile respectively.
         fasta_hash = hashlib.md5()
         tree_hash = hashlib.md5()
         hmm_hash = hashlib.md5()
+        model_hash = hashlib.md5()
 
         with open(default_fasta) as fasta_in:
             fasta_hash.update(fasta_in.read().encode())
@@ -67,12 +70,16 @@ class place_seqs_tests(unittest.TestCase):
         with open(default_hmm) as hmm_in:
             hmm_hash.update(hmm_in.read().encode())
 
+        with open(default_model) as model_in:
+            model_hash.update(model_in.read().encode())
+
         # Check that md5sum values match expected values.
         self.assertEqual([fasta_hash.hexdigest(), tree_hash.hexdigest(),
-                          hmm_hash.hexdigest()],
+                          hmm_hash.hexdigest(), model_hash.hexdigest()],
                          ['a1675a5c0a2c1941ff2e71c63049a7b4',
                           'f247071837f74c156dc530736cb6d453',
-                          'd50b0dac445b5243e86816dbdeadf898'])
+                          'd50b0dac445b5243e86816dbdeadf898',
+                          '478b5011ea8aeb0c720e9bb68774fabd'])
 
     # def test_run_papara(self):
     #     '''Basic test for run_papara function.'''
@@ -135,6 +142,7 @@ class place_seqs_tests(unittest.TestCase):
 
         with TemporaryDirectory() as temp_dir:
             run_epa_ng(tree=test_tree,
+                       model=default_model,
                        ref_msa_fastafile=exp_ref_fasta,
                        study_msa_fastafile=exp_study_fasta,
                        out_dir=temp_dir)
@@ -151,6 +159,7 @@ class place_seqs_tests(unittest.TestCase):
                                 ref_msa=test_msa,
                                 tree=test_tree,
                                 hmm=test_hmm,
+                                model=default_model,
                                 out_tree=tmp_tree,
                                 alignment_tool="hmmalign",
                                 threads=1,

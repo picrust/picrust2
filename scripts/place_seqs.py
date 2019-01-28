@@ -40,7 +40,8 @@ parser.add_argument('-t', '--tree', metavar='PATH', type=str,
                          '(default: %(default)s).')
 
 parser.add_argument('--model', metavar='PATH', type=str, default=default_model,
-                    help='File containing model parameters used to create phylogenetic tree'.)
+                    help='File containing model parameters used to create phylogenetic '
+                         'tree (default: %(default)s).')
 
 parser.add_argument('-o', '--out_tree', metavar='PATH', required=True,
                     type=str, help='Name of final output tree')
