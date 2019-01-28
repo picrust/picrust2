@@ -19,6 +19,9 @@ default_tree = path.join(project_dir, "default_files", "prokaryotic",
 default_hmm = path.join(project_dir, "default_files", "prokaryotic",
                         "reference.hmm")
 
+default_model = path.join(project_dir, "default_files", "prokaryotic",
+                          "reference.model")
+
 default_regroup_map = path.join(project_dir, "default_files",
                                 "pathway_mapfiles",
                                 "ec_level4_to_metacyc_rxn.tsv")
