@@ -119,7 +119,7 @@ parser.add_argument('-a', '--alignment_tool', type=str.lower,
                          'to reference MSA prior to EPA-NG step (default: ' +
                          '%(default)s).')
 
-parser.add_argument('--max_nsti', metavar='INT', type=float, default=2.0,
+parser.add_argument('--max_nsti', metavar='FLOAT', type=float, default=2.0,
                     help='Sequences with NSTI values above this value will '
                          'be excluded (default: %(default)d).')
 
