@@ -8,7 +8,7 @@ import sys
 from os import path, chdir, getcwd
 from picrust2.util import (system_call_check, make_output_dir, read_fasta,
                            read_phylip, write_fasta, write_phylip,
-                           read_stockholm, check_files_exist)
+                           read_stockholm)
 
 
 def place_seqs_pipeline(study_fasta,
@@ -23,9 +23,6 @@ def place_seqs_pipeline(study_fasta,
 
     # Identify reference files to use.
     ref_msa, tree, hmm, model = identify_ref_files(ref_dir)
-
-    # Check that input files exist.
-    check_files_exist([study_fasta, ref_msa, tree, hmm, model])
 
     if alignment_tool == "hmmalign":
 

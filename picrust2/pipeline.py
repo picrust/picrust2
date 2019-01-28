@@ -8,6 +8,7 @@ from os import path
 import sys
 import biom
 from picrust2.default import default_tables
+from picrust2.place_seqs import identify_ref_files
 from picrust2.util import (make_output_dir, check_files_exist, read_fasta,
                            system_call_check)
 
@@ -92,6 +93,19 @@ def full_pipeline(study_fasta,
     # Append marker as well, since this also needs to be run.
     funcs.append("marker")
     func_tables["marker"] = marker_gene_table
+
+    # Check that all input files exist. 
+    ref_msa, tree, hmm, model = identify_ref_files(ref_dir)
+    files2check = [ref_msa, tree, hmm, model] + list(func_tables.values())
+
+    if not no_pathways:
+        files2check.append(pathway_map)
+
+        if not no_regroup:
+            files2check.append(regroup_map)
+
+    # This will throw an error if any input files are not found.
+    check_files_exist(files2check)
 
     if verbose:
         print("Placing sequences onto reference tree", file=sys.stderr)
