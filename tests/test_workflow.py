@@ -88,6 +88,8 @@ class workflow_test(unittest.TestCase):
                               " -r " + test_ref_dir +
                               " --custom_trait_tables " + test_known_traits +
                               " --marker_gene_table " + test_known_marker +
+                              " --seed 1" +
+                              " --no_gap_fill" +
                               " --verbose")
 
 if __name__ == '__main__':

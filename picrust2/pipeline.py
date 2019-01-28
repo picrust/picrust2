@@ -68,6 +68,9 @@ def full_pipeline(study_fasta,
 
     else:
 
+        # Split paths to input custom trait tables and take the basename to be
+        # the function id. The first table specified is assumed to be used
+        # for inferring pathways.
         funcs = []
         func_tables = {}
 
@@ -89,8 +92,7 @@ def full_pipeline(study_fasta,
 
     # Check that all input files exist. 
     ref_msa, tree, hmm, model = identify_ref_files(ref_dir)
-    files2check = [study_fasta, input_table, ref_msa, tree, hmm, model] +
-                  list(func_tables.values())
+    files2check = [study_fasta, input_table, ref_msa, tree, hmm, model] + list(func_tables.values())
 
     if not no_pathways:
         files2check.append(pathway_map)
