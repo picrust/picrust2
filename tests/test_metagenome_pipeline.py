@@ -12,8 +12,8 @@ from tempfile import TemporaryDirectory
 from picrust2.util import biom_to_pandas_df
 from picrust2.metagenome_pipeline import (run_metagenome_pipeline,
                                           norm_by_marker_copies,
-                                          calc_weighted_nsti,
-                                          id_rare_seqs)
+                                          calc_weighted_nsti, id_rare_seqs,
+                                          drop_tips_by_nsti)
 
 # Set paths to test files.
 test_dir_path = path.join(path.dirname(path.abspath(__file__)), "test_data",
@@ -181,6 +181,40 @@ class metagenome_pipeline_test(unittest.TestCase):
         pd.testing.assert_frame_equal(weighted_nsti_out,
                                       expected_weighted_nsti_df,
                                       check_like=True)
+
+    def test_nsti_filtering(self):
+        '''Test that NSTI values filtered out correctly by checking for
+        expected sequences to be retained..'''
+
+        test_file = path.join("tests", "test_data", "hsp", "hsp_output",
+                              "mp_pred_out_nsti.tsv")
+
+        pred_test_in = pd.read_csv(test_file, sep="\t", index_col="sequence")
+
+        pred_test_in_filt, nsti_col = drop_tips_by_nsti(tab=pred_test_in,
+                                                     nsti_col="metadata_NSTI",
+                                                        max_nsti=0.003)
+
+        expected_passing_seqs = set(['2571042249_cluster', '2593339006',
+                                 '2571042244', '2571042654', '2568526369',
+                                 '2574180429_cluster', '2593338844',
+                                 '2568526487_cluster', '2574180282_cluster'])
+
+        self.assertSetEqual(expected_passing_seqs,
+                            set(list(pred_test_in_filt.index)))
+
+    def test_nsti_filtering_all_err(self):
+        '''Test that error thrown when all ASVs thrown out.'''
+
+        test_file = path.join("tests", "test_data", "hsp", "hsp_output",
+                              "mp_pred_out_nsti.tsv")
+
+        pred_test_in = pd.read_csv(test_file, sep="\t", index_col="sequence")
+
+        with self.assertRaises(SystemExit):
+            pred_test_in_filt, nsti_col = drop_tips_by_nsti(tab=pred_test_in,
+                                                      nsti_col="metadata_NSTI",
+                                                            max_nsti=0.000001)
 
 class rare_seqs_test(unittest.TestCase):
     '''Checks that \"RARE\" category is being collapsed to correctly.'''

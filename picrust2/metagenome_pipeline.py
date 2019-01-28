@@ -45,17 +45,15 @@ def run_metagenome_pipeline(input_biom,
 
     # If NSTI column present then remove all rows with value above specified
     # max value. Also, remove NSTI column (in both dataframes).
-    if "metadata_NSTI" in pred_function.columns:
+    if 'metadata_NSTI' in pred_function.columns:
+        pred_function, nsti_val = drop_tips_by_nsti(tab=pred_function,
+                                                    nsti_col='metadata_NSTI',
+                                                    max_nsti=max_nsti)
 
-        pred_function = pred_function[pred_function['metadata_NSTI'] <= max_nsti]
-        nsti_val = pred_function[['metadata_NSTI']]
-        pred_function.drop('metadata_NSTI', axis=1, inplace=True)
-
-    if "metadata_NSTI" in pred_marker.columns:
-
-        pred_marker = pred_marker[pred_marker['metadata_NSTI'] <= max_nsti]
-        nsti_val = pred_marker[['metadata_NSTI']]
-        pred_marker.drop('metadata_NSTI', axis=1, inplace=True)
+    if 'metadata_NSTI' in pred_marker.columns:
+        pred_marker, nsti_val = drop_tips_by_nsti(tab=pred_marker,
+                                                  nsti_col='metadata_NSTI',
+                                                  max_nsti=max_nsti)
 
     # Re-order predicted abundance tables to be in same order as study seqs.
     # Also, drop any sequence ids that don't overlap across all dataframes.
@@ -101,6 +99,37 @@ def run_metagenome_pipeline(input_biom,
                            rare_seqs=rare_seqs,
                            proc=proc,
                            strat_out=strat_out))
+
+
+def drop_tips_by_nsti(tab, nsti_col, max_nsti):
+    '''Takes in (1) function table (columns are functions, rows are predicted
+    genomes for ASVs, (2) which column of this function table corresponds to
+    NSTI values, and (3) the maximum NSTI value for ASVs to be retained. Will
+    return table with ASVs above the max NSTI cut-off excluded and a dataframe
+    which just contains the NSTI values for ASVs that passed the cut-off. Will
+    report how many ASVs were removed and will throw error if all ASVs are.'''
+
+    orig_num_rows = tab.shape[0]
+
+    tab = tab[tab[nsti_col] <= max_nsti]
+
+    filt_num_rows = tab.shape[0]
+
+    if filt_num_rows == 0:
+        sys.exit("Stopping - all ASVs filtered from table when max NSTI "
+                 "cut-off of " + str(max_nsti) + " used.")
+    else:
+        num_removed = orig_num_rows - filt_num_rows
+        print(str(num_removed) + " of " + str(orig_num_rows) + " ASVs were "
+              "above the max NSTI cut-off of " + str(max_nsti) + " and were "
+              "removed.", file=sys.stderr)
+
+    # Keep track of NSTI column as separate dataframe and remove this column
+    # from the main dataframe.
+    nsti_val = tab[[nsti_col]]
+
+    return(tab.drop(nsti_col, axis=1, inplace=False), nsti_val)
+
 
 def calc_weighted_nsti(seq_counts, nsti_input, outfile=None):
     '''Will calculate weighted NSTI values given sequence count table and NSTI
