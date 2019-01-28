@@ -197,16 +197,13 @@ def system_call_check(cmd, print_out=False, stdout=None, stderr=None):
     '''Run system command and throw and error if return is not 0. Input command
     can be a list containing the command or a string.'''
 
-    # Print command out if option set.
-    if print_out:
-        if type(cmd) is list:
-            print(" ".join(cmd))
-        else:
-            print(cmd)
-
     # Convert command to list if input as string.
     if type(cmd) is str:
         cmd = cmd.split()
+
+    # Print command out if option set.
+    if print_out:
+        print(" ".join(cmd), file=sys.stderr)
 
     return_value = call(cmd, stdout=stdout, stderr=stderr)
 
