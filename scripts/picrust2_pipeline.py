@@ -151,11 +151,6 @@ parser.add_argument('-n', '--calculate_NSTI', default=False,
                     help='Calculate NSTI and add to output ' +
                          'file')
 
-parser.add_argument('-c', '--confidence', default=False, action='store_true',
-                    help='Output 95 percent confidence ' +
-                         'intervals (only possible for mk_model, emp_prob, '
-                         'and mp settings)')
-
 parser.add_argument('--seed', default=100, type=int,
                     help='Seed to make output reproducible, which is '
                          'necessary for the mp and emp_prob methods '
@@ -214,7 +209,6 @@ def main():
                                                     min_samples=args.min_samples,
                                                     hsp_method=args.hsp_method,
                                                     calculate_NSTI=args.calculate_NSTI,
-                                                    confidence=args.confidence,
                                                     seed=args.seed,
                                                     no_gap_fill=args.no_gap_fill,
                                                     per_sequence_contrib=args.per_sequence_contrib,

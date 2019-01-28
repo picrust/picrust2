@@ -75,10 +75,6 @@ parser.add_argument('-n', '--calculate_NSTI', default=False,
                     help='Calculate NSTI and add to output ' +
                          'file')
 
-parser.add_argument('-c', '--confidence', default=False, action='store_true',
-                    help='Output 95 percent confidence ' +
-                         'intervals (only possible when used with \"emp_prob\" method currently).')
-
 parser.add_argument('--check', default=False, action='store_true',
                     help='Check input trait table before HSP')
 
@@ -114,14 +110,10 @@ def main():
     # Check that input filenames exist.
     check_files_exist([args.tree, trait_table])
 
-    # Only calculate CIs if method is "emp_prob".
-    if args.confidence and args.hsp_method in "emp_prob":
-        ci_setting = True
-    else:
-        ci_setting = False
+    # No longer support outputting CIs with this script. 
+    ci_setting = False
 
     count_outfile = args.output_prefix + ".tsv"
-    ci_outfile = args.output_prefix + "_ci.tsv"
 
     hsp_table, ci_table = castor_hsp_workflow(tree_path=args.tree,
                                               trait_table_path=trait_table,
@@ -137,13 +129,6 @@ def main():
     make_output_dir_for_file(count_outfile)
     hsp_table.to_csv(path_or_buf=count_outfile, index_label="sequence",
                      sep="\t")
-
-    # Output the CI file as well if option set.
-    if ci_setting:
-        make_output_dir_for_file(ci_outfile)
-        ci_table.to_csv(path_or_buf=ci_outfile, index_label="sequence",
-                        sep="\t")
-
 
 if __name__ == "__main__":
     main()

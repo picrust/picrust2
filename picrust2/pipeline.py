@@ -34,7 +34,6 @@ def full_pipeline(study_fasta,
                   min_samples,
                   hsp_method,
                   calculate_NSTI,
-                  confidence,
                   seed,
                   no_gap_fill,
                   per_sequence_contrib,
@@ -153,9 +152,6 @@ def full_pipeline(study_fasta,
         # Add flags to command if specified.
         if func == "marker" and calculate_NSTI:
             hsp_cmd.append("--calculate_NSTI")
-
-        if confidence and hsp_method == "emp_prob":
-            hsp_cmd.append("--confidence")
 
         system_call_check(hsp_cmd, print_out=verbose)
 
