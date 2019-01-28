@@ -8,9 +8,8 @@ import argparse
 from os import path
 import sys
 import time
-from picrust2.default import (default_fasta, default_tree, default_hmm, default_model,
-                              default_tables, default_map, default_regroup_map,
-                              default_pathway_map)
+from picrust2.default import (default_ref_dir, default_tables, default_map,
+                              default_regroup_map, default_pathway_map)
 from picrust2.util import make_output_dir
 from picrust2.pipeline import full_pipeline
 
@@ -42,22 +41,12 @@ parser.add_argument('-o', '--output', metavar='PATH', required=True,
 parser.add_argument('--threads', type=int, default=1,
                     help='Number of threads to use (default: %(default)d).')
 
-parser.add_argument('-r', '--ref_msa', metavar='PATH', type=str,
-                    default=default_fasta,
-                    help='FASTA of aligned reference sequences (default: %(default)s).')
-
-parser.add_argument('-t', '--tree', metavar='PATH', type=str,
-                    default=default_tree,
-                    help='Input tree based on aligned reference sequences. '
-                         '(default: %(default)s).')
-
-parser.add_argument('--hmm', metavar='PATH', type=str,
-                    default=default_hmm,
-                    help='Hidden markov model of reference MSA (default: %(default)s).')
-
-parser.add_argument('--model', metavar='PATH', type=str, default=default_model,
-                    help='File containing model parameters used to create phylogenetic '
-                         'tree (default: %(default)s).')
+parser.add_argument('-r', '--ref_dir', metavar='PATH', type=str,
+                    default=default_ref_dir,
+                    help='Directory containing reference sequence files '
+                         '(default: %(default)s). Please see the online '
+                         'documentation for how to name the files in this '
+                         'directory.')
 
 parser.add_argument('--in_traits', type=str.upper, default='EC,KO',
                     help='Comma-delimited list (with no spaces) of which gene '
@@ -191,10 +180,7 @@ def main():
                                                     input_table=args.input,
                                                     output_folder=args.output,
                                                     threads=args.threads,
-                                                    ref_msa=args.ref_msa,
-                                                    tree=args.tree,
-                                                    hmm=args.hmm,
-                                                    model=args.model,
+                                                    ref_dir=args.ref_dir,
                                                     in_traits=args.in_traits,
                                                     custom_trait_tables=args.custom_trait_tables,
                                                     marker_gene_table=args.marker_gene_table,

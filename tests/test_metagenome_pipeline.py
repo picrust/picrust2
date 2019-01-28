@@ -186,7 +186,8 @@ class metagenome_pipeline_test(unittest.TestCase):
         '''Test that NSTI values filtered out correctly by checking for
         expected sequences to be retained..'''
 
-        test_file = path.join("tests", "test_data", "hsp", "hsp_output",
+        test_file = path.join(path.dirname(path.abspath(__file__)),
+                              "test_data", "hsp", "hsp_output",
                               "mp_pred_out_nsti.tsv")
 
         pred_test_in = pd.read_csv(test_file, sep="\t", index_col="sequence")
@@ -206,7 +207,8 @@ class metagenome_pipeline_test(unittest.TestCase):
     def test_nsti_filtering_all_err(self):
         '''Test that error thrown when all ASVs thrown out.'''
 
-        test_file = path.join("tests", "test_data", "hsp", "hsp_output",
+        test_file = path.join(path.dirname(path.abspath(__file__)),
+                              "test_data", "hsp", "hsp_output",
                               "mp_pred_out_nsti.tsv")
 
         pred_test_in = pd.read_csv(test_file, sep="\t", index_col="sequence")

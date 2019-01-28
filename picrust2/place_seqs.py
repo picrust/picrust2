@@ -4,17 +4,15 @@ __copyright__ = "Copyright 2018, The PICRUSt Project"
 __license__ = "GPL"
 __version__ = "2.0.4-b"
 
+import sys
 from os import path, chdir, getcwd
 from picrust2.util import (system_call_check, make_output_dir, read_fasta,
                            read_phylip, write_fasta, write_phylip,
-                           read_stockholm)
+                           read_stockholm, check_files_exist)
 
 
 def place_seqs_pipeline(study_fasta,
-                        ref_msa,
-                        tree,
-                        hmm,
-                        model,
+                        ref_dir,
                         out_tree,
                         alignment_tool,
                         threads,
@@ -23,6 +21,12 @@ def place_seqs_pipeline(study_fasta,
                         print_cmds):
     '''Full pipeline for running sequence placement.'''
 
+    # Identify reference files to use.
+    ref_msa, tree, hmm, model = identify_ref_files(ref_dir)
+
+    # Check that input files exist.
+    check_files_exist([study_fasta, ref_msa, tree, hmm, model])
+
     if alignment_tool == "hmmalign":
 
         out_stockholm = path.join(out_dir, "query_align.stockholm")
@@ -30,7 +34,6 @@ def place_seqs_pipeline(study_fasta,
         system_call_check("hmmalign  --trim --dna --mapali " + ref_msa + " --informat FASTA -o " +
                           out_stockholm + " " + hmm + " " + study_fasta,
                           print_out=print_cmds)
-
 
         hmmalign_out = read_stockholm(out_stockholm, clean_char=True)
 
@@ -116,7 +119,6 @@ def run_papara(tree: str, ref_msa: dict, study_fasta: str, out_dir: str,
     return(read_phylip(path.join(out_dir, "papara_alignment.out"),
                        check_input=True))
 
-
 def split_ref_study_papara(papara_out: dict, ref_seqnames: set, ref_fasta: str,
                            study_fasta: str):
     '''Split PaPaRa phylip output into FASTA MSA files of study sequences and
@@ -136,7 +138,6 @@ def split_ref_study_papara(papara_out: dict, ref_seqnames: set, ref_fasta: str,
     write_fasta(ref_papara_subset, ref_fasta)
     write_fasta(study_papara_subset, study_fasta)
 
-
 def run_epa_ng(tree: str, ref_msa_fastafile: str, study_msa_fastafile: str,
                model: str, out_dir: str, chunk_size=5000, threads=1,
                print_cmds=False):
@@ -150,7 +151,6 @@ def run_epa_ng(tree: str, ref_msa_fastafile: str, study_msa_fastafile: str,
                       " --chunk-size " + str(chunk_size) + " -T " +
                       str(threads) + " -m " + model + " -w " + out_dir,
                       print_out=print_cmds)
-
 
 def gappa_jplace_to_newick(jplace_file: str, outfile: str, print_cmds=False):
     '''System call to gappa binary to convert jplace object to newick
@@ -169,3 +169,69 @@ def gappa_jplace_to_newick(jplace_file: str, outfile: str, print_cmds=False):
     # Rename newick file to be specified outfile.
     system_call_check("mv " + newick_file + " " + outfile,
                       print_out=print_cmds)
+
+def identify_ref_files(in_dir):
+    '''Given a directory will check whether the four required reference files
+    are present and will return the path to each file in a list in the order:
+    FASTA, TREE, HMM, MODEL.'''
+
+    base_path = path.basename(in_dir)
+
+    # Expected filenames to be in this directory.
+    # Note that only one of the possible FASTA filenames should be in the
+    # directory. An error will be thrown if multiple files are found.
+    possible_fasta = [path.join(in_dir, base_path + ".fna.gz"),
+                      path.join(in_dir, base_path + ".fasta.gz"),
+                      path.join(in_dir, base_path + ".fna"),
+                      path.join(in_dir, base_path + ".fasta")]
+
+    path2return = []
+
+    # Flag for whether FASTA file is present.
+    missing_fasta = False
+
+    # Identify which possible FASTA files are present.
+    for poss in possible_fasta:
+        if path.isfile(poss):
+            path2return.append(poss)
+
+    # Throw error if multiple FASTAs identified.
+    if len(path2return) == 0:
+        missing_fasta = True
+    elif len(path2return) > 1:
+        sys.exit("Found multiple FASTA files in specified reference directory. "
+                 "Only one should be present. Files found: \n" +
+                 "\n".join(path2return))
+
+    # Check whether other reference files exist as well.
+    # List to keep track of which required files are missing.
+    missing_files = []
+
+    other_expected = [path.join(in_dir, base_path + ".tre"),
+                      path.join(in_dir, base_path + ".hmm"),
+                      path.join(in_dir, base_path + ".model")]
+
+    for other in other_expected:
+        if path.isfile(other):
+            path2return.append(other)
+        else:
+            missing_files.append(other)
+    
+    if missing_fasta:
+        print("No FASTA file found in specified directory. Expected to find "
+              "one of:\n" + "\n".join(possible_fasta) + "\n\n", file=sys.stderr)
+
+        if len(missing_files) > 0:
+            print("In addition to the missing FASTA file, the following "
+                  "expected file(s) could not be found:\n" +
+                  "\n".join(missing_files) + "\n\n", file=sys.stderr)
+    elif len(missing_files) > 0:
+            if len(missing_files) > 0:
+                print("The following expected file(s) could not be found:\n" +
+                      "\n".join(missing_files) + "\n\n", file=sys.stderr)
+
+    if missing_fasta or len(missing_files) > 0:
+        sys.exit("Error - missing at least one of the four reference files in "
+                 "this specified directory: " + in_dir)
+
+    return(path2return)

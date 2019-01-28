@@ -8,7 +8,6 @@ import unittest
 from os import path
 from tempfile import TemporaryDirectory
 from picrust2.util import system_call_check
-from picrust2.default import default_model
 
 # Paths to input files.
 test_dir_path = path.join(path.dirname(path.abspath(__file__)))
@@ -16,14 +15,8 @@ test_dir_path = path.join(path.dirname(path.abspath(__file__)))
 test_study_seqs = path.join(test_dir_path, "test_data", "place_seqs",
                             "study_seqs_test.fasta")
 
-test_tree = path.join(test_dir_path, "test_data", "place_seqs",
-                      "img_centroid_16S_aligned_head30.tre")
-
-test_msa = path.join(test_dir_path, "test_data", "place_seqs",
-                     "img_centroid_16S_aligned_head30.fna")
-
-test_hmm = path.join(test_dir_path, "test_data", "place_seqs",
-                     "img_centroid_16S_aligned_head30.hmm")
+test_ref_dir = path.join(test_dir_path, "test_data", "place_seqs",
+                         "img_centroid_16S_aligned_head30")
 
 test_known_marker = path.join(test_dir_path, "test_data", "workflow",
                               "workflow_known_marker.tsv")
@@ -52,26 +45,22 @@ class workflow_test(unittest.TestCase):
             out_tree = path.join(temp_dir, "out.tre")
 
             system_call_check("place_seqs.py -s " + test_study_seqs + " -r " +
-                              test_msa + " -t " + test_tree + " --hmm " +
-                              test_hmm + " --model " + default_model + " -o " +
-                              out_tree)
+                              test_ref_dir + " -o " + out_tree)
 
             hsp_out_prefix = path.join(temp_dir, "hsp_out")
             hsp_out_prefix_marker = path.join(temp_dir, "hsp_out_marker")
 
             system_call_check("hsp.py -t " + out_tree +
-                " --observed_trait_table " + test_known_traits + " -n -c " +
-                "-o " + hsp_out_prefix)
+                              " --observed_trait_table " + test_known_traits +
+                              " -n -o " + hsp_out_prefix)
 
             system_call_check("hsp.py -t " + out_tree +
-                " --observed_trait_table " + test_known_marker + " -n -c " +
-                "-o " + hsp_out_prefix_marker)
+                              " --observed_trait_table " + test_known_marker +
+                              " -n -o " + hsp_out_prefix_marker)
 
-            traits_predict = path.join(temp_dir, hsp_out_prefix +
-                                       ".tsv")
+            traits_predict = path.join(temp_dir, hsp_out_prefix + ".tsv")
 
-            marker_predict = path.join(temp_dir, hsp_out_prefix_marker +
-                                       ".tsv")
+            marker_predict = path.join(temp_dir, hsp_out_prefix_marker + ".tsv")
 
             metagenome_out = path.join(temp_dir, "meta_out")
 
@@ -94,9 +83,9 @@ class workflow_test(unittest.TestCase):
             out_dir = path.join(temp_dir, "pipeline_out")
 
             system_call_check("picrust2_pipeline.py -s " + test_study_seqs +
-                              " -i " + test_seq_abun_tsv + " -o " + out_dir +
-                              " -r " + test_msa + " -t " + test_tree +
-                              " --hmm " + test_hmm + " --model " + default_model +
+                              " -i " + test_seq_abun_tsv +
+                              " -o " + out_dir +
+                              " -r " + test_ref_dir +
                               " --custom_trait_tables " + test_known_traits +
                               " --marker_gene_table " + test_known_marker +
                               " --verbose")

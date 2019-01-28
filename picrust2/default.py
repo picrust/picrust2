@@ -10,17 +10,16 @@ from os import path
     
 project_dir = path.dirname(path.abspath(__file__))
 
-default_fasta = path.join(project_dir, "default_files", "prokaryotic",
-                          "reference.fna")
+default_ref_dir = path.join(project_dir, "default_files", "prokaryotic",
+                            "pro_ref")
 
-default_tree = path.join(project_dir, "default_files", "prokaryotic",
-                         "reference.tre")
+default_fasta = path.join(default_ref_dir, "pro_ref.fna.gz")
 
-default_hmm = path.join(project_dir, "default_files", "prokaryotic",
-                        "reference.hmm")
+default_tree = path.join(default_ref_dir, "pro_ref.tre")
 
-default_model = path.join(project_dir, "default_files", "prokaryotic",
-                          "reference.model")
+default_hmm = path.join(default_ref_dir, "pro_ref.hmm")
+
+default_model = path.join(default_ref_dir, "pro_ref.model")
 
 default_regroup_map = path.join(project_dir, "default_files",
                                 "pathway_mapfiles",

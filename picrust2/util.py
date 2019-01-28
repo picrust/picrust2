@@ -11,14 +11,14 @@ from subprocess import call
 import pandas as pd
 import numpy as np
 import tempfile
+import gzip
 import sys
 
 
 def read_fasta(filename, cut_header=False):
-
-    '''Read in FASTA file and return dictionary with each independent sequence
-    id as a key and the corresponding sequence string as the value.
-    '''
+    '''Read in FASTA file (gzipped or not) and return dictionary with each
+    independent sequence id as a key and the corresponding sequence string as
+    the value.'''
 
     # Intitialize empty dict.
     seq = {}
@@ -28,30 +28,35 @@ def read_fasta(filename, cut_header=False):
     name = None
 
     # Read in FASTA line-by-line.
-    with open(filename, "r") as fasta:
+    if filename[-3:] == ".gz":
+        fasta_in = gzip.open(filename, "rt")
+    else:
+        fasta_in = open(filename, "r")
 
-        for line in fasta:
+    for line in fasta_in:
 
-            # If header-line then split by whitespace, take the first element,
-            # and define the sequence name as everything after the ">".
-            if line[0] == ">":
+        # If header-line then split by whitespace, take the first element,
+        # and define the sequence name as everything after the ">".
+        if line[0] == ">":
 
-                if cut_header:
-                    name = line.split()[0][1:]
-                else:
-                    name = line[1:]
-
-                name = name.rstrip("\r\n")
-
-                # Intitialize empty sequence with this id.
-                seq[name] = ""
-
+            if cut_header:
+                name = line.split()[0][1:]
             else:
-                # Remove line terminator/newline characters.
-                line = line.rstrip("\r\n")
+                name = line[1:]
 
-                # Add sequence to dictionary.
-                seq[name] += line
+            name = name.rstrip("\r\n")
+
+            # Intitialize empty sequence with this id.
+            seq[name] = ""
+
+        else:
+            # Remove line terminator/newline characters.
+            line = line.rstrip("\r\n")
+
+            # Add sequence to dictionary.
+            seq[name] += line
+
+    fasta_in.close()
 
     return seq
 
