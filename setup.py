@@ -31,4 +31,7 @@ setup(name='PICRUSt2',
 			'h5py',
                         'joblib',
                         'biom-format'],
+      package_data={'picrust2':
+                    ['MinPath/MinPath12hmp.py',
+                     'Rscripts/*R']}
       long_description=long_description)
