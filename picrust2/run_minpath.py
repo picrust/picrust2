@@ -362,23 +362,31 @@ def run_minpath_pipeline(inputfile,
 
         # Prep output dfs.
         path_abun_unstrat = prep_pathway_df_out(path_raw_abun_unstrat)
-        path_cov_unstrat = prep_pathway_df_out(path_raw_cov_unstrat, 
-                                               num_digits=10)
         path_abun_strat = prep_pathway_df_out(path_raw_abun_strat,
                                               strat_index=True)
 
-        # Also parse stratified coverage table if --per_sequence_contrib set.
-        path_cov_strat = None
-        if per_sequence_contrib:
-            path_cov_strat = prep_pathway_df_out(path_raw_cov_strat,
-                                                 strat_index=True,
-                                                 num_digits=10)
+        if coverage:
+            path_cov_unstrat = prep_pathway_df_out(path_raw_cov_unstrat, 
+                                                   num_digits=10)
+            # Also parse stratified coverage table if --per_sequence_contrib set.
+            path_cov_strat = None
+            if per_sequence_contrib:
+                path_cov_strat = prep_pathway_df_out(path_raw_cov_strat,
+                                                     strat_index=True,
+                                                     num_digits=10)
 
-            path_cov_strat.columns = ["pathway", "sequence"] + samples
+                path_cov_strat.columns = ["pathway", "sequence"] + samples
+
+
+            path_cov_unstrat.columns = samples
+
+        else:
+            path_cov_unstrat = None
+            path_cov_strat = None
 
         # Set column labels of unstratified dataframe to be sample names.
         path_abun_unstrat.columns = samples
-        path_cov_unstrat.columns = samples
+        
         path_abun_strat.columns = ["pathway", "sequence"] + samples
 
         return(path_abun_unstrat, path_cov_unstrat, path_abun_strat,
@@ -405,12 +413,17 @@ def run_minpath_pipeline(inputfile,
             path_raw_cov_unstrat += [sample_output[1]]
 
         path_abun_unstrat = prep_pathway_df_out(path_raw_abun_unstrat)
-        path_cov_unstrat = prep_pathway_df_out(path_raw_cov_unstrat,
-                                               num_digits=10)
+
+        if coverage:
+            path_cov_unstrat = prep_pathway_df_out(path_raw_cov_unstrat,
+                                                   num_digits=10)
+            path_cov_unstrat.columns = samples
+        else:
+            path_cov_unstrat = None
 
         # Set column labels of unstratified dataframe to be sample names.
         path_abun_unstrat.columns = samples
-        path_cov_unstrat.columns = samples
+
 
         return(path_abun_unstrat, path_cov_unstrat, None, None)
 
@@ -583,14 +596,15 @@ def minpath_wrapper(sample_id, unstrat_input, minpath_map, out_dir,
 
 def strat_minpath(sample_id, strat_input, minpath_map, out_dir, pathway_db,
                   gap_fill=True, per_sequence_contrib=False, print_opt=False,
-                  proc=1):
+                  proc=1, calc_coverage=False):
     '''Read in sample_id, gene family table, and out_dir, and run MinPath based
     on the gene family abundances. Returns both unstratified and stratified
     pathway abundances as dictionaries in a list. Will compute the simplistic
     "community-wide contributions" for stratitifed output unless 
     per_sequence_contrib=True, which in contrast will cause MinPath to be run
     for each sequence. Also returns the coverage of each unstratified pathway
-    as the a different dictionary in a list when per_sequence_contrib=True.'''
+    as the a different dictionary in a list when per_sequence_contrib=True
+    and calc_coverage=True'''
 
     # Get gene family abundances summed over all sequences for this sample.
     unstrat_input = strat_to_unstrat_counts(strat_input)
@@ -627,7 +641,8 @@ def strat_minpath(sample_id, strat_input, minpath_map, out_dir, pathway_db,
         pathway_abun, pathway_cov = pathway_abun_and_coverage(pathway,
                                                               pathway_db,
                                                               path_reaction_abun,
-                                                              median_abun)
+                                                              median_abun,
+                                                              calc_coverage)
 
         if pathway_abun == 0:
             continue
@@ -665,6 +680,7 @@ def strat_minpath(sample_id, strat_input, minpath_map, out_dir, pathway_db,
                                         out_dir,
                                         pathway_db,
                                         gap_fill,
+                                        calc_coverage,
                                         print_opt,
                                         "_" + seq)
                                         for seq in set(strat_input['sequence']))
@@ -689,7 +705,8 @@ def strat_minpath(sample_id, strat_input, minpath_map, out_dir, pathway_db,
 
 
 def unstrat_minpath_for_seq(seq, sample_id, in_tab, minpath_map, out_dir,
-                            pathway_db, gap_fill, print_opt, extra_str):
+                            pathway_db, gap_fill, calc_coverage, print_opt,
+                            extra_str):
     '''Will run MinPath and get abundances and coverages for pathways present
     based on unstratified table. This unstratified table will correspond to a
     single sequence however, so a stratified table will be returned (with only
@@ -707,6 +724,7 @@ def unstrat_minpath_for_seq(seq, sample_id, in_tab, minpath_map, out_dir,
                                                   out_dir,
                                                   pathway_db,
                                                   gap_fill,
+                                                  calc_coverage,
                                                   print_opt,
                                                   extra_str)
 
@@ -719,11 +737,11 @@ def unstrat_minpath_for_seq(seq, sample_id, in_tab, minpath_map, out_dir,
 
 
 def unstrat_minpath(sample_id, unstrat_input, minpath_map, out_dir, pathway_db,
-                    gap_fill=True, print_opt=False, extra_str=""):
+                    gap_fill=True, calc_coverage=False, print_opt=False, extra_str=""):
     '''Read in sample_id, gene family table, and out_dir, and run MinPath based
     on the gene family abundances. Returns unstratified pathway abundances as
     dictionaries in a list. Also returns the coverage of each unstratified
-    pathway as the a different dictionary in a list.'''
+    pathway as the a different dictionary in a list (if calc_coverage=True)'''
 
     unstrat_input.set_index("function", inplace=True)
 
@@ -760,7 +778,8 @@ def unstrat_minpath(sample_id, unstrat_input, minpath_map, out_dir, pathway_db,
         pathway_abun, pathway_cov = pathway_abun_and_coverage(pathway,
                                                               pathway_db,
                                                               path_reaction_abun,
-                                                              median_abun)
+                                                              median_abun,
+                                                              calc_coverage)
 
         # Add these values to each respective pandas Series.
         unstrat_abun[pathway] = pathway_abun
@@ -769,9 +788,12 @@ def unstrat_minpath(sample_id, unstrat_input, minpath_map, out_dir, pathway_db,
     return([unstrat_abun, unstrat_cov])
 
 
-def pathway_abun_and_coverage(pathway, pathway_db, reaction_abun, median_value):
+def pathway_abun_and_coverage(pathway, pathway_db, reaction_abun, median_value,
+                              calc_coverage=False):
     '''Determine pathway abundance and coverage for either structured or
-    unstructured pathway.'''
+    unstructured pathway. Calculating coverage is off by default.'''
+
+    pathway_cov = None
 
     # Check if pathway database is structured. If so then get structure and
     # use it and the key reactions to get pathway abundance and coverage.
@@ -789,13 +811,13 @@ def pathway_abun_and_coverage(pathway, pathway_db, reaction_abun, median_value):
                                                                         reaction_abun,
                                                                         False,
                                                                         median_value)
-
-        # Calculate pathway coverage.
-        pathway_cov = compute_structured_pathway_abundance_or_coverage(structure,
-                                                                       key_reactions,
-                                                                       reaction_abun,
-                                                                       True,
-                                                                       median_value)
+        if calc_coverage:
+            # Calculate pathway coverage.
+            pathway_cov = compute_structured_pathway_abundance_or_coverage(structure,
+                                                                           key_reactions,
+                                                                           reaction_abun,
+                                                                           True,
+                                                                           median_value)
 
     else:
         # Otherwise, sort enzyme reactions, take second half, and get their
@@ -821,7 +843,8 @@ def pathway_abun_and_coverage(pathway, pathway_db, reaction_abun, median_value):
             if abun > median_value:
                 count_higher_than_median += 1
 
-        pathway_cov = count_higher_than_median / len(reaction_abun_only)
+        if calc_coverage:
+            pathway_cov = count_higher_than_median / len(reaction_abun_only)
 
     return(pathway_abun, pathway_cov)
 
