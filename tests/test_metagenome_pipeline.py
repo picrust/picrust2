@@ -69,6 +69,12 @@ class metagenome_pipeline_test(unittest.TestCase):
                                                              out_dir=temp_dir,
                                                              strat_out=True)
 
+        print("strat")
+        print(strat_out.head())
+
+        print("unstrat")
+        print(unstrat_out.head())
+
         pd.testing.assert_frame_equal(strat_out, exp_strat_in, check_like=True)
 
         pd.testing.assert_frame_equal(unstrat_out, exp_unstrat_in,
@@ -88,21 +94,6 @@ class metagenome_pipeline_test(unittest.TestCase):
 
         pd.testing.assert_frame_equal(unstrat_out, exp_unstrat_in,
                                       check_like=True)
-
-    def test_full_pipeline_strat_tsv_2proc(self):
-        '''Test that run_metagenome_pipeline works on tsv input seqtab and
-        running on 2 processes.'''
-
-        with TemporaryDirectory() as temp_dir:
-            strat_out, unstrat_out = run_metagenome_pipeline(input_biom=seqtab_tsv,
-                                                             function=func_predict,
-                                                             marker=marker_predict,
-                                                             max_nsti=2,
-                                                             out_dir=temp_dir,
-                                                             proc=2,
-                                                             strat_out=True)
-    
-        pd.testing.assert_frame_equal(strat_out, exp_strat_in, check_like=True)
 
     def test_full_pipeline_strat_biom(self):
         '''Test that run_metagenome_pipeline create corrected stratified output
@@ -166,7 +157,8 @@ class metagenome_pipeline_test(unittest.TestCase):
     def test_weighted_nsti(self):
         '''Test that expected weighted NSTI values are calculated.'''
 
-        weighted_nsti_out = calc_weighted_nsti(exp_norm_in, nsti_in)
+        weighted_nsti_out = calc_weighted_nsti(exp_norm_in, nsti_in,
+                                               return_df=True)
 
         expected_weighted_nsti = { "samples": ["sample1", "sample2",
                                                 "sample3"],

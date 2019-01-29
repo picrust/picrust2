@@ -467,18 +467,6 @@ def read_metagenome_input(filename):
     return(input_df, strat_tab)
 
 
-def strat_to_unstrat_counts(strat_df, func_col="function"):
-    '''Given a pandas dataframe with the columns "sequence", "function" (by
-    default), and at least 1 sample column, will return the dataframe after
-    removing sequence column and summing all functions per sample. Functions
-    will be new index labels.'''
-
-    # Drop column containing sequence ids.
-    strat_df = strat_df.drop(["sequence"], axis=1)
-
-    return(pd.pivot_table(data=strat_df, index=func_col, aggfunc=np.sum))
-
-
 def identify_minpath_present(report_file):
     '''Parse MinPath report output file and returns set containing all pathways
     ids that were called as present.'''
@@ -1072,3 +1060,14 @@ def calc_median_reaction_abun(reaction_abun, pathways_present, pathway_db):
 
     # Calculate and return median.
     return(np.median(all_reaction_abun))
+
+
+def strat_to_unstrat_counts(strat_df, func_col="function"):
+    '''Given a pandas dataframe with the columns "sequence", "function" (by
+    default), and at least 1 sample column, will return the dataframe after
+    removing sequence column and summing all functions per sample. Functions
+    will be new index labels.'''
+
+    strat_df = strat_df.drop(["sequence"], axis=1)
+
+    return(pd.pivot_table(data=strat_df, index=func_col, aggfunc=np.sum))
