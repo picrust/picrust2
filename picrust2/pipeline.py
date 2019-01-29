@@ -33,6 +33,7 @@ def full_pipeline(study_fasta,
                   calculate_NSTI,
                   skip_minpath,
                   no_gap_fill,
+                  coverage,
                   per_sequence_contrib,
                   seed,
                   verbose):
@@ -220,6 +221,9 @@ def full_pipeline(study_fasta,
         if skip_minpath:
             pathway_pipeline_cmd.append("--skip_minpath")
 
+        if coverage:
+            pathway_pipeline_cmd.append("--coverage")
+
         if no_regroup:
             pathway_pipeline_cmd.append("--no_regroup")
         else:
@@ -227,6 +231,16 @@ def full_pipeline(study_fasta,
 
         if per_sequence_contrib:
             pathway_pipeline_cmd.append("--per_sequence_contrib")
+
+            norm_sequence_abun = path.join(output_folder,
+                                           rxn_func + "_metagenome_out",
+                                           "seqtab_norm.tsv")
+
+            pathway_pipeline_cmd.append("--per_sequence_abun",
+                                        norm_sequence_abun)
+
+            pathway_pipeline_cmd.append("--per_sequence_function",
+                                        predicted_funcs[rxn_func])
 
         if verbose:
             pathway_pipeline_cmd.append("--print_cmds")

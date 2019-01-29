@@ -142,17 +142,23 @@ parser.add_argument('--no_gap_fill', default=False, action="store_true",
                          'pathway abundances (Gap filling is on otherwise by '
                          'default.')
 
-parser.add_argument('--per_sequence_contrib', default=False, action="store_true",
-                    help='Run MinPath on the gene families contributed by '
-                    'each sequence (i.e. a predicted genome) individually. '
-                    'This will only matter --per_sequence_contrib is set. '
-                    'Note this will GREATLY increase the runtime, but will '
-                    'output the predicted pathway abundance contributed by the '
-                    'predicted gene families in each predicted genome alone '
-                    '(i.e. not the contribution to the community-wide '
-                    'abundance). Pathway coverage stratified by contributing '
-                    'sequence will also be output when this option is set '
-                    '(default: %(default)d).')
+parser.add_argument('--coverage', default=False, action="store_true",
+                    help='Calculate pathway coverages as well as abundances, '
+                         'which are experimental and only useful for '
+                         'advanced users.')
+
+parser.add_argument('--per_sequence_contrib', default=False,
+                    action="store_true",
+                    help='Flag to specify that MinPath is run on the genes '
+                    'contributed by each sequence (i.e. a predicted '
+                    'genome) individually. Note this will greatly increase '
+                    'the runtime. The output will be the predicted pathway '
+                    'abundance contributed by each individual sequence. This '
+                    'is in contrast to the default stratified output, which '
+                    'is the contribution to the community-wide pathway '
+                    'abundances. Pathway coverage stratified by contributing '
+                    'sequence will also be output when --coverage is set '
+                    '(default: %(default)s).')
 
 parser.add_argument('--seed', default=100, type=int,
                     help='Seed to make output reproducible, which is '
@@ -186,6 +192,7 @@ def main():
                                                     regroup_map=args.regroup_map,
                                                     skip_minpath=args.skip_minpath,
                                                     no_regroup=args.no_regroup,
+                                                    coverage=args.coverage,
                                                     stratified=args.stratified,
                                                     max_nsti=args.max_nsti,
                                                     min_reads=args.min_reads,

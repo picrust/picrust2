@@ -22,8 +22,7 @@ def run_metagenome_pipeline(input_biom,
                             min_reads=1,
                             min_samples=1,
                             strat_out=False,
-                            out_dir='metagenome_out',
-                            output_normfile=False):
+                            out_dir='metagenome_out'):
     '''Main function to run full metagenome pipeline. Meant to run modular
     functions largely listed below. Will return predicted metagenomes
     straitifed and unstratified by contributing genomes (i.e. taxa).'''
@@ -62,11 +61,8 @@ def run_metagenome_pipeline(input_biom,
     # Create output directory if it does not already exist.
     make_output_dir(out_dir)
 
-    # Create normalized sequence abundance filename if outfile specified.
-    if output_normfile:
-        norm_output = path.join(out_dir, "seqtab_norm.tsv")
-    else:
-        norm_output = None
+    # Create normalized sequence abundance filename.
+    norm_output = path.join(out_dir, "seqtab_norm.tsv")
 
     # Normalize input study sequence abundances by predicted abundance of
     # marker genes and output normalized table if specified.

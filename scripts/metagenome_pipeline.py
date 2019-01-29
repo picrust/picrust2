@@ -84,8 +84,7 @@ def main():
                                                        min_reads=args.min_reads,
                                                        min_samples=args.min_samples,
                                                        strat_out=args.strat_out,
-                                                       proc=args.proc,
-                                                       output_normfile=True)
+                                                       proc=args.proc)
 
     # Generate output table filepaths and write out pandas dataframe.
     unstrat_outfile = path.join(args.out_dir, "pred_metagenome_unstrat.tsv")

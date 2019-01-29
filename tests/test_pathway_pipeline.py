@@ -9,14 +9,18 @@ import pandas as pd
 from os import path
 from tempfile import TemporaryDirectory
 from picrust2.default import default_regroup_map, default_pathway_map
-from picrust2.run_minpath import (minpath_wrapper, run_minpath_pipeline,
-                                  read_metagenome_input, unstrat_minpath,
-                                  strat_minpath, strat_to_unstrat_counts,
-                                  PathwaysDatabase, regroup_func_ids)
+from picrust2.pathway_pipeline import (minpath_wrapper,
+                                       pathway_pipeline,
+                                       read_metagenome_input,
+                                       unstrat_pathway_levels,
+                                       basic_strat_pathway_levels,
+                                       strat_to_unstrat_counts,
+                                       PathwaysDatabase,
+                                       regroup_func_ids)
 
 # Path to test directory.
 test_dir_path = path.join(path.dirname(path.abspath(__file__)), "test_data",
-                          "run_minpath")
+                          "pathway_pipeline")
 
 # Paths to input files and expected outputs.
 in_metagenome_strat = path.join(test_dir_path, "test_input_ec_strat.tsv")
@@ -38,14 +42,16 @@ class run_minpath_tests(unittest.TestCase):
         that unstratified abundances are right.'''
 
         with TemporaryDirectory() as temp_dir:
-            unstrat_path_abun_df, unstrat_path_cov_df, strat_path_abun_df, strat_cov = run_minpath_pipeline(in_metagenome_strat2,
-                                                                                                 default_pathway_map,
-                                                                                                 proc=1,
-                                                                                                 out_dir=temp_dir,
-                                                                                                 regroup_mapfile=default_regroup_map,
-                                                                                                 gap_fill=True,
-                                                                                                 per_sequence_contrib=False,
-                                                                                                 print_cmds=False)
+            unstrat_path_abun_df, unstrat_path_cov_df, strat_path_abun_df, strat_cov = pathway_pipeline(in_metagenome_strat2,
+                                                                                                        default_pathway_map,
+                                                                                                        proc=1,
+                                                                                                        out_dir=temp_dir,
+                                                                                                        run_minpath=True,
+                                                                                                        coverage=True,
+                                                                                                        regroup_mapfile=default_regroup_map,
+                                                                                                        gap_fill=True,
+                                                                                                        per_sequence_contrib=False,
+                                                                                                        print_cmds=False)
 
 
         # Compare these predicted tables to expected tables.
@@ -83,10 +89,12 @@ class run_minpath_tests(unittest.TestCase):
         '''Test running default pipeline on unstratified input table.'''
 
         with TemporaryDirectory() as temp_dir:
-            unstrat_path_abun_df, unstrat_path_cov_df, strat_abun, strat_cov = run_minpath_pipeline(in_metagenome_unstrat,
+            unstrat_path_abun_df, unstrat_path_cov_df, strat_abun, strat_cov = pathway_pipeline(in_metagenome_unstrat,
                                                                                                  default_pathway_map,
                                                                                                  proc=1,
                                                                                                  out_dir=temp_dir,
+                                                                                                 run_minpath=True,
+                                                                                                 coverage=True,
                                                                                                  regroup_mapfile=default_regroup_map,
                                                                                                  gap_fill=True,
                                                                                                  per_sequence_contrib=False,
@@ -111,14 +119,16 @@ class run_minpath_tests(unittest.TestCase):
         per genome contributions are correct (per_sequence_contrib set).'''
 
         with TemporaryDirectory() as temp_dir:
-            unstrat_path_abun_df, unstrat_path_cov_df, strat_path_abun_df, strat_path_cov_df = run_minpath_pipeline(in_metagenome_strat,
-                                                                                                 default_pathway_map,
-                                                                                                 proc=1,
-                                                                                                 out_dir=temp_dir,
-                                                                                                 regroup_mapfile=default_regroup_map,
-                                                                                                 gap_fill=True,
-                                                                                                 per_sequence_contrib=True,
-                                                                                                 print_cmds=False)
+            unstrat_path_abun_df, unstrat_path_cov_df, strat_path_abun_df, strat_path_cov_df = pathway_pipeline(in_metagenome_strat,
+                                                                                                                default_pathway_map,
+                                                                                                                proc=1,
+                                                                                                                out_dir=temp_dir,
+                                                                                                                run_minpath=True,
+                                                                                                                coverage=True,
+                                                                                                                regroup_mapfile=default_regroup_map,
+                                                                                                                gap_fill=True,
+                                                                                                                per_sequence_contrib=True,
+                                                                                                                print_cmds=False)
 
 
         # Compare these predicted tables to expected tables.
