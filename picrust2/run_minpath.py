@@ -270,6 +270,7 @@ def run_minpath_pipeline(inputfile,
                          out_dir,
                          proc=1,
                          regroup_mapfile=None,
+                         coverage=False,
                          gap_fill=True,
                          per_sequence_contrib=False,
                          print_cmds=False):
@@ -866,6 +867,17 @@ def regroup_func_ids(in_df, is_strat, mapfile, proc):
                                          aggfunc=np.sum)
 
     regrouped_table.reset_index(inplace=True)
+
+    # If no rows remain then throw error.
+    if regrouped_table.shape[0] == 0:
+        sys.exit("\nError - no rows remain after regrouping input table. The "
+                 "default pathway and regroup mapfiles are meant for EC "
+                 "numbers. Note that KEGG pathways are not supported since "
+                 "KEGG is a closed-source database, but you can input custom "
+                 "pathway mapfiles if you have access. If you are using a "
+                 "custom function database did you mean to set the "
+                 "--no-regroup flag and/or change the default pathways "
+                 "mapfile used?\n")
 
     return(regrouped_table)
     
