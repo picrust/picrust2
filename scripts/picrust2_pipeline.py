@@ -133,10 +133,9 @@ parser.add_argument('-n', '--calculate_NSTI', default=False,
                     help='Calculate NSTI and add to output ' +
                          'file')
 
-parser.add_argument('--seed', default=100, type=int,
-                    help='Seed to make output reproducible, which is '
-                         'necessary for the mp and emp_prob methods '
-                         '(default: %(default)d).')
+parser.add_argument('--skip_minpath', default=False, action="store_true",
+                    help='Do not run MinPath to identify which pathways are '
+                         'present as a first pass (on by default).')
 
 parser.add_argument('--no_gap_fill', default=False, action="store_true",
                     help='Do not perform gap filling before predicting '
@@ -154,6 +153,11 @@ parser.add_argument('--per_sequence_contrib', default=False, action="store_true"
                     'abundance). Pathway coverage stratified by contributing '
                     'sequence will also be output when this option is set '
                     '(default: %(default)d).')
+
+parser.add_argument('--seed', default=100, type=int,
+                    help='Seed to make output reproducible, which is '
+                         'necessary for the mp and emp_prob methods '
+                         '(default: %(default)d).')
 
 parser.add_argument('--verbose', default=False, action='store_true',
                     help='If specified, print out wrapped commands to screen')
@@ -180,6 +184,7 @@ def main():
                                                     pathway_map=args.pathway_map,
                                                     no_pathways=args.no_pathways,
                                                     regroup_map=args.regroup_map,
+                                                    skip_minpath=args.skip_minpath,
                                                     no_regroup=args.no_regroup,
                                                     stratified=args.stratified,
                                                     max_nsti=args.max_nsti,

@@ -265,15 +265,16 @@ class PathwaysDatabase:
         return "\n".join(data)
 
 
-def run_minpath_pipeline(inputfile,
-                         mapfile,
-                         out_dir,
-                         proc=1,
-                         regroup_mapfile=None,
-                         coverage=False,
-                         gap_fill=True,
-                         per_sequence_contrib=False,
-                         print_cmds=False):
+def pathway_pipeline(inputfile,
+                     mapfile,
+                     out_dir,
+                     proc=1,
+                     run_minpath=True,
+                     coverage=False,
+                     regroup_mapfile=None,
+                     gap_fill=True,
+                     per_sequence_contrib=False,
+                     print_cmds=False):
     '''Pipeline containing full pipeline for reading input files, making
     calls to functions to run MinPath and calculate pathway abundances and
     coverages. Will return 3 output Pandas dataframes: (1) unstratified pathway
@@ -283,6 +284,13 @@ def run_minpath_pipeline(inputfile,
     # Read in table of gene family abundances and determine if in stratified
     # format or not.
     in_metagenome, strat_format = read_metagenome_input(inputfile)
+
+    # Throw error if --per_sequence_contrib set while unstratified table input.
+    if per_sequence_contrib and not strat_format:
+        sys.exit("Error: --per_sequence_contrib option set, but unstratified "
+                 "table was input. Please input a stratified table (i.e. "
+                 "a table that includes the columns \"function\" and "
+                 "\"sequence\" to use this option.")
 
     # Remove 'description' column if it exists.
     if "description" in in_metagenome.columns:
@@ -310,9 +318,12 @@ def run_minpath_pipeline(inputfile,
     pathways_in = PathwaysDatabase(database=mapfile, reaction_names=reactions)
 
     # Write out mapfile with all structure removed.
-    minpath_mapfile = path.join(out_dir, "parsed_mapfile.tsv")
-    with open(minpath_mapfile, "w") as out_map:
-        out_map.write(pathways_in.get_database())
+    if run_minpath:
+        minpath_mapfile = path.join(out_dir, "parsed_mapfile.tsv")
+        with open(minpath_mapfile, "w") as out_map:
+            out_map.write(pathways_in.get_database())
+    else:
+        minpath_mapfile = None
 
     # Subset input table of reactions to only those found in pathway database.
     in_metagenome = in_metagenome[in_metagenome.function.isin(pathways_in.reaction_list())]
@@ -327,11 +338,13 @@ def run_minpath_pipeline(inputfile,
             # instead).
             path_abun_raw = []
             for sample_id in samples:
-                path_abun_raw.append(strat_minpath(sample_id,
+                path_abun_raw.append(strat_pathway_levels(sample_id,
                                                    in_metagenome[["function", "sequence", sample_id]],
                                                    minpath_mapfile,
                                                    out_dir,
                                                    pathways_in,
+                                                   run_minpath,
+                                                   coverage,
                                                    gap_fill,
                                                    per_sequence_contrib,
                                                    print_cmds,
@@ -340,10 +353,10 @@ def run_minpath_pipeline(inputfile,
         else:
             # Parallelize this step if not going to run MinPath for each
             # sequence individually.
-            path_abun_raw = Parallel(n_jobs=proc)(delayed(strat_minpath)(sample_id,
-                                            in_metagenome[["function", "sequence",
-                                                           sample_id]],
+            path_abun_raw = Parallel(n_jobs=proc)(delayed(strat_pathway_levels)(sample_id,
+                                            in_metagenome[["function", "sequence", sample_id]],
                                             minpath_mapfile, out_dir, pathways_in,
+                                            run_minpath, coverage, 
                                             gap_fill, per_sequence_contrib,
                                             print_cmds, 1)
                                             for sample_id in samples)
@@ -396,12 +409,12 @@ def run_minpath_pipeline(inputfile,
     # forward to process.
     else:
         path_raw_unstrat = Parallel(n_jobs=proc)(delayed(
-                                               unstrat_minpath)(sample_id,
+                                               unstrat_pathway_levels)(sample_id,
                                                in_metagenome[["function", 
                                                               sample_id]],
                                                minpath_mapfile, out_dir,
-                                               pathways_in, gap_fill,
-                                               print_cmds)
+                                               pathways_in, run_minpath,
+                                               coverage, gap_fill, print_cmds)
                                                for sample_id in samples)
 
         # Prep output df.
@@ -531,7 +544,7 @@ def path_abun_weighted_by_seq(reaction_abun, func_ids, total_sum, path_abun,
 def minpath_wrapper(sample_id, unstrat_input, minpath_map, out_dir,
                     print_opt=False, extra_str=""):
     '''Run MinPath based on gene abundances in a single sample. Will return
-    the abundances of gene families within each identified pathway.'''
+    a set of all pathways called as present.'''
 
     # Make output directory for MinPath intermediate files.
     make_output_dir(path.join(out_dir, "minpath_running"))
@@ -554,9 +567,6 @@ def minpath_wrapper(sample_id, unstrat_input, minpath_map, out_dir,
 
     id_minpath_fh = open(minpath_in, "w")
 
-    # Inititalize dictionary for keeping track of reaction abundances.
-    reaction_abun = defaultdict(int)
-
     # Loop over all reactions (which are the index labels in unstrat table
     # unless regrouped).
     for reaction_id in unstrat_input.index.values:
@@ -569,8 +579,6 @@ def minpath_wrapper(sample_id, unstrat_input, minpath_map, out_dir,
             continue
 
         id_minpath_fh.write(reaction_id + "\t" + str(reaction_count) + "\n")
-
-        reaction_abun[reaction_id] = reaction_count
 
     id_minpath_fh.close()
 
@@ -589,14 +597,13 @@ def minpath_wrapper(sample_id, unstrat_input, minpath_map, out_dir,
     # to be present.
     path_present = identify_minpath_present(minpath_report)
 
-    # Return list of which pathways are present and the abundances of all gene
-    # families.
-    return(path_present, reaction_abun)
+    # Return list of which pathways are present.
+    return(path_present)
 
 
-def strat_minpath(sample_id, strat_input, minpath_map, out_dir, pathway_db,
-                  gap_fill=True, per_sequence_contrib=False, print_opt=False,
-                  proc=1, calc_coverage=False):
+def strat_pathway_levels(sample_id, strat_input, minpath_map, out_dir,
+                         pathway_db, run_minpath, calc_coverage, gap_fill=True,
+                         per_sequence_contrib=False, print_opt=False, proc=1):
     '''Read in sample_id, gene family table, and out_dir, and run MinPath based
     on the gene family abundances. Returns both unstratified and stratified
     pathway abundances as dictionaries in a list. Will compute the simplistic
@@ -609,8 +616,12 @@ def strat_minpath(sample_id, strat_input, minpath_map, out_dir, pathway_db,
     # Get gene family abundances summed over all sequences for this sample.
     unstrat_input = strat_to_unstrat_counts(strat_input)
 
-    pathways_present, reaction_abun = minpath_wrapper(sample_id, unstrat_input,
-                                               minpath_map, out_dir, print_opt)
+    # Define dictionary for keeping track of reaction abundances.
+    reaction_abun = unstrat_input[sample_id].to_dict(defaultdict(int))
+
+    if run_minpath:
+        pathways_present = minpath_wrapper(sample_id, unstrat_input,
+                                           minpath_map, out_dir, print_opt)
 
     # Initialize series and dataframe that will contain pathway abundances and
     # coverage scores.
@@ -679,8 +690,9 @@ def strat_minpath(sample_id, strat_input, minpath_map, out_dir, pathway_db,
                                         minpath_map,
                                         out_dir,
                                         pathway_db,
-                                        gap_fill,
+                                        run_minpath,
                                         calc_coverage,
+                                        gap_fill,
                                         print_opt,
                                         "_" + seq)
                                         for seq in set(strat_input['sequence']))
@@ -705,8 +717,8 @@ def strat_minpath(sample_id, strat_input, minpath_map, out_dir, pathway_db,
 
 
 def unstrat_minpath_for_seq(seq, sample_id, in_tab, minpath_map, out_dir,
-                            pathway_db, gap_fill, calc_coverage, print_opt,
-                            extra_str):
+                            pathway_db, gap_fill, run_minpath,
+                            calc_coverage, print_opt, extra_str):
     '''Will run MinPath and get abundances and coverages for pathways present
     based on unstratified table. This unstratified table will correspond to a
     single sequence however, so a stratified table will be returned (with only
@@ -718,15 +730,16 @@ def unstrat_minpath_for_seq(seq, sample_id, in_tab, minpath_map, out_dir,
 
     # Run MinPath and get pathway abundances and coverage for this
     # sequence only.
-    [seq_path_abun, seq_path_cov] = unstrat_minpath(sample_id,
-                                                  in_tab,
-                                                  minpath_map,
-                                                  out_dir,
-                                                  pathway_db,
-                                                  gap_fill,
-                                                  calc_coverage,
-                                                  print_opt,
-                                                  extra_str)
+    [seq_path_abun, seq_path_cov] = unstrat_pathway_levels(sample_id,
+                                                           in_tab,
+                                                           minpath_map,
+                                                           out_dir,
+                                                           pathway_db,
+                                                           run_minpath,
+                                                           calc_coverage,
+                                                           gap_fill,
+                                                           print_opt,
+                                                           extra_str)
 
     # Add sequence as part of index to returned abundance and coverage
     # tables.
@@ -736,18 +749,23 @@ def unstrat_minpath_for_seq(seq, sample_id, in_tab, minpath_map, out_dir,
     return([seq_path_abun, seq_path_cov])
 
 
-def unstrat_minpath(sample_id, unstrat_input, minpath_map, out_dir, pathway_db,
-                    gap_fill=True, calc_coverage=False, print_opt=False, extra_str=""):
-    '''Read in sample_id, gene family table, and out_dir, and run MinPath based
-    on the gene family abundances. Returns unstratified pathway abundances as
-    dictionaries in a list. Also returns the coverage of each unstratified
-    pathway as the a different dictionary in a list (if calc_coverage=True)'''
+def unstrat_pathway_levels(sample_id, unstrat_input, minpath_map, out_dir,
+                           pathway_db, run_minpath, calc_coverage,
+                           gap_fill=True, print_opt=False, extra_str=""):
+    '''Read in sample_id, gene family table, and out_dir. Returns unstratified
+    pathway abundances as dictionaries in a list. Also returns the coverage of
+    each unstratified pathway as the a different dictionary in a list (if
+    calc_coverage=True)'''
 
     unstrat_input.set_index("function", inplace=True)
 
-    pathways_present, reaction_abun = minpath_wrapper(sample_id, unstrat_input,
-                                                      minpath_map, out_dir,
-                                                      print_opt, extra_str)
+    # Define dictionary for keeping track of reaction abundances.
+    reaction_abun = unstrat_input[sample_id].to_dict(defaultdict(int))
+
+    if run_minpath:
+        pathways_present = minpath_wrapper(sample_id, unstrat_input,
+                                           minpath_map, out_dir,
+                                           print_opt, extra_str)
 
     # Initialize series that will contain pathway abundances and coverage.
     unstrat_abun = pd.Series([])
@@ -789,7 +807,7 @@ def unstrat_minpath(sample_id, unstrat_input, minpath_map, out_dir, pathway_db,
 
 
 def pathway_abun_and_coverage(pathway, pathway_db, reaction_abun, median_value,
-                              calc_coverage=False):
+                              calc_coverage):
     '''Determine pathway abundance and coverage for either structured or
     unstructured pathway. Calculating coverage is off by default.'''
 

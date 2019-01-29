@@ -31,9 +31,10 @@ def full_pipeline(study_fasta,
                   min_samples,
                   hsp_method,
                   calculate_NSTI,
-                  seed,
+                  skip_minpath,
                   no_gap_fill,
                   per_sequence_contrib,
+                  seed,
                   verbose):
     '''Function that contains wrapper commands for full PICRUSt2 pipeline.
     Descriptions of all of these input arguments/options are given in the
@@ -206,28 +207,31 @@ def full_pipeline(study_fasta,
         if verbose:
             print("Inferring pathways from predicted " + rxn_func)
 
-        run_minpath_cmd = ["run_minpath.py",
-                           "--input", func_output[rxn_func],
-                           "--out_dir", path_output_dir,
-                           "--map", pathway_map,
-                           "--intermediate", pathways_intermediate,
-                           "--proc", str(threads)]
+        pathway_pipeline_cmd = ["pathway_pipeline.py",
+                                "--input", func_output[rxn_func],
+                                "--out_dir", path_output_dir,
+                                "--map", pathway_map,
+                                "--intermediate", pathways_intermediate,
+                                "--proc", str(threads)]
 
         if no_gap_fill:
-            run_minpath_cmd.append("--no_gap_fill")
+            pathway_pipeline_cmd.append("--no_gap_fill")
+
+        if skip_minpath:
+            pathway_pipeline_cmd.append("--skip_minpath")
 
         if no_regroup:
-            run_minpath_cmd.append("--no_regroup")
+            pathway_pipeline_cmd.append("--no_regroup")
         else:
-            run_minpath_cmd += ["--regroup_map", regroup_map]
+            pathway_pipeline_cmd += ["--regroup_map", regroup_map]
 
         if per_sequence_contrib:
-            run_minpath_cmd.append("--per_sequence_contrib")
+            pathway_pipeline_cmd.append("--per_sequence_contrib")
 
         if verbose:
-            run_minpath_cmd.append("--print_cmds")
+            pathway_pipeline_cmd.append("--print_cmds")
 
-        system_call_check(run_minpath_cmd, print_out=verbose)
+        system_call_check(pathway_pipeline_cmd, print_out=verbose)
 
         if verbose:
             print("Wrote predicted pathway abundances and coverages to " +

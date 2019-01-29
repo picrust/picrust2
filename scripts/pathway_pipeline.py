@@ -50,6 +50,10 @@ parser.add_argument('-m', '--map', metavar='MAP', type=str,
                          'reactions to prokaryotic pathways '
                          '(default: %(default)s).')
 
+parser.add_argument('--skip_minpath', default=False, action="store_true",
+                    help='Do not run MinPath to identify which pathways are '
+                         'present as a first pass (on by default).')
+
 parser.add_argument('--no_gap_fill', default=False, action="store_true",
                     help='Do not perform gap filling before predicting ' +
                          'pathway abundances (Gap filling is on otherwise by ' +
@@ -78,17 +82,21 @@ parser.add_argument('-r', '--regroup_map', metavar='ID_MAP',
                          'regrouping E.C. numbers to MetaCyc reactions '
                          '(default: %(default)s).')
 
-parser.add_argument('--per_sequence_contrib', default=False, action="store_true",
-                    help='Run MinPath on the gene families contributed by '
-                    'each sequence (i.e. a predicted genome) individually. '
-                    'This will only matter when a stratified table is input. '
-                    'Note this will GREATLY increase the runtime, but will '
-                    'output the predicted pathway abundance contributed by the '
-                    'predicted gene families in each predicted genome alone '
-                    '(i.e. not the contribution to the community-wide '
-                    'abundance). Pathway coverage stratified by contributing '
-                    'sequence will also be output when this option is set '
-                    '(default: %(default)d).')
+parser.add_argument('--per_sequence_contrib', metavar='IN_TABLE', type=str,
+                    default=None,
+                    help='When an input file is specified, MinPath is run on '
+                    'the genes contributed by each sequence (i.e. a predicted '
+                    'genome) individually. The path to the output of the '
+                    'hidden-state prediction step (a table of sequences by '
+                    'functions, typically \"EC_predicted.tsv\") needs to be '
+                    'specified. Note this will greatly increase the runtime. '
+                    'The output will be the predicted pathway abundance '
+                    'contributed by each individual sequence. This is in '
+                    'contrast to the default stratified output, which is the '
+                    'contribution to the community-wide pathway abundances. '
+                    'Pathway coverage stratified by contributing sequence '
+                    'will also be output when --coverage is set '
+                    '(default: %(default)s).')
 
 parser.add_argument('--print_cmds', default=False, action="store_true",
                     help='If specified, print out wrapped commands to screen')
@@ -105,6 +113,8 @@ def main():
 
     gap_fill_opt = not args.no_gap_fill
 
+    run_minpath_opt = not args.skip_minpath
+
     # If no regrouping flag set then set input regrouping mapfile to be None.
     if args.no_regroup:
         args.regroup_map = None
@@ -115,24 +125,26 @@ def main():
 
         make_output_dir(args.intermediate)
 
-        unstrat_abun, unstrat_cov, strat_abun, strat_cov = run_minpath_pipeline(
+        unstrat_abun, unstrat_cov, strat_abun, strat_cov = pathway_pipeline(
                                                       inputfile=args.input,
                                                       mapfile=args.map,
                                                       regroup_mapfile=args.regroup_map,
                                                       proc=args.proc,
                                                       out_dir=args.intermediate,
+                                                      run_minpath=run_minpath_opt,
                                                       coverage=args.coverage,
                                                       gap_fill=gap_fill_opt,
                                                       per_sequence_contrib=args.per_sequence_contrib,
                                                       print_cmds=args.print_cmds)
     else:
         with TemporaryDirectory() as temp_dir:
-            unstrat_abun, unstrat_cov, strat_abun, strat_cov = run_minpath_pipeline(
+            unstrat_abun, unstrat_cov, strat_abun, strat_cov = pathway_pipeline(
                                                             inputfile=args.input,
                                                             mapfile=args.map,
                                                             regroup_mapfile=args.regroup_map,
                                                             proc=args.proc,
                                                             out_dir=temp_dir,
+                                                            run_minpath=run_minpath_opt,
                                                             coverage=args.coverage,
                                                             gap_fill=gap_fill_opt,
                                                             per_sequence_contrib=args.per_sequence_contrib,
