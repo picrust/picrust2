@@ -66,6 +66,11 @@ parser.add_argument('--no_regroup', default=False, action="store_true",
                     help='Do not regroup input gene families to reactions '
                          'as specified in the regrouping mapfile.')
 
+parser.add_argument('--coverage', default=False, action="store_true",
+                    help='Calculate pathway coverages as well as abundances, '
+                         'which are experimental and only useful for '
+                         'advanced users.')
+
 parser.add_argument('-r', '--regroup_map', metavar='ID_MAP',
                     default=default_regroup_map, type=str,
                     help='Mapfile of ids to regroup gene families to before '
@@ -116,6 +121,7 @@ def main():
                                                       regroup_mapfile=args.regroup_map,
                                                       proc=args.proc,
                                                       out_dir=args.intermediate,
+                                                      coverage=args.coverage,
                                                       gap_fill=gap_fill_opt,
                                                       per_sequence_contrib=args.per_sequence_contrib,
                                                       print_cmds=args.print_cmds)
@@ -127,6 +133,7 @@ def main():
                                                             regroup_mapfile=args.regroup_map,
                                                             proc=args.proc,
                                                             out_dir=temp_dir,
+                                                            coverage=args.coverage,
                                                             gap_fill=gap_fill_opt,
                                                             per_sequence_contrib=args.per_sequence_contrib,
                                                             print_cmds=args.print_cmds)
@@ -138,9 +145,10 @@ def main():
     unstrat_abun.to_csv(path_or_buf=unstrat_abun_outfile,  sep="\t",
                        index_label="pathway")
 
-    unstrat_cov_outfile = path.join(args.out_dir, "path_cov_unstrat.tsv")
-    unstrat_cov.to_csv(path_or_buf=unstrat_cov_outfile,  sep="\t",
-                       index_label="pathway")
+    if args.coverage:
+        unstrat_cov_outfile = path.join(args.out_dir, "path_cov_unstrat.tsv")
+        unstrat_cov.to_csv(path_or_buf=unstrat_cov_outfile,  sep="\t",
+                           index_label="pathway")
 
     # Write stratified output only if something besides None was returned.
     if strat_abun is not None:
@@ -148,7 +156,7 @@ def main():
         strat_abun.to_csv(path_or_buf=strat_abun_outfile,  sep="\t",
                           index=False)
 
-    if strat_cov is not None:
+    if args.coverage and strat_cov is not None:
         strat_cov_outfile = path.join(args.out_dir, "path_cov_strat.tsv")
         strat_cov.to_csv(path_or_buf=strat_cov_outfile,  sep="\t",
                          index=False)
