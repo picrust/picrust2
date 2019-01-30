@@ -266,11 +266,10 @@ def full_pipeline(study_fasta,
                                            rxn_func + "_metagenome_out",
                                            "seqtab_norm.tsv")
 
-            pathway_pipeline_cmd.append("--per_sequence_abun",
-                                        norm_sequence_abun)
+            pathway_pipeline_cmd += ["--per_sequence_abun", norm_sequence_abun]
 
-            pathway_pipeline_cmd.append("--per_sequence_function",
-                                        predicted_funcs[rxn_func])
+            pathway_pipeline_cmd += ["--per_sequence_function",
+                                      predicted_funcs[rxn_func]]
 
         if verbose:
             pathway_pipeline_cmd.append("--print_cmds")
