@@ -390,6 +390,8 @@ def pathway_pipeline(inputfile,
 
             path_abun_strat.columns = ["pathway", "sequence"] + samples
 
+            path_abun_strat.sort_values(['pathway', 'sequence'], inplace=True)
+
         else:
 
             for sample_output in path_out_raw:
@@ -398,13 +400,12 @@ def pathway_pipeline(inputfile,
 
         # Prep unstratified output tables.
         path_abun_unstrat = prep_pathway_df_out(path_raw_abun_unstrat)
+        path_abun_unstrat.columns = samples  
 
         if coverage:
             path_cov_unstrat = prep_pathway_df_out(path_raw_cov_unstrat, 
                                                    num_digits=10)
             path_cov_unstrat.columns = samples
-
-        path_abun_unstrat.columns = samples  
 
     # Otherwise the data is in unstratified format, which is more straight-
     # forward to process.
@@ -441,6 +442,12 @@ def pathway_pipeline(inputfile,
 
         # Set column labels of unstratified dataframe to be sample names.
         path_abun_unstrat.columns = samples
+
+    # Sort unstratified output tables by index name.
+    path_abun_unstrat.sort_index(axis=0, inplace=True)
+
+    if coverage:
+        path_cov_unstrat.sort_index(axis=0, inplace=True)
 
     # Calculate pathway levels for each individual sequence (in parallel)
     # and then multiply this table by the abundance of each sequence
@@ -698,6 +705,7 @@ def per_sequence_contrib_levels(sequence_abun, sequence_func,
                                         return_unstrat=False)
     strat_abun.index.set_names("pathway", level=0, inplace=True)
     strat_abun.reset_index(drop=False, inplace=True)
+    strat_abun.sort_values(['pathway', 'sequence'], inplace=True)
 
     if calc_coverage:
         path_cov_by_seq = prep_pathway_df_out(raw_cov,
@@ -714,6 +722,7 @@ def per_sequence_contrib_levels(sequence_abun, sequence_func,
                                             return_unstrat=False)
         strat_cov.index.set_names("pathway", level=0, inplace=True)
         strat_cov.reset_index(drop=False, inplace=True)
+        strat_cov.sort_values(['pathway', 'sequence'], inplace=True)
     else:
         strat_cov = None
 
@@ -743,6 +752,8 @@ def basic_strat_pathway_levels(sample_id, strat_input, minpath_map, out_dir,
     if run_minpath:
         pathways_present = minpath_wrapper(sample_id, unstrat_input,
                                            minpath_map, out_dir, print_opt)
+    else:
+        pathways_present = set(pathway_db.pathway_list())
 
     # Initialize series and dataframe that will contain pathway abundances and
     # coverage scores.
@@ -821,6 +832,8 @@ def unstrat_pathway_levels(sample_id, unstrat_input, minpath_map, out_dir,
         pathways_present = minpath_wrapper(sample_id, unstrat_input,
                                            minpath_map, out_dir,
                                            print_opt, extra_str)
+    else:
+        pathways_present = set(pathway_db.pathway_list())
 
     # Initialize series that will contain pathway abundances and coverage.
     unstrat_abun = pd.Series([])
