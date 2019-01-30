@@ -33,10 +33,8 @@ hsp.py -t study.tre -i 16S -o 16S_predicted_traits
 parser.add_argument('-t', '--tree', metavar='PATH', required=True, type=str,
                     help='The full reference tree, in newick format')
 
-parser.add_argument('-o', '--output_prefix', metavar='PATH', type=str,
-                    required=True,
-                    help='Prefix for output filenames (predicted count ' +
-                         'table and optionally a table of CIs)')
+parser.add_argument('-o', '--output', metavar='PATH', type=str,
+                    required=True, help='Output filename.')
 
 parser.add_argument('-i', '--in_trait', type=str.upper, choices=TRAIT_OPTIONS,
                     help='Specifies which default trait table should be ' +
@@ -113,8 +111,6 @@ def main():
     # No longer support outputting CIs with this script. 
     ci_setting = False
 
-    count_outfile = args.output_prefix + ".tsv"
-
     hsp_table, ci_table = castor_hsp_workflow(tree_path=args.tree,
                                               trait_table_path=trait_table,
                                               hsp_method=args.hsp_method,
@@ -126,8 +122,8 @@ def main():
                                               ran_seed=args.seed)
 
     # Output the table to file.
-    make_output_dir_for_file(count_outfile)
-    hsp_table.to_csv(path_or_buf=count_outfile, index_label="sequence",
+    make_output_dir_for_file(args.output)
+    hsp_table.to_csv(path_or_buf=args.output, index_label="sequence",
                      sep="\t")
 
 if __name__ == "__main__":

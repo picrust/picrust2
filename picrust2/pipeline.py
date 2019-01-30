@@ -115,6 +115,13 @@ def full_pipeline(study_fasta,
     # Check that sequence names in FASTA overlap with input table.
     check_overlapping_seqs(study_fasta, input_table)
 
+    # Check that NSTI being calculated if max NSTI set.
+    if max_nsti and not calculate_NSTI:
+        sys.exit("Error - max NSTI option set, but NSTI is not being "
+                 "calculated, which is likely not intended. Add the "
+                 "--calculate_NSTI option if you want NSTI values to be "
+                 "calculated and used.")
+
     if verbose:
         print("Placing sequences onto reference tree", file=sys.stderr)
 
@@ -147,18 +154,21 @@ def full_pipeline(study_fasta,
 
     for func in funcs:
 
-        hsp_out_prefix = path.join(output_folder, func + "_predicted")
+        # Change output filename for NSTI and non-NSTI containing files.
+        hsp_outfile = path.join(output_folder, func + "_predicted")
 
-        # Keep track of output file name for next step of pipeline.
         if func == "marker" and calculate_NSTI:
-            predicted_funcs[func] = hsp_out_prefix + "_and_nsti.tsv"
+            hsp_outfile = hsp_outfile + "_and_nsti.tsv"
         else:
-            predicted_funcs[func] = hsp_out_prefix + ".tsv"
+            hsp_outfile = hsp_outfile + ".tsv"
+
+        # Keep track of output filename for next step of pipeline.
+        predicted_funcs[func] = hsp_outfile
 
         # Run hsp.py for each function database.
         hsp_cmd = ["hsp.py",
                    "--tree", out_tree,
-                   "--output_prefix", hsp_out_prefix,
+                   "--output", hsp_outfile,
                    "--observed_trait_table", func_tables[func],
                    "--hsp_method", hsp_method,
                    "--processes", str(threads),
@@ -167,6 +177,8 @@ def full_pipeline(study_fasta,
         # Add flags to command if specified.
         if func == "marker" and calculate_NSTI:
             hsp_cmd.append("--calculate_NSTI")
+
+
 
         system_call_check(hsp_cmd, print_out=verbose)
 

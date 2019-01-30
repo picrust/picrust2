@@ -47,20 +47,16 @@ class workflow_test(unittest.TestCase):
             system_call_check("place_seqs.py -s " + test_study_seqs + " -r " +
                               test_ref_dir + " -o " + out_tree)
 
-            hsp_out_prefix = path.join(temp_dir, "hsp_out")
-            hsp_out_prefix_marker = path.join(temp_dir, "hsp_out_marker")
+            traits_predict = path.join(temp_dir, "hsp_out.ts")
+            marker_predict = path.join(temp_dir, "hsp_out_marker.tsv")
 
             system_call_check("hsp.py -t " + out_tree +
                               " --observed_trait_table " + test_known_traits +
-                              " -n -o " + hsp_out_prefix)
+                              " -n -o " + traits_predict)
 
             system_call_check("hsp.py -t " + out_tree +
                               " --observed_trait_table " + test_known_marker +
-                              " -n -o " + hsp_out_prefix_marker)
-
-            traits_predict = path.join(temp_dir, hsp_out_prefix + ".tsv")
-
-            marker_predict = path.join(temp_dir, hsp_out_prefix_marker + ".tsv")
+                              " -n -o " + marker_predict)
 
             metagenome_out = path.join(temp_dir, "meta_out")
 
@@ -89,7 +85,13 @@ class workflow_test(unittest.TestCase):
                               " --custom_trait_tables " + test_known_traits +
                               " --marker_gene_table " + test_known_marker +
                               " --seed 1" +
+                              " --max_nsti 1.9" +
+                              " --min_reads 2" +
+                              " --min_samples 2" +
+                              " --calculate_NSTI" +
+                              " --skip_minpath" +
                               " --no_gap_fill" +
+                              " --coverage" +
                               " --verbose")
 
 if __name__ == '__main__':
