@@ -9,7 +9,7 @@ dependencies:
 - epa-ng=0.3.4
 - gappa=0.1.0
 - glpk=4.65
-- h5py=2.9.0
+- h5py=2.7.0
 - hmmer=3.2.1
 - joblib=0.13.1
 - numpy=1.12.1
