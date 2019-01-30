@@ -1,4 +1,4 @@
-name: dev_picrust2
+name: picrust2
 channels:
 - conda-forge
 - r
