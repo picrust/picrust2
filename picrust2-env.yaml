@@ -6,6 +6,7 @@ channels:
 - defaults
 
 dependencies:
+- biom-format=2.1.7
 - epa-ng=0.3.4
 - gappa=0.1.0
 - glpk=4.65
@@ -14,12 +15,10 @@ dependencies:
 - joblib=0.13.1
 - numpy=1.12.1
 - pandas=0.22.0
+- pytest=4.1.1
+- pytest-cov=2.6.1
 - python >=3.5,<3.7
 - r-base=3.4.1
 - r-castor=1.3.4
 - scipy=0.19.1
 
-- pip:
-  - biom-format==2.1.7
-  - pytest==4.1.1
-  - pytest-cov==2.6.1
