@@ -95,7 +95,8 @@ def run_metagenome_pipeline(input_biom,
                                                    study_seq_counts))
 
 
-def strat_funcs_by_samples(func_abun, sample_abun, rare_seqs=[]):
+def strat_funcs_by_samples(func_abun, sample_abun, rare_seqs=[],
+                           return_unstrat=True):
     '''Take in function table and study sequence abundance table. Returns
     stratified table of function abundances per sequence (rows) per samples
     (columns). Will also return unstratified format (function by sample).
@@ -133,9 +134,11 @@ def strat_funcs_by_samples(func_abun, sample_abun, rare_seqs=[]):
     # Remove rows that are all 0.
     strat_func = strat_func.loc[~(strat_func == 0).all(axis=1)]
 
-    # Return dataframe and also unstratified dataframe.
-    return(strat_func, strat_func.sum(level='function', axis=0))
-
+    # Return dataframe and also unstratified dataframe if specified.
+    if return_unstrat:
+        return(strat_func, strat_func.sum(level='function', axis=0))
+    else:
+        return(strat_func)
 
 def unstrat_funcs_only_by_samples(func_abun, sample_abun):
     '''Take in function table and study sequence abundance table. Returns
@@ -233,7 +236,7 @@ def norm_by_marker_copies(input_seq_counts,
     # Output normalized table if specified.
     if norm_filename:
         input_seq_counts.to_csv(path_or_buf=norm_filename,
-                                index_label="sequence",
+                                index_label="normalized",
                                 sep="\t")
 
     return(input_seq_counts)

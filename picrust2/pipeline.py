@@ -48,6 +48,13 @@ def full_pipeline(study_fasta,
     # Make output folder.
     make_output_dir(output_folder)
 
+    # Throw warning if --per_sequence_contrib set but --stratified unset.
+    if per_sequence_contrib and not stratified:
+        print("\nThe option --per_sequence_contrib was set, but not the option "
+              "--stratified. This means that a stratified pathway table will "
+              "be output only (i.e. a stratified metagenome table will NOT "
+              "be output).\n", file=sys.stderr)
+
     out_tree = path.join(output_folder, "out.tre")
 
     if custom_trait_tables is None:
@@ -121,6 +128,7 @@ def full_pipeline(study_fasta,
     place_seqs_cmd = ["place_seqs.py",
                       "--study_fasta", study_fasta,
                       "--ref_dir", ref_dir,
+                      "--out_tree", out_tree,
                       "--threads", str(threads),
                       "--intermediate", place_seqs_intermediate,
                       "--chunk_size", str(5000)]
@@ -184,16 +192,20 @@ def full_pipeline(study_fasta,
                                    "--max_nsti", str(max_nsti),
                                    "--min_reads", str(min_reads),
                                    "--min_samples", str(min_samples),
-                                   "--proc", str(threads),
                                    "--out_dir", func_output_dir]
+
+        # Initialize 2-element list as value for each function.
+        # First value will be unstratified output and second will be
+        # stratified output.
+        func_output[func] = [None, None]
+
+        func_output[func][0] = path.join(func_output_dir,
+                                         "pred_metagenome_unstrat.tsv")
 
         if stratified:
             metagenome_pipeline_cmd.append("--strat_out")
-            func_output[func] = path.join(func_output_dir,
-                                          "pred_metagenome_strat.tsv")
-        else:
-            func_output[func] = path.join(func_output_dir,
-                                          "pred_metagenome_unstrat.tsv")
+            func_output[func][1] = path.join(func_output_dir,
+                                             "pred_metagenome_strat.tsv")
 
         system_call_check(metagenome_pipeline_cmd, print_out=verbose)
 
@@ -208,8 +220,14 @@ def full_pipeline(study_fasta,
         if verbose:
             print("Inferring pathways from predicted " + rxn_func)
 
+        # Determine whether stratified or unstratified table should be input.
+        if not stratified or per_sequence_contrib:
+            rxn_input_metagenome = func_output[rxn_func][0]
+        else:
+            rxn_input_metagenome = func_output[rxn_func][1]
+
         pathway_pipeline_cmd = ["pathway_pipeline.py",
-                                "--input", func_output[rxn_func],
+                                "--input", rxn_input_metagenome,
                                 "--out_dir", path_output_dir,
                                 "--map", pathway_map,
                                 "--intermediate", pathways_intermediate,

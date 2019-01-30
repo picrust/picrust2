@@ -133,10 +133,6 @@ def main():
 
     run_minpath_opt = not args.skip_minpath
 
-    # If no regrouping flag set then set input regrouping mapfile to be None.
-    if args.no_regroup:
-        args.regroup_map = None
-
     # If intermediate output directory set then create and output there.
     # Otherwise make a temporary directory for the intermediate files.
     if args.intermediate:
@@ -152,6 +148,7 @@ def main():
                                                       run_minpath=run_minpath_opt,
                                                       coverage=args.coverage,
                                                       gap_fill=gap_fill_opt,
+                                                      no_regroup=args.no_regroup,
                                                       per_sequence_contrib=args.per_sequence_contrib,
                                                       per_sequence_abun=args.per_sequence_abun,
                                                       per_sequence_function=args.per_sequence_function,
@@ -167,6 +164,7 @@ def main():
                                                             run_minpath=run_minpath_opt,
                                                             coverage=args.coverage,
                                                             gap_fill=gap_fill_opt,
+                                                            no_regroup=args.no_regroup,
                                                             per_sequence_contrib=args.per_sequence_contrib,
                                                             per_sequence_abun=args.per_sequence_abun,
                                                             per_sequence_function=args.per_sequence_function,

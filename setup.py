@@ -33,5 +33,5 @@ setup(name='PICRUSt2',
                         'biom-format'],
       package_data={'picrust2':
                     ['MinPath/MinPath12hmp.py',
-                     'Rscripts/*R']}
+                     'Rscripts/*R']},
       long_description=long_description)

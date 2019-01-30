@@ -51,7 +51,7 @@ exp_strat_in_rare = exp_strat_in_rare.set_index(["function", "sequence"])
 
 exp_unstrat_in = pd.read_table(exp_unstrat, sep="\t", index_col="function")
 
-exp_norm_in = pd.read_table(exp_norm, sep="\t", index_col="sequence")
+exp_norm_in = pd.read_table(exp_norm, sep="\t", index_col="normalized")
 
 nsti_in = pd.read_table(nsti_in_path, sep="\t", index_col="sequence")
 
@@ -68,12 +68,6 @@ class metagenome_pipeline_test(unittest.TestCase):
                                                              max_nsti=2,
                                                              out_dir=temp_dir,
                                                              strat_out=True)
-
-        print("strat")
-        print(strat_out.head())
-
-        print("unstrat")
-        print(unstrat_out.head())
 
         pd.testing.assert_frame_equal(strat_out, exp_strat_in, check_like=True)
 

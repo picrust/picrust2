@@ -71,7 +71,7 @@ class workflow_test(unittest.TestCase):
             metagenome_outfile = path.join(metagenome_out,
                                            "pred_metagenome_strat.tsv")
 
-            system_call_check("run_minpath.py -i " + metagenome_outfile +
+            system_call_check("pathway_pipeline.py -i " + metagenome_outfile +
                               " -o " + temp_dir)
 
     def test_picrust2_pipeline_script(self):
