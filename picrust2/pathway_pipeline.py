@@ -590,9 +590,6 @@ def minpath_wrapper(sample_id, unstrat_input, minpath_map, out_dir,
     minpath_mps = path.join(out_dir, "minpath_running", sample_id + extra_str +
                             "_minpath.mps")
 
-    minpath_output = open(path.join(out_dir, sample_id + "_minpath_out.txt"),
-                          "w")
-
     id_minpath_fh = open(minpath_in, "w")
 
     # Loop over all reactions (which are the index labels in unstrat table
@@ -618,8 +615,7 @@ def minpath_wrapper(sample_id, unstrat_input, minpath_map, out_dir,
                   minpath_map + " -report " + minpath_report +\
                   " -details " + minpath_details + " -mps " + minpath_mps
 
-    system_call_check(minpath_cmd, print_out=print_opt,
-                      stdout=minpath_output)
+    system_call_check(minpath_cmd, print_out=print_opt)
 
     # Read through MinPath report and keep track of pathways identified
     # to be present.
