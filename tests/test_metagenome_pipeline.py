@@ -65,7 +65,7 @@ class metagenome_pipeline_test(unittest.TestCase):
             strat_out, unstrat_out = run_metagenome_pipeline(input_biom=seqtab_tsv,
                                                              function=func_predict,
                                                              marker=marker_predict,
-                                                             max_nsti=2,
+                                                             max_nsti=1.9,
                                                              out_dir=temp_dir,
                                                              strat_out=True)
 
@@ -82,7 +82,7 @@ class metagenome_pipeline_test(unittest.TestCase):
             strat_out, unstrat_out = run_metagenome_pipeline(input_biom=seqtab_tsv,
                                                              function=func_predict,
                                                              marker=marker_predict,
-                                                             max_nsti=2,
+                                                             max_nsti=2.1,
                                                              out_dir=temp_dir,
                                                              strat_out=False)
 
@@ -97,7 +97,7 @@ class metagenome_pipeline_test(unittest.TestCase):
             strat_out, unstrat_out = run_metagenome_pipeline(input_biom=seqtab_biom,
                                                              function=func_predict,
                                                              marker=marker_predict,
-                                                             max_nsti=2,
+                                                             max_nsti=2.0,
                                                              out_dir=temp_dir,
                                                              strat_out=True)
 
@@ -111,7 +111,7 @@ class metagenome_pipeline_test(unittest.TestCase):
             strat_out, unstrat_out = run_metagenome_pipeline(input_biom=seqtab_biom,
                                                              function=func_predict,
                                                              marker=marker_predict,
-                                                             max_nsti=2,
+                                                             max_nsti=1.8,
                                                              out_dir=temp_dir,
                                                              strat_out=False)
 
@@ -126,7 +126,7 @@ class metagenome_pipeline_test(unittest.TestCase):
             strat_out, unstrat_out = run_metagenome_pipeline(input_biom=seqtab_biom,
                                                              function=func_predict,
                                                              marker=marker_predict,
-                                                             max_nsti=2,
+                                                             max_nsti=2.1,
                                                              out_dir=temp_dir,
                                                              strat_out=False)
 
@@ -236,7 +236,7 @@ class rare_seqs_test(unittest.TestCase):
             strat_out, unstrat_out = run_metagenome_pipeline(input_biom=seqtab_tsv,
                                                              function=func_predict,
                                                              marker=marker_predict,
-                                                             max_nsti=2,
+                                                             max_nsti=2.1,
                                                              min_reads=4,
                                                              min_samples=2,
                                                              out_dir=temp_dir,
