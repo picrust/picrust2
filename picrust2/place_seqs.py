@@ -51,8 +51,8 @@ def place_seqs_pipeline(study_fasta,
 
     run_epa_ng(tree=tree, ref_msa_fastafile=ref_msa_fastafile,
                study_msa_fastafile=study_msa_fastafile, model=model,
-               chunk_size=chunk_size, threads=threads,
-               out_dir=epa_out_dir, print_cmds=print_cmds)
+               chunk_size=chunk_size, threads=threads, out_dir=epa_out_dir,
+               print_cmds=print_cmds)
 
     jplace_outfile = path.join(epa_out_dir, "epa_result.jplace")
 
@@ -113,18 +113,19 @@ def split_ref_study_papara(papara_out: dict, ref_seqnames: set, ref_fasta: str,
     write_fasta(study_papara_subset, study_fasta)
 
 def run_epa_ng(tree: str, ref_msa_fastafile: str, study_msa_fastafile: str,
-               model: str, out_dir: str, chunk_size=5000, threads=1,
-               print_cmds=False):
+               model: str, out_dir: str, chunk_size=5000,
+               threads=1, print_cmds=False):
     '''Run EPA-NG on specified tree, reference MSA, and study sequence MSA.
     Will output a .jplace file in out_dir.'''
 
     make_output_dir(out_dir)
 
-    system_call_check("epa-ng --tree " + tree + " --ref-msa " +
-                      ref_msa_fastafile + " --query " + study_msa_fastafile +
-                      " --chunk-size " + str(chunk_size) + " -T " +
-                      str(threads) + " -m " + model + " -w " + out_dir,
-                      print_out=print_cmds)
+    epa_ng_command = ["epa-ng", "--tree", tree, "--ref-msa", ref_msa_fastafile,
+                      "--query", study_msa_fastafile, "--chunk-size",
+                      str(chunk_size), "-T", str(threads), "-m", model, "-w",
+                      out_dir]
+
+    system_call_check(epa_ng_command, print_out=print_cmds)
 
 def gappa_jplace_to_newick(jplace_file: str, outfile: str, print_cmds=False):
     '''System call to gappa binary to convert jplace object to newick

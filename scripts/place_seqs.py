@@ -38,11 +38,11 @@ parser.add_argument('--threads', type=int, default=1,
                     help='Number of threads to use (default: %(default)d).')
 
 parser.add_argument('--intermediate', metavar='PATH', type=str, default=None,
-                    help='Output folder for intermediate files (wont be ' +
+                    help='Output folder for intermediate files (will not be ' +
                          'kept unless this option is set.')
 
 parser.add_argument('--chunk_size', type=int, default=5000,
-                    help='Number of query seqs to read in at once for epa-ng ' +
+                    help='Number of query seqs to read in at once for EPA-ng ' +
                          '(default: %(default)d).')
 
 parser.add_argument('--print_cmds', default=False, action='store_true',
