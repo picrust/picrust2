@@ -66,7 +66,7 @@ class run_minpath_tests(unittest.TestCase):
                                                                                                         run_minpath=True,
                                                                                                         coverage=True,
                                                                                                         regroup_mapfile=default_regroup_map,
-                                                                                                        gap_fill=True,
+                                                                                                        gap_fill_on=True,
                                                                                                         per_sequence_contrib=False,
                                                                                                         print_cmds=False)
 
@@ -113,7 +113,7 @@ class run_minpath_tests(unittest.TestCase):
                                                                                                 run_minpath=True,
                                                                                                 coverage=True,
                                                                                                 regroup_mapfile=default_regroup_map,
-                                                                                                gap_fill=True,
+                                                                                                gap_fill_on=True,
                                                                                                 per_sequence_contrib=False,
                                                                                                 print_cmds=False)
 
@@ -143,7 +143,7 @@ class run_minpath_tests(unittest.TestCase):
                                                                                                                 run_minpath=True,
                                                                                                                 coverage=True,
                                                                                                                 regroup_mapfile=default_regroup_map,
-                                                                                                                gap_fill=True,
+                                                                                                                gap_fill_on=True,
                                                                                                                 per_sequence_contrib=True,
                                                                                                                 per_sequence_abun=in_per_seq_abun,
                                                                                                                 per_sequence_function=in_per_seq_func,
@@ -199,7 +199,7 @@ class run_minpath_tests(unittest.TestCase):
                                                                                                                 run_minpath=True,
                                                                                                                 coverage=True,
                                                                                                                 regroup_mapfile=default_regroup_map,
-                                                                                                                gap_fill=True,
+                                                                                                                gap_fill_on=True,
                                                                                                                 per_sequence_contrib=True,
                                                                                                                 per_sequence_abun=in_per_seq_abun,
                                                                                                                 per_sequence_function=in_per_seq_func,
