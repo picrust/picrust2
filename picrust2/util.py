@@ -200,7 +200,7 @@ def read_stockholm(filename, clean_char=True):
     return seq
 
 
-def system_call_check(cmd, print_out=False):
+def system_call_check(cmd, print_out=False, print_stderr=False):
     '''Run system command and throw and error if return is not 0. Input command
     can be a list containing the command or a string.'''
 
@@ -240,6 +240,11 @@ def system_call_check(cmd, print_out=False):
                 print(f.read(), file=sys.stderr)
 
             sys.exit()
+
+        # Print log info to stderr is helpful for certain subprocesses.
+        elif print_stderr:
+            with open(stderr_file, 'r') as f:
+                print(f.read(), file=sys.stderr)
 
     return(return_value)
 
