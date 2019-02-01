@@ -128,10 +128,9 @@ parser.add_argument('-m', '--hsp_method', default='mp',
                     'traits using squared-change parsimony (default: '
                     '%(default)s).')
 
-parser.add_argument('-n', '--calculate_NSTI', default=False,
-                    action='store_true',
-                    help='Calculate NSTI and add to output ' +
-                         'file')
+parser.add_argument('--skip_nsti', default=False, action='store_true',
+                    help='Do not calculate nearest-sequenced taxon index '
+                    '(NSTI).')
 
 parser.add_argument('--skip_minpath', default=False, action="store_true",
                     help='Do not run MinPath to identify which pathways are '
@@ -198,7 +197,7 @@ def main():
                                                     min_reads=args.min_reads,
                                                     min_samples=args.min_samples,
                                                     hsp_method=args.hsp_method,
-                                                    calculate_NSTI=args.calculate_NSTI,
+                                                    skip_nsti=args.skip_nsti,
                                                     seed=args.seed,
                                                     no_gap_fill=args.no_gap_fill,
                                                     per_sequence_contrib=args.per_sequence_contrib,

@@ -88,7 +88,6 @@ class workflow_test(unittest.TestCase):
                               " --max_nsti 1.9" +
                               " --min_reads 2" +
                               " --min_samples 2" +
-                              " --calculate_NSTI" +
                               " --skip_minpath" +
                               " --no_gap_fill" +
                               " --coverage" +

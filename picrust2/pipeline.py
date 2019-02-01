@@ -30,7 +30,7 @@ def full_pipeline(study_fasta,
                   min_reads,
                   min_samples,
                   hsp_method,
-                  calculate_NSTI,
+                  skip_nsti,
                   skip_minpath,
                   no_gap_fill,
                   coverage,
@@ -115,13 +115,6 @@ def full_pipeline(study_fasta,
     # Check that sequence names in FASTA overlap with input table.
     check_overlapping_seqs(study_fasta, input_table)
 
-    # Check that NSTI being calculated if max NSTI set.
-    if max_nsti and not calculate_NSTI:
-        sys.exit("Error - max NSTI option set, but NSTI is not being "
-                 "calculated, which is likely not intended. Add the "
-                 "--calculate_NSTI option if you want NSTI values to be "
-                 "calculated and used.")
-
     if verbose:
         print("Placing sequences onto reference tree", file=sys.stderr)
 
@@ -157,7 +150,7 @@ def full_pipeline(study_fasta,
         # Change output filename for NSTI and non-NSTI containing files.
         hsp_outfile = path.join(output_folder, func + "_predicted")
 
-        if func == "marker" and calculate_NSTI:
+        if func == "marker" and not skip_nsti:
             hsp_outfile = hsp_outfile + "_and_nsti.tsv"
         else:
             hsp_outfile = hsp_outfile + ".tsv"
@@ -175,10 +168,8 @@ def full_pipeline(study_fasta,
                    "--seed", str(seed)]
 
         # Add flags to command if specified.
-        if func == "marker" and calculate_NSTI:
+        if func == "marker" and not skip_nsti:
             hsp_cmd.append("--calculate_NSTI")
-
-
 
         system_call_check(hsp_cmd, print_out=verbose)
 
@@ -201,7 +192,6 @@ def full_pipeline(study_fasta,
                                    "--input", input_table,
                                    "--function", predicted_funcs[func],
                                    "--marker", predicted_funcs["marker"],
-                                   "--max_nsti", str(max_nsti),
                                    "--min_reads", str(min_reads),
                                    "--min_samples", str(min_samples),
                                    "--out_dir", func_output_dir]
@@ -214,12 +204,18 @@ def full_pipeline(study_fasta,
         func_output[func][0] = path.join(func_output_dir,
                                          "pred_metagenome_unstrat.tsv")
 
+        if not skip_nsti:
+            metagenome_pipeline_cmd += ["--max_nsti", str(max_nsti)]
+
         if stratified:
             metagenome_pipeline_cmd.append("--strat_out")
             func_output[func][1] = path.join(func_output_dir,
                                              "pred_metagenome_strat.tsv")
 
-        system_call_check(metagenome_pipeline_cmd, print_out=verbose)
+        # Note that STDERR is printed for this command since it outputs how
+        # many ASVs were above the NSTI cut-off (if specified).
+        system_call_check(metagenome_pipeline_cmd, print_out=verbose,
+                          print_stderr=True)
 
     # Now infer pathway abundances and coverages unless --no_pathways set.
     pathway_outfiles = None
