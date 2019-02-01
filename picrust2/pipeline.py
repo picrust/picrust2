@@ -35,7 +35,6 @@ def full_pipeline(study_fasta,
                   no_gap_fill,
                   coverage,
                   per_sequence_contrib,
-                  seed,
                   verbose):
     '''Function that contains wrapper commands for full PICRUSt2 pipeline.
     Descriptions of all of these input arguments/options are given in the
@@ -165,7 +164,7 @@ def full_pipeline(study_fasta,
                    "--observed_trait_table", func_tables[func],
                    "--hsp_method", hsp_method,
                    "--processes", str(threads),
-                   "--seed", str(seed)]
+                   "--seed", "100"]
 
         # Add flags to command if specified.
         if func == "marker" and not skip_nsti:

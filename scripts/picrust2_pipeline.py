@@ -159,11 +159,6 @@ parser.add_argument('--per_sequence_contrib', default=False,
                     'sequence will also be output when --coverage is set '
                     '(default: %(default)s).')
 
-parser.add_argument('--seed', default=100, type=int,
-                    help='Seed to make output reproducible, which is '
-                         'necessary for the mp and emp_prob methods '
-                         '(default: %(default)d).')
-
 parser.add_argument('--verbose', default=False, action='store_true',
                     help='If specified, print out wrapped commands to screen')
 
@@ -198,7 +193,6 @@ def main():
                                                     min_samples=args.min_samples,
                                                     hsp_method=args.hsp_method,
                                                     skip_nsti=args.skip_nsti,
-                                                    seed=args.seed,
                                                     no_gap_fill=args.no_gap_fill,
                                                     per_sequence_contrib=args.per_sequence_contrib,
                                                     verbose=args.verbose)
