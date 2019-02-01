@@ -315,4 +315,4 @@ def check_overlapping_seqs(in_seq, in_tab):
 
     # Otherwise print to STDER how many ASVs overlap between the two files.
     print(str(num_ASV_overlap) + " of " + str(len(BIOM_ASVs)) + " sequence "
-          "ids overlap between input table and FASTA.", file=sys.stderr)
+          "ids overlap between input table and FASTA.\n", file=sys.stderr)
