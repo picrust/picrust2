@@ -655,7 +655,11 @@ def per_sequence_contrib_levels(sequence_abun, sequence_func,
 
     pred_function.index.name = "function"
 
-    sequence_ids = pred_function.columns
+    # Restrict to sequences overlapping in sequence table as well (which may
+    # have been removed if they were above the NSTI cut-off.
+    overlapping_sequence_ids = [col for col in pred_function.columns if col in study_seq_counts.index.values]
+
+    pred_function = pred_function[overlapping_sequence_ids]
 
     pred_function.reset_index(inplace=True)
 
@@ -680,7 +684,7 @@ def per_sequence_contrib_levels(sequence_abun, sequence_func,
                                                calc_coverage,
                                                gap_fill_on,
                                                print_opt)
-                                               for sequence in sequence_ids)
+                                               for sequence in overlapping_sequence_ids)
 
     # Create dataframes from these outputted lists (series per sequence).
     # Prep output df. Then get stratified table with sample as columns
@@ -693,10 +697,10 @@ def per_sequence_contrib_levels(sequence_abun, sequence_func,
         raw_cov += [seq_output[1]]
 
     path_abun_by_seq = prep_pathway_df_out(raw_abun)
-    path_abun_by_seq.columns = sequence_ids
+    path_abun_by_seq.columns = overlapping_sequence_ids
 
     # Subset and order study sequence table to be same as in stratified table.
-    study_seq_counts = study_seq_counts.loc[list(sequence_ids)]
+    study_seq_counts = study_seq_counts.loc[overlapping_sequence_ids]
 
     strat_abun = strat_funcs_by_samples(func_abun=path_abun_by_seq.transpose(),
                                         sample_abun=study_seq_counts,
@@ -710,7 +714,7 @@ def per_sequence_contrib_levels(sequence_abun, sequence_func,
     if calc_coverage:
         path_cov_by_seq = prep_pathway_df_out(raw_cov,
                                               num_digits=10)
-        path_cov_by_seq.columns = sequence_ids
+        path_cov_by_seq.columns = overlapping_sequence_ids
 
         # Convert study sequence abundances to be binary 1 and 0 for present
         # and absent rather than multiplying the coverages by abundances.
