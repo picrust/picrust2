@@ -239,7 +239,7 @@ def system_call_check(cmd, print_out=False, print_stderr=False):
                 print("\nSTDERR of failed command:", file=sys.stderr)
                 print(f.read(), file=sys.stderr)
 
-            sys.exit()
+            sys.exit(1)
 
         # Print log info to stderr is helpful for certain subprocesses.
         elif print_stderr:
