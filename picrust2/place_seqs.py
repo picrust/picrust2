@@ -150,6 +150,9 @@ def identify_ref_files(in_dir):
     are present and will return the path to each file in a list in the order:
     FASTA, TREE, HMM, MODEL.'''
 
+    # Remove any trailing slashes.
+    in_dir = in_dir.rstrip('/')
+
     base_path = path.basename(in_dir)
 
     # Expected filenames to be in this directory.
