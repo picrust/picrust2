@@ -2,7 +2,7 @@
 
 __copyright__ = "Copyright 2018, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.0.4-b"
+__version__ = "2.1.0-b"
 
 from os import makedirs
 from os.path import abspath, dirname, isdir, join, exists
@@ -11,14 +11,14 @@ from subprocess import call
 import pandas as pd
 import numpy as np
 import tempfile
+import gzip
 import sys
 
 
 def read_fasta(filename, cut_header=False):
-
-    '''Read in FASTA file and return dictionary with each independent sequence
-    id as a key and the corresponding sequence string as the value.
-    '''
+    '''Read in FASTA file (gzipped or not) and return dictionary with each
+    independent sequence id as a key and the corresponding sequence string as
+    the value.'''
 
     # Intitialize empty dict.
     seq = {}
@@ -28,30 +28,35 @@ def read_fasta(filename, cut_header=False):
     name = None
 
     # Read in FASTA line-by-line.
-    with open(filename, "r") as fasta:
+    if filename[-3:] == ".gz":
+        fasta_in = gzip.open(filename, "rt")
+    else:
+        fasta_in = open(filename, "r")
 
-        for line in fasta:
+    for line in fasta_in:
 
-            # If header-line then split by whitespace, take the first element,
-            # and define the sequence name as everything after the ">".
-            if line[0] == ">":
+        # If header-line then split by whitespace, take the first element,
+        # and define the sequence name as everything after the ">".
+        if line[0] == ">":
 
-                if cut_header:
-                    name = line.split()[0][1:]
-                else:
-                    name = line[1:]
-
-                name = name.rstrip("\r\n")
-
-                # Intitialize empty sequence with this id.
-                seq[name] = ""
-
+            if cut_header:
+                name = line.split()[0][1:]
             else:
-                # Remove line terminator/newline characters.
-                line = line.rstrip("\r\n")
+                name = line[1:]
 
-                # Add sequence to dictionary.
-                seq[name] += line
+            name = name.rstrip("\r\n")
+
+            # Intitialize empty sequence with this id.
+            seq[name] = ""
+
+        else:
+            # Remove line terminator/newline characters.
+            line = line.rstrip("\r\n")
+
+            # Add sequence to dictionary.
+            seq[name] += line
+
+    fasta_in.close()
 
     return seq
 
@@ -59,7 +64,9 @@ def read_fasta(filename, cut_header=False):
 def write_fasta(seq, outfile):
     out_fasta = open(outfile, "w")
 
-    for s in seq:
+    # Look through sequence ids (sorted alphabetically so output file is
+    # reproducible).
+    for s in sorted(seq.keys()):
         out_fasta.write(">" + s + "\n")
         out_fasta.write(seq[s] + "\n")
 
@@ -193,28 +200,53 @@ def read_stockholm(filename, clean_char=True):
     return seq
 
 
-def system_call_check(cmd, print_out=False, stdout=None, stderr=None):
+def system_call_check(cmd, print_out=False, print_stderr=False):
     '''Run system command and throw and error if return is not 0. Input command
     can be a list containing the command or a string.'''
-
-    # Print command out if option set.
-    if print_out:
-        if type(cmd) is list:
-            print(" ".join(cmd))
-        else:
-            print(cmd)
 
     # Convert command to list if input as string.
     if type(cmd) is str:
         cmd = cmd.split()
 
-    return_value = call(cmd, stdout=stdout, stderr=stderr)
+    # Print command out if option set.
+    if print_out:
+        print(" ".join(cmd), file=sys.stderr)
 
-    # Exit with error if command did not finish successfully.
-    if return_value != 0:
-        raise SystemExit("Error running this command:\n" + " ".join(cmd))
-    else:
-        return(return_value)
+    # Write stdout and stderr of command to temporary files.
+    # Only output the content of these files if the job fails.
+    with tempfile.TemporaryDirectory() as temp_dir:
+
+        stdout_file = join(temp_dir, "stdout.txt")
+        stderr_file = join(temp_dir, "stderr.txt")
+
+        with open(stdout_file, "wb") as stdout_fh, \
+             open(stderr_file, "wb") as stderr_fh:
+
+            return_value = call(cmd, stdout=stdout_fh,
+                                stderr=stderr_fh)
+
+        # Exit with error if command did not finish successfully.
+        if return_value != 0:
+            print("\nError running this command:\n" + " ".join(cmd),
+                  file=sys.stderr)
+
+            # Print out stdout and stderr.
+            with open(stdout_file, 'r') as f:
+                print("\nSTDOUT of failed command:", file=sys.stderr)
+                print(f.read(), file=sys.stderr)
+
+            with open(stderr_file, 'r') as f:
+                print("\nSTDERR of failed command:", file=sys.stderr)
+                print(f.read(), file=sys.stderr)
+
+            sys.exit(1)
+
+        # Print log info to stderr is helpful for certain subprocesses.
+        elif print_stderr:
+            with open(stderr_file, 'r') as f:
+                print(f.read(), file=sys.stderr)
+
+    return(return_value)
 
 def make_output_dir(dirpath, strict=False):
     """Make an output directory if it doesn't exist

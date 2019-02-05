@@ -5,7 +5,7 @@ from glob import glob
 
 __copyright__ = "Copyright 2018, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.0.4-b"
+__version__ = "2.1.0-b"
 __maintainer__ = "Gavin Douglas"
 
 long_description = ("Please visit the google group here if you have questions: "
@@ -31,4 +31,7 @@ setup(name='PICRUSt2',
 			'h5py',
                         'joblib',
                         'biom-format'],
+      package_data={'picrust2':
+                    ['MinPath/MinPath12hmp.py',
+                     'Rscripts/*R']},
       long_description=long_description)

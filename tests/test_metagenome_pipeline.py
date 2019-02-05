@@ -2,7 +2,7 @@
 
 __copyright__ = "Copyright 2018, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.0.4-b"
+__version__ = "2.1.0-b"
 
 import unittest
 from os import path
@@ -12,8 +12,8 @@ from tempfile import TemporaryDirectory
 from picrust2.util import biom_to_pandas_df
 from picrust2.metagenome_pipeline import (run_metagenome_pipeline,
                                           norm_by_marker_copies,
-                                          calc_weighted_nsti,
-                                          id_rare_seqs)
+                                          calc_weighted_nsti, id_rare_seqs,
+                                          drop_tips_by_nsti)
 
 # Set paths to test files.
 test_dir_path = path.join(path.dirname(path.abspath(__file__)), "test_data",
@@ -51,9 +51,10 @@ exp_strat_in_rare = exp_strat_in_rare.set_index(["function", "sequence"])
 
 exp_unstrat_in = pd.read_table(exp_unstrat, sep="\t", index_col="function")
 
-exp_norm_in = pd.read_table(exp_norm, sep="\t", index_col="sequence")
+exp_norm_in = pd.read_table(exp_norm, sep="\t", index_col="normalized")
 
 nsti_in = pd.read_table(nsti_in_path, sep="\t", index_col="sequence")
+
 
 class metagenome_pipeline_test(unittest.TestCase):
 
@@ -64,7 +65,7 @@ class metagenome_pipeline_test(unittest.TestCase):
             strat_out, unstrat_out = run_metagenome_pipeline(input_biom=seqtab_tsv,
                                                              function=func_predict,
                                                              marker=marker_predict,
-                                                             max_nsti=2,
+                                                             max_nsti=1.9,
                                                              out_dir=temp_dir,
                                                              strat_out=True)
 
@@ -81,27 +82,12 @@ class metagenome_pipeline_test(unittest.TestCase):
             strat_out, unstrat_out = run_metagenome_pipeline(input_biom=seqtab_tsv,
                                                              function=func_predict,
                                                              marker=marker_predict,
-                                                             max_nsti=2,
+                                                             max_nsti=2.1,
                                                              out_dir=temp_dir,
                                                              strat_out=False)
 
         pd.testing.assert_frame_equal(unstrat_out, exp_unstrat_in,
                                       check_like=True)
-
-    def test_full_pipeline_strat_tsv_2proc(self):
-        '''Test that run_metagenome_pipeline works on tsv input seqtab and
-        running on 2 processes.'''
-
-        with TemporaryDirectory() as temp_dir:
-            strat_out, unstrat_out = run_metagenome_pipeline(input_biom=seqtab_tsv,
-                                                             function=func_predict,
-                                                             marker=marker_predict,
-                                                             max_nsti=2,
-                                                             out_dir=temp_dir,
-                                                             proc=2,
-                                                             strat_out=True)
-    
-        pd.testing.assert_frame_equal(strat_out, exp_strat_in, check_like=True)
 
     def test_full_pipeline_strat_biom(self):
         '''Test that run_metagenome_pipeline create corrected stratified output
@@ -111,7 +97,7 @@ class metagenome_pipeline_test(unittest.TestCase):
             strat_out, unstrat_out = run_metagenome_pipeline(input_biom=seqtab_biom,
                                                              function=func_predict,
                                                              marker=marker_predict,
-                                                             max_nsti=2,
+                                                             max_nsti=2.0,
                                                              out_dir=temp_dir,
                                                              strat_out=True)
 
@@ -125,7 +111,7 @@ class metagenome_pipeline_test(unittest.TestCase):
             strat_out, unstrat_out = run_metagenome_pipeline(input_biom=seqtab_biom,
                                                              function=func_predict,
                                                              marker=marker_predict,
-                                                             max_nsti=2,
+                                                             max_nsti=1.8,
                                                              out_dir=temp_dir,
                                                              strat_out=False)
 
@@ -140,7 +126,7 @@ class metagenome_pipeline_test(unittest.TestCase):
             strat_out, unstrat_out = run_metagenome_pipeline(input_biom=seqtab_biom,
                                                              function=func_predict,
                                                              marker=marker_predict,
-                                                             max_nsti=2,
+                                                             max_nsti=2.1,
                                                              out_dir=temp_dir,
                                                              strat_out=False)
 
@@ -165,7 +151,8 @@ class metagenome_pipeline_test(unittest.TestCase):
     def test_weighted_nsti(self):
         '''Test that expected weighted NSTI values are calculated.'''
 
-        weighted_nsti_out = calc_weighted_nsti(exp_norm_in, nsti_in)
+        weighted_nsti_out = calc_weighted_nsti(exp_norm_in, nsti_in,
+                                               return_df=True)
 
         expected_weighted_nsti = { "samples": ["sample1", "sample2",
                                                 "sample3"],
@@ -181,6 +168,42 @@ class metagenome_pipeline_test(unittest.TestCase):
         pd.testing.assert_frame_equal(weighted_nsti_out,
                                       expected_weighted_nsti_df,
                                       check_like=True)
+
+    def test_nsti_filtering(self):
+        '''Test that NSTI values filtered out correctly by checking for
+        expected sequences to be retained..'''
+
+        test_file = path.join(path.dirname(path.abspath(__file__)),
+                              "test_data", "hsp", "hsp_output",
+                              "mp_pred_out_nsti.tsv")
+
+        pred_test_in = pd.read_csv(test_file, sep="\t", index_col="sequence")
+
+        pred_test_in_filt, nsti_col = drop_tips_by_nsti(tab=pred_test_in,
+                                                     nsti_col="metadata_NSTI",
+                                                        max_nsti=0.003)
+
+        expected_passing_seqs = set(['2571042249_cluster', '2593339006',
+                                 '2571042244', '2571042654', '2568526369',
+                                 '2574180429_cluster', '2593338844',
+                                 '2568526487_cluster', '2574180282_cluster'])
+
+        self.assertSetEqual(expected_passing_seqs,
+                            set(list(pred_test_in_filt.index)))
+
+    def test_nsti_filtering_all_err(self):
+        '''Test that error thrown when all ASVs thrown out.'''
+
+        test_file = path.join(path.dirname(path.abspath(__file__)),
+                              "test_data", "hsp", "hsp_output",
+                              "mp_pred_out_nsti.tsv")
+
+        pred_test_in = pd.read_csv(test_file, sep="\t", index_col="sequence")
+
+        with self.assertRaises(SystemExit):
+            pred_test_in_filt, nsti_col = drop_tips_by_nsti(tab=pred_test_in,
+                                                      nsti_col="metadata_NSTI",
+                                                            max_nsti=0.000001)
 
 class rare_seqs_test(unittest.TestCase):
     '''Checks that \"RARE\" category is being collapsed to correctly.'''
@@ -213,7 +236,7 @@ class rare_seqs_test(unittest.TestCase):
             strat_out, unstrat_out = run_metagenome_pipeline(input_biom=seqtab_tsv,
                                                              function=func_predict,
                                                              marker=marker_predict,
-                                                             max_nsti=2,
+                                                             max_nsti=2.1,
                                                              min_reads=4,
                                                              min_samples=2,
                                                              out_dir=temp_dir,

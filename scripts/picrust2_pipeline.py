@@ -2,20 +2,18 @@
 
 __copyright__ = "Copyright 2018, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.0.4-b"
+__version__ = "2.1.0-b"
 
 import argparse
 from os import path
 import sys
 import time
-from picrust2.default import (default_fasta, default_tree, default_hmm, default_model,
-                              default_tables, default_map, default_regroup_map,
-                              default_pathway_map)
+from picrust2.default import (default_ref_dir, default_tables, default_map,
+                              default_regroup_map, default_pathway_map)
 from picrust2.util import make_output_dir
 from picrust2.pipeline import full_pipeline
 
 HSP_METHODS = ['mp', 'emp_prob', 'pic', 'scp', 'subtree_average']
-ALIGN_CHOICES = ["hmmalign", "papara"]
 
 parser = argparse.ArgumentParser(
 
@@ -42,23 +40,12 @@ parser.add_argument('-o', '--output', metavar='PATH', required=True,
 parser.add_argument('--threads', type=int, default=1,
                     help='Number of threads to use (default: %(default)d).')
 
-parser.add_argument('-r', '--ref_msa', metavar='PATH', type=str,
-                    default=default_fasta,
-                    help='FASTA of aligned reference sequences (default: %(default)s).')
-
-parser.add_argument('-t', '--tree', metavar='PATH', type=str,
-                    default=default_tree,
-                    help='Input tree based on aligned reference sequences. '
-                         '(default: %(default)s).')
-
-parser.add_argument('--hmm', metavar='PATH', type=str,
-                    default=default_hmm,
-                    help='Hidden markov model of reference MSA (default: %(default)s).')
-
-parser.add_argument('--model', metavar='PATH', type=str, default=default_model,
-                    help='File containing model parameters used to create phylogenetic '
-                         'tree (default: %(default)s).')
-
+parser.add_argument('-r', '--ref_dir', metavar='PATH', type=str,
+                    default=default_ref_dir,
+                    help='Directory containing reference sequence files '
+                         '(default: %(default)s). Please see the online '
+                         'documentation for how to name the files in this '
+                         'directory.')
 
 parser.add_argument('--in_traits', type=str.upper, default='EC,KO',
                     help='Comma-delimited list (with no spaces) of which gene '
@@ -113,13 +100,7 @@ parser.add_argument('--stratified', default=False, action='store_true',
                     help='Flag to indicate that stratified tables should be '
                          'generated at all steps (will increase run-time)')
 
-parser.add_argument('-a', '--alignment_tool', type=str.lower,
-                    default="hmmalign", choices=ALIGN_CHOICES,
-                    help='Which program to use for aligning query sequences ' +
-                         'to reference MSA prior to EPA-NG step (default: ' +
-                         '%(default)s).')
-
-parser.add_argument('--max_nsti', metavar='INT', type=int, default=2,
+parser.add_argument('--max_nsti', metavar='FLOAT', type=float, default=2.0,
                     help='Sequences with NSTI values above this value will '
                          'be excluded (default: %(default)d).')
 
@@ -147,40 +128,36 @@ parser.add_argument('-m', '--hsp_method', default='mp',
                     'traits using squared-change parsimony (default: '
                     '%(default)s).')
 
-parser.add_argument('-n', '--calculate_NSTI', default=False,
-                    action='store_true',
-                    help='Calculate NSTI and add to output ' +
-                         'file')
+parser.add_argument('--skip_nsti', default=False, action='store_true',
+                    help='Do not calculate nearest-sequenced taxon index '
+                    '(NSTI).')
 
-parser.add_argument('-c', '--confidence', default=False, action='store_true',
-                    help='Output 95 percent confidence ' +
-                         'intervals (only possible for mk_model, emp_prob, '
-                         'and mp settings)')
-
-parser.add_argument('--seed', default=100, type=int,
-                    help='Seed to make output reproducible, which is '
-                         'necessary for the mp and emp_prob methods '
-                         '(default: %(default)d).')
+parser.add_argument('--skip_minpath', default=False, action="store_true",
+                    help='Do not run MinPath to identify which pathways are '
+                         'present as a first pass (on by default).')
 
 parser.add_argument('--no_gap_fill', default=False, action="store_true",
                     help='Do not perform gap filling before predicting '
                          'pathway abundances (Gap filling is on otherwise by '
                          'default.')
 
-parser.add_argument('--per_sequence_contrib', default=False, action="store_true",
-                    help='Run MinPath on the gene families contributed by '
-                    'each sequence (i.e. a predicted genome) individually. '
-                    'This will only matter --per_sequence_contrib is set. '
-                    'Note this will GREATLY increase the runtime, but will '
-                    'output the predicted pathway abundance contributed by the '
-                    'predicted gene families in each predicted genome alone '
-                    '(i.e. not the contribution to the community-wide '
-                    'abundance). Pathway coverage stratified by contributing '
-                    'sequence will also be output when this option is set '
-                    '(default: %(default)d).')
+parser.add_argument('--coverage', default=False, action="store_true",
+                    help='Calculate pathway coverages as well as abundances, '
+                         'which are experimental and only useful for '
+                         'advanced users.')
 
-parser.add_argument('--no_descrip', default=False, action='store_true',
-                    help='Do not add function descriptions to output tables.')
+parser.add_argument('--per_sequence_contrib', default=False,
+                    action="store_true",
+                    help='Flag to specify that MinPath is run on the genes '
+                    'contributed by each sequence (i.e. a predicted '
+                    'genome) individually. Note this will greatly increase '
+                    'the runtime. The output will be the predicted pathway '
+                    'abundance contributed by each individual sequence. This '
+                    'is in contrast to the default stratified output, which '
+                    'is the contribution to the community-wide pathway '
+                    'abundances. Pathway coverage stratified by contributing '
+                    'sequence will also be output when --coverage is set '
+                    '(default: %(default)s).')
 
 parser.add_argument('--verbose', default=False, action='store_true',
                     help='If specified, print out wrapped commands to screen')
@@ -200,29 +177,24 @@ def main():
                                                     input_table=args.input,
                                                     output_folder=args.output,
                                                     threads=args.threads,
-                                                    ref_msa=args.ref_msa,
-                                                    tree=args.tree,
-                                                    hmm=args.hmm,
-                                                    model=args.model,
+                                                    ref_dir=args.ref_dir,
                                                     in_traits=args.in_traits,
                                                     custom_trait_tables=args.custom_trait_tables,
                                                     marker_gene_table=args.marker_gene_table,
                                                     pathway_map=args.pathway_map,
                                                     no_pathways=args.no_pathways,
                                                     regroup_map=args.regroup_map,
+                                                    skip_minpath=args.skip_minpath,
                                                     no_regroup=args.no_regroup,
+                                                    coverage=args.coverage,
                                                     stratified=args.stratified,
-                                                    alignment_tool=args.alignment_tool,
                                                     max_nsti=args.max_nsti,
                                                     min_reads=args.min_reads,
                                                     min_samples=args.min_samples,
                                                     hsp_method=args.hsp_method,
-                                                    calculate_NSTI=args.calculate_NSTI,
-                                                    confidence=args.confidence,
-                                                    seed=args.seed,
+                                                    skip_nsti=args.skip_nsti,
                                                     no_gap_fill=args.no_gap_fill,
                                                     per_sequence_contrib=args.per_sequence_contrib,
-                                                    no_descrip=args.no_descrip,
                                                     verbose=args.verbose)
 
     # Print out elapsed time.

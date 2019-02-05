@@ -2,7 +2,7 @@
 
 __copyright__ = "Copyright 2018, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.0.4-b"
+__version__ = "2.1.0-b"
 
 import argparse
 from picrust2.wrap_hsp import castor_hsp_workflow
@@ -33,10 +33,8 @@ hsp.py -t study.tre -i 16S -o 16S_predicted_traits
 parser.add_argument('-t', '--tree', metavar='PATH', required=True, type=str,
                     help='The full reference tree, in newick format')
 
-parser.add_argument('-o', '--output_prefix', metavar='PATH', type=str,
-                    required=True,
-                    help='Prefix for output filenames (predicted count ' +
-                         'table and optionally a table of CIs)')
+parser.add_argument('-o', '--output', metavar='PATH', type=str,
+                    required=True, help='Output filename.')
 
 parser.add_argument('-i', '--in_trait', type=str.upper, choices=TRAIT_OPTIONS,
                     help='Specifies which default trait table should be ' +
@@ -75,10 +73,6 @@ parser.add_argument('-n', '--calculate_NSTI', default=False,
                     help='Calculate NSTI and add to output ' +
                          'file')
 
-parser.add_argument('-c', '--confidence', default=False, action='store_true',
-                    help='Output 95 percent confidence ' +
-                         'intervals (only possible when used with \"emp_prob\" method currently).')
-
 parser.add_argument('--check', default=False, action='store_true',
                     help='Check input trait table before HSP')
 
@@ -114,14 +108,8 @@ def main():
     # Check that input filenames exist.
     check_files_exist([args.tree, trait_table])
 
-    # Only calculate CIs if method is "emp_prob".
-    if args.confidence and args.hsp_method in "emp_prob":
-        ci_setting = True
-    else:
-        ci_setting = False
-
-    count_outfile = args.output_prefix + ".tsv"
-    ci_outfile = args.output_prefix + "_ci.tsv"
+    # No longer support outputting CIs with this script. 
+    ci_setting = False
 
     hsp_table, ci_table = castor_hsp_workflow(tree_path=args.tree,
                                               trait_table_path=trait_table,
@@ -134,16 +122,9 @@ def main():
                                               ran_seed=args.seed)
 
     # Output the table to file.
-    make_output_dir_for_file(count_outfile)
-    hsp_table.to_csv(path_or_buf=count_outfile, index_label="sequence",
+    make_output_dir_for_file(args.output)
+    hsp_table.to_csv(path_or_buf=args.output, index_label="sequence",
                      sep="\t")
-
-    # Output the CI file as well if option set.
-    if ci_setting:
-        make_output_dir_for_file(ci_outfile)
-        ci_table.to_csv(path_or_buf=ci_outfile, index_label="sequence",
-                        sep="\t")
-
 
 if __name__ == "__main__":
     main()
