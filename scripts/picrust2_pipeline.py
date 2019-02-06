@@ -21,9 +21,7 @@ parser = argparse.ArgumentParser(
                 "predictions for E.C. numbers, KEGG orthologs, and MetaCyc "
                 "pathway abundances and coverages by default. Note that this "
                 "is a convenience script and you can also run each step "
-                "individually. Descriptions of gene families and pathways "
-                "will be added automatically to output files unless custom "
-                "trait tables are input.",
+                "individually.",
 
     formatter_class=argparse.RawDescriptionHelpFormatter)
 
