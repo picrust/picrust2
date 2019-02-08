@@ -351,6 +351,9 @@ def pathway_pipeline(inputfile,
     path_cov_strat = None
     path_abun_strat = None
 
+    minpath_out_dir = path.join(out_dir, "minpath_running")
+    make_output_dir(minpath_out_dir)
+
     # Run minpath wrapper on all samples if table is stratified. Note that 
     # input stratified table is subsetted to required columns only.
     if strat_format:
@@ -362,7 +365,7 @@ def pathway_pipeline(inputfile,
                                                       sample_id,
                                                       in_metagenome[["function", "sequence", sample_id]],
                                                       minpath_mapfile,
-                                                      out_dir,
+                                                      minpath_out_dir,
                                                       pathways_in,
                                                       run_minpath,
                                                       coverage, 
@@ -415,7 +418,7 @@ def pathway_pipeline(inputfile,
                                                    sample_id,
                                                    in_metagenome[["function", sample_id]],
                                                    minpath_mapfile,
-                                                   out_dir,
+                                                   minpath_out_dir,
                                                    pathways_in,
                                                    run_minpath,
                                                    coverage,
@@ -453,10 +456,14 @@ def pathway_pipeline(inputfile,
     # and then multiply this table by the abundance of each sequence
     # within each sample (using same approach as in metagenome pipeline).
     if per_sequence_contrib:
+
+        per_seq_out_dir = path.join(out_dir, "minpath_running_per_seq")
+        make_output_dir(per_seq_out_dir)
+
         path_abun_strat, path_cov_strat = per_sequence_contrib_levels(sequence_abun=per_sequence_abun,
                                                                       sequence_func=per_sequence_function,
                                                                       minpath_map=minpath_mapfile,
-                                                                      out_dir=out_dir,
+                                                                      per_seq_out_dir=per_seq_out_dir,
                                                                       pathway_db=pathways_in,
                                                                       run_minpath=run_minpath,
                                                                       calc_coverage=coverage,
@@ -569,25 +576,22 @@ def path_abun_weighted_by_seq(reaction_abun, func_ids, total_sum, path_abun,
     return(strat_path_abun.iloc[:, 0])
 
 
-def minpath_wrapper(sample_id, unstrat_input, minpath_map, out_dir,
+def minpath_wrapper(sample_id, unstrat_input, minpath_map, minpath_outdir,
                     print_opt=False, extra_str=""):
     '''Run MinPath based on gene abundances in a single sample. Will return
     a set of all pathways called as present.'''
 
-    # Make output directory for MinPath intermediate files.
-    make_output_dir(path.join(out_dir, "minpath_running"))
-
     # Define MinPath input and output filenames.
-    minpath_in = path.join(out_dir, "minpath_running", sample_id + extra_str +
+    minpath_in = path.join(minpath_outdir, sample_id + extra_str +
                            "_minpath_in.txt")
 
-    minpath_report = path.join(out_dir, "minpath_running", sample_id +
+    minpath_report = path.join(minpath_outdir, sample_id +
                                extra_str + "_minpath_report.txt")
 
-    minpath_details = path.join(out_dir, "minpath_running", sample_id +
+    minpath_details = path.join(minpath_outdir, sample_id +
                                 extra_str + "_minpath_details.txt")
 
-    minpath_mps = path.join(out_dir, "minpath_running", sample_id + extra_str +
+    minpath_mps = path.join(minpath_outdir, sample_id + extra_str +
                             "_minpath.mps")
 
     id_minpath_fh = open(minpath_in, "w")
@@ -625,7 +629,7 @@ def minpath_wrapper(sample_id, unstrat_input, minpath_map, out_dir,
     return(path_present)
 
 def per_sequence_contrib_levels(sequence_abun, sequence_func,
-                                minpath_map, out_dir, pathway_db,
+                                minpath_map, per_seq_out_dir, pathway_db,
                                 run_minpath, calc_coverage, gap_fill_on, nproc,
                                 regroup_map, print_opt=False):
 
@@ -667,10 +671,6 @@ def per_sequence_contrib_levels(sequence_abun, sequence_func,
     if regroup_map:
         pred_function = regroup_func_ids(pred_function, False, regroup_map,
                                          nproc)
-
-    # Make different output directory for --per_sequence_contrib intermediate
-    # files.
-    per_seq_out_dir = path.join(out_dir, "per_sequence_contrib")
 
     # Get pathway levels for each sequence (note that sample info is not used
     # here).
@@ -754,8 +754,10 @@ def basic_strat_pathway_levels(sample_id, strat_input, minpath_map, out_dir,
     reaction_abun = unstrat_input[sample_id].to_dict(defaultdict(int))
 
     if run_minpath:
+
         pathways_present = minpath_wrapper(sample_id, unstrat_input,
-                                           minpath_map, out_dir, print_opt)
+                                           minpath_map, out_dir,
+                                           print_opt)
     else:
         pathways_present = set(pathway_db.pathway_list())
 
@@ -834,9 +836,10 @@ def unstrat_pathway_levels(sample_id, unstrat_input, minpath_map, out_dir,
     reaction_abun = unstrat_input[sample_id].to_dict(defaultdict(int))
 
     if run_minpath:
+
         pathways_present = minpath_wrapper(sample_id, unstrat_input,
                                            minpath_map, out_dir,
-                                           print_opt, extra_str)
+                                           print_opt)
     else:
         pathways_present = set(pathway_db.pathway_list())
 
