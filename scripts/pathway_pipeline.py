@@ -6,8 +6,7 @@ __version__ = "2.1.0-b"
 
 import argparse
 from picrust2.pathway_pipeline import pathway_pipeline
-from tempfile import TemporaryDirectory
-from picrust2.util import make_output_dir, check_files_exist
+from picrust2.util import make_output_dir, check_files_exist, TemporaryDirectory
 from picrust2.default import default_regroup_map, default_pathway_map
 from os import path
 

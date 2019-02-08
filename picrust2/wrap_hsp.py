@@ -10,8 +10,7 @@ from os import path
 import pandas as pd
 from math import ceil
 from joblib import Parallel, delayed
-from tempfile import TemporaryDirectory
-from picrust2.util import system_call_check
+from picrust2.util import system_call_check, TemporaryDirectory
 
 def castor_hsp_workflow(tree_path,
                         trait_table_path,

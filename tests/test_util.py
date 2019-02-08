@@ -9,12 +9,12 @@ from os import path
 import pandas as pd
 import hashlib
 import gzip
-from tempfile import TemporaryDirectory
 from picrust2.util import (write_fasta, read_fasta, write_phylip, read_phylip,
                            three_df_index_overlap_sort, add_descrip_col,
                            convert_humann2_to_picrust2,
                            convert_picrust2_to_humann2,
-                           convert_picrust2_to_humann2_merged)
+                           convert_picrust2_to_humann2_merged,
+                           TemporaryDirectory)
 
 from picrust2.default import default_map
 

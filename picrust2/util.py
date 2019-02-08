@@ -4,10 +4,14 @@ __copyright__ = "Copyright 2018, The PICRUSt Project"
 __license__ = "GPL"
 __version__ = "2.1.0-b"
 
-from os import makedirs
+from os import makedirs, chmod
 from os.path import abspath, dirname, isdir, join, exists
 from collections import defaultdict
 from subprocess import call
+import stat
+import shutil as _shutil
+import weakref as _weakref
+import warnings as _warnings
 import pandas as pd
 import numpy as np
 import tempfile
@@ -615,3 +619,45 @@ def convert_picrust2_to_humann2_merged(infiles, outfile):
 
     # Write out.
     new_tab.to_csv(path_or_buf=outfile,  sep="\t", index_label=first_col)
+
+
+class TemporaryDirectory(object):
+    '''Create and return a temporary directory.  This has the same
+    behavior as mkdtemp but can be used as a context manager.  For
+    example:
+        with TemporaryDirectory() as tmpdir:
+            ...
+    Upon exiting the context, the directory and everything contained
+    in it are removed.
+
+    NOTE: This function was taken and modified from the tempfile package to
+    first change permissions on folder to be deleted.'''
+
+    def __init__(self, suffix=None, prefix=None, dir=None):
+        self.name = tempfile.mkdtemp(suffix, prefix, dir)
+        self._finalizer = _weakref.finalize(
+            self, self._cleanup, self.name,
+            warn_message="Implicitly cleaning up {!r}".format(self))
+
+    @classmethod
+    def _cleanup(cls, name, warn_message):
+        _shutil.rmtree(name)
+        _warnings.warn(warn_message, ResourceWarning)
+
+    def __repr__(self):
+        return "<{} {!r}>".format(self.__class__.__name__, self.name)
+
+    def __enter__(self):
+        return self.name
+
+    def __exit__(self, exc, value, tb):
+        self.cleanup()
+
+    def cleanup(self):
+        if self._finalizer.detach():
+
+            # Line added by Gavin Douglas to change permissions to 777 before
+            # deleting:
+            system_call_check(["chmod", "-R", "777", self.name])
+
+            _shutil.rmtree(self.name)

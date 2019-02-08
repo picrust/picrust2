@@ -7,7 +7,7 @@ __version__ = "2.1.0-b"
 import unittest
 import pandas as pd
 from os import path
-from tempfile import TemporaryDirectory
+from picrust2.util import TemporaryDirectory
 from picrust2.default import default_regroup_map, default_pathway_map
 from picrust2.pathway_pipeline import (minpath_wrapper,
                                        pathway_pipeline,

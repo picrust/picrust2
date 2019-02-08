@@ -8,8 +8,7 @@ import unittest
 from os import path
 import pandas as pd
 import biom
-from tempfile import TemporaryDirectory
-from picrust2.util import biom_to_pandas_df
+from picrust2.util import biom_to_pandas_df, TemporaryDirectory
 from picrust2.metagenome_pipeline import (run_metagenome_pipeline,
                                           norm_by_marker_copies,
                                           calc_weighted_nsti, id_rare_seqs,

@@ -5,10 +5,9 @@ __license__ = "GPL"
 __version__ = "2.1.0-b"
 
 import argparse
-from tempfile import TemporaryDirectory
 from picrust2.place_seqs import place_seqs_pipeline
 from picrust2.default import default_ref_dir
-from picrust2.util import make_output_dir
+from picrust2.util import make_output_dir, TemporaryDirectory
 
 parser = argparse.ArgumentParser(
 

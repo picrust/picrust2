@@ -7,8 +7,7 @@ __version__ = "2.1.0-b"
 import unittest
 import gzip
 from os import path
-from tempfile import TemporaryDirectory
-from picrust2.util import read_phylip, read_fasta
+from picrust2.util import read_phylip, read_fasta, TemporaryDirectory
 from picrust2.default import (default_ref_dir, default_fasta, default_tree,
                               default_hmm, default_model) 
 from picrust2.place_seqs import (place_seqs_pipeline, split_ref_study_papara,
