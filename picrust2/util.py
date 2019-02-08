@@ -218,7 +218,7 @@ def system_call_check(cmd, print_out=False, print_stderr=False):
 
     # Write stdout and stderr of command to temporary files.
     # Only output the content of these files if the job fails.
-    with tempfile.TemporaryDirectory() as temp_dir:
+    with TemporaryDirectory() as temp_dir:
 
         stdout_file = join(temp_dir, "stdout.txt")
         stderr_file = join(temp_dir, "stderr.txt")
