@@ -12,17 +12,17 @@ import scipy.stats
 import pandas as pd
 import numpy as np
 import copy
-import biom
 from picrust2.util import (system_call_check, check_files_exist,
                            make_output_dir)
 from picrust2.metagenome_pipeline import strat_funcs_by_samples
+
 
 class PathwaysDatabase:
     '''Holds all of the reactions/pathways data from the file provided.
     This class was taken from HUMAnN2 v0.11.1 and was modified only slightly so
     that it could be used without additional classes and functions defined in
     HUMAnN2.'''
-    
+
     def _is_optional_reaction(self, item, reaction_names=[]):
         '''Check if this reaction is optional.'''
 
@@ -37,7 +37,8 @@ class PathwaysDatabase:
         else:
             return False
 
-    def _find_reaction_list_and_key_reactions(self, items, reaction_names=None):
+    def _find_reaction_list_and_key_reactions(self, items,
+                                              reaction_names=None):
         '''Find the reactions in the pathways items and also the key
         reactions.'''
 
@@ -48,35 +49,35 @@ class PathwaysDatabase:
 
             # Ignore items that are not reactions as they are part of pathway
             # structure.
-            if not item in ["(", ")", "", "+", ","]:
+            if item not in ["(", ")", "", "+", ","]:
 
                 # Check if this reaction is optional and remove the first
-                # character if so.               
+                # character if so.
                 if self._is_optional_reaction(item, reaction_names):
                     item = item[1:]
                 else:
                     # Record that this is a key reaction (i.e. not optional).
                     key_reactions.append(item)
-                        
-                reaction_list.append(item)      
-        
+
+                reaction_list.append(item)
+
         return reaction_list, key_reactions
-        
+
     def _find_structure(self, items, reaction_names=None):
         '''Find the structure of the pathway from the string.'''
-        
+
         # Initialize dictionary that will contain pathway structure (which can
         # include multiple levels).
         structure = [" "]
-        levels = { 0: structure}
+        levels = {0: structure}
         current_level = 0
-            
+
         # Loop through items (which can include reactions and syntax of the
         # pathway structure)
         for item in items:
             if item:
                 # Check if the item name indicates an optional reaction.
-                # If so, remove the "-" at the beginning of the name.             
+                # If so, remove the "-" at the beginning of the name.
                 if self._is_optional_reaction(item, reaction_names):
                     item = item[1:]
 
@@ -119,16 +120,17 @@ class PathwaysDatabase:
             reactions[pathway] = reactions[pathway].split(" ")
 
             # Find and store the structure for the pathway.
-            structure = self._find_structure(reactions[pathway], reaction_names)
+            structure = self._find_structure(reactions[pathway],
+                                             reaction_names)
             self.__pathways_structure[pathway] = structure
-            
+
             # Find the list of reactions and the key reactions.
             reaction_list, key_reactions = self._find_reaction_list_and_key_reactions(reactions[pathway],
                                                                                       reaction_names)
 
             # Store the list of key reactions for the pathway.
             self.__key_reactions[pathway] = key_reactions
-            
+
             # Update the reactions dictionary to contain the list of reactions
             # instead of the structure string.
             reactions[pathway] = reaction_list
@@ -138,27 +140,25 @@ class PathwaysDatabase:
     def _store_pathways(self, reactions):
         '''Create the dictionaries of reactions to pathways and pathways to
         reactions.'''
-        
+
         for pathway in reactions:
             for reaction in reactions[pathway]:
-                self.__pathways_to_reactions[pathway]=self.__pathways_to_reactions.get(
-                    pathway, []) + [reaction]
-                self.__reactions_to_pathways[reaction]=self.__reactions_to_pathways.get(
-                    reaction, []) + [pathway]
+                self.__pathways_to_reactions[pathway] = self.__pathways_to_reactions.get(pathway, []) + [reaction]
+                self.__reactions_to_pathways[reaction] = self.__reactions_to_pathways.get(reaction, []) + [pathway]
 
     def __init__(self, database=None, reaction_names=[]):
         '''Load in the pathways data from the database file.'''
 
-        self.__pathways_to_reactions={}
-        self.__reactions_to_pathways={}
-        self.__pathways_structure={}
-        self.__key_reactions={}
+        self.__pathways_to_reactions = {}
+        self.__reactions_to_pathways = {}
+        self.__pathways_structure = {}
+        self.__key_reactions = {}
 
-        if not database is None:
+        if database is not None:
 
             # Check that database file exists.
             check_files_exist([database])
-            
+
             file_handle = open(database, "rt")
 
             line = file_handle.readline()
@@ -186,14 +186,14 @@ class PathwaysDatabase:
                         structured_pathway = True
 
                 line = file_handle.readline()
-            
+
             file_handle.close()
-            
+
             # If this is a structured pathways set, then store the structure.
             if structured_pathway:
                 reactions = self._set_pathways_structure(reactions,
                                                          reaction_names)
-            
+
             self._store_pathways(reactions)
 
     def is_structured(self):
@@ -203,15 +203,15 @@ class PathwaysDatabase:
             return True
         else:
             return False
-                    
+
     def add_pathway_structure(self, pathway, structure,
                               reactions_database=None):
         '''Add the string structure for a pathway.'''
 
         reaction_names = None
-        if not reactions_database is None:
-            reaction_names=reactions_database.reaction_list()
-        
+        if reactions_database is not None:
+            reaction_names = reactions_database.reaction_list()
+
         reactions = self._set_pathways_structure({pathway: structure},
                                                  reaction_names)
         self._store_pathways(reactions)
@@ -220,37 +220,37 @@ class PathwaysDatabase:
         '''Add the unstructured pathway.'''
 
         self._store_pathways({pathway: reactions})
-        
+
     def get_structure_for_pathway(self, pathway):
         '''Return the structure for a pathway.'''
-        
-        return copy.deepcopy(self.__pathways_structure.get(pathway, [])) 
+
+        return copy.deepcopy(self.__pathways_structure.get(pathway, []))
 
     def get_key_reactions_for_pathway(self, pathway):
         '''Return the key reactions for a pathway.'''
-        
+
         return copy.copy(self.__key_reactions.get(pathway, []))
-        
+
     def find_reactions(self, pathway):
         '''Return the list of reactions associated with the pathway.'''
-         
+
         return copy.copy(self.__pathways_to_reactions.get(pathway, []))
 
     def find_pathways(self, reaction):
         '''Return the list of pathways associated with the reaction.'''
-         
+
         return copy.copy(self.__reactions_to_pathways.get(reaction, []))
-    
+
     def reaction_list(self):
         '''Return the list of reactions included in the database.'''
-        
+
         return list(self.__reactions_to_pathways.keys())
-    
+
     def pathway_list(self):
         '''Return the list of pathways included in the database.'''
-        
+
         return list(self.__pathways_to_reactions.keys())
-    
+
     def get_database(self, min_reactions=1):
         '''Return the database as a flat file with a single pathway per
         line.'''
@@ -354,10 +354,10 @@ def pathway_pipeline(inputfile,
     minpath_out_dir = path.join(out_dir, "minpath_running")
     make_output_dir(minpath_out_dir)
 
-    # Run minpath wrapper on all samples if table is stratified. Note that 
+    # Run minpath wrapper on all samples if table is stratified. Note that
     # input stratified table is subsetted to required columns only.
     if strat_format:
-        
+
         # Get unstratified and stratified pathway levels.
         # Note that stratified tables will only be returned by this step if
         # per_sequence_contrib=False (extra step required below).
@@ -368,7 +368,7 @@ def pathway_pipeline(inputfile,
                                                       minpath_out_dir,
                                                       pathways_in,
                                                       run_minpath,
-                                                      coverage, 
+                                                      coverage,
                                                       gap_fill_on,
                                                       per_sequence_contrib,
                                                       print_cmds)
@@ -377,7 +377,7 @@ def pathway_pipeline(inputfile,
         # Split the output into unstratified and stratified.
         path_raw_abun_unstrat = []
         path_raw_cov_unstrat = []
-        
+
         if not per_sequence_contrib:
             path_raw_abun_strat = []
 
@@ -403,10 +403,10 @@ def pathway_pipeline(inputfile,
 
         # Prep unstratified output tables.
         path_abun_unstrat = prep_pathway_df_out(path_raw_abun_unstrat)
-        path_abun_unstrat.columns = samples  
+        path_abun_unstrat.columns = samples
 
         if coverage:
-            path_cov_unstrat = prep_pathway_df_out(path_raw_cov_unstrat, 
+            path_cov_unstrat = prep_pathway_df_out(path_raw_cov_unstrat,
                                                    num_digits=10)
             path_cov_unstrat.columns = samples
 
@@ -567,7 +567,7 @@ def path_abun_weighted_by_seq(reaction_abun, func_ids, total_sum, path_abun,
     strat_path_abun = np.around((seq_path_abun/total_sum)*path_abun, decimals=4)
 
     # Remove rows that are all 0.
-    strat_path_abun = strat_path_abun.loc[strat_path_abun[strat_path_abun.columns[0]] > 0 , :]
+    strat_path_abun = strat_path_abun.loc[strat_path_abun[strat_path_abun.columns[0]] > 0, :]
 
     # Rename index labels to be "pathway|||sequence".
     strat_path_abun.index = ["|||".join([pathway, str(seq)]) for seq in strat_path_abun.index]
@@ -627,6 +627,7 @@ def minpath_wrapper(sample_id, unstrat_input, minpath_map, minpath_outdir,
 
     # Return list of which pathways are present.
     return(path_present)
+
 
 def per_sequence_contrib_levels(sequence_abun, sequence_func,
                                 minpath_map, per_seq_out_dir, pathway_db,
@@ -739,7 +740,7 @@ def basic_strat_pathway_levels(sample_id, strat_input, minpath_map, out_dir,
                                print_opt=False):
     '''Read in sample_id, gene family table, and out_dir, and run MinPath based
     on the gene family abundances. Returns both unstratified and stratified
-    pathway abundances as dictionaries in a list when 
+    pathway abundances as dictionaries in a list when
     per_sequence_contrib=False. In this case will compute the simplistic
     "community-wide contributions" for stratified output. When
     per_sequence_contrib=True only the stratified values returned will be None
@@ -786,7 +787,7 @@ def basic_strat_pathway_levels(sample_id, strat_input, minpath_map, out_dir,
         reactions = pathway_db.find_reactions(pathway)
 
         # Get abundances of all of these reactions.
-        path_reaction_abun = {reaction_id:reaction_abun[reaction_id] for reaction_id in reactions}
+        path_reaction_abun = {reaction_id: reaction_abun[reaction_id] for reaction_id in reactions}
 
         # Get pathway abundance and coverage
         pathway_abun, pathway_cov = pathway_abun_and_coverage(pathway,
@@ -861,7 +862,7 @@ def unstrat_pathway_levels(sample_id, unstrat_input, minpath_map, out_dir,
 
     # Loop through all pathways present and get abundance and coverage.
     for pathway in pathways_present:
-        # Note that here the term "reactions" is used interchangeably with 
+        # Note that here the term "reactions" is used interchangeably with
         # gene families (reactions is the term used by HUMAnN2) - the gene
         # families above may have already been converted to reactions or not.
 
@@ -869,7 +870,7 @@ def unstrat_pathway_levels(sample_id, unstrat_input, minpath_map, out_dir,
         reactions = pathway_db.find_reactions(pathway)
 
         # Get abundances of all of these reactions.
-        path_reaction_abun = {reaction_id:reaction_abun[reaction_id] for reaction_id in reactions}
+        path_reaction_abun = {reaction_id: reaction_abun[reaction_id] for reaction_id in reactions}
 
         # Get pathway abundance and coverage
         pathway_abun, pathway_cov = pathway_abun_and_coverage(pathway,
@@ -1001,8 +1002,8 @@ def regroup_func_ids(in_df, is_strat, mapfile, proc):
                  "mapfile used?\n")
 
     return(regrouped_table)
-    
-    
+
+
 def convert_func_ids(functions, strat_df, func_map):
     '''Will return dataframe with all new ids replacing the value in
     "function" column for each input function.'''
@@ -1052,6 +1053,7 @@ def read_reaction_names(reactions_database):
 
     return reactions
 
+
 def compute_structured_pathway_abundance_or_coverage(structure,
                                                      key_reactions,
                                                      reaction_abun,
@@ -1061,7 +1063,7 @@ def compute_structured_pathway_abundance_or_coverage(structure,
     '''Returns the abundance or the coverage of a structured pathway based on
     the pathway structure, list of key reactions, and abundance of reactions in
     the pathway. Coverage will be calculated when calc_coverage=True, which
-    uses the median abundance of reactions in the pathway. 
+    uses the median abundance of reactions in the pathway.
     This calculation is based on the approach implemented in HUMAnN2 and below
     code was modified from the compute_structured_pathway_abundance_or_coverage
     function in HUMAnN2 v0.11.1.'''
@@ -1079,7 +1081,7 @@ def compute_structured_pathway_abundance_or_coverage(structure,
         if isinstance(item, list):
             # If the item is a list then recursively determine that part of the
             # pathway's abundance.
-            key_reaction_scores.append(compute_structured_pathway_abundance_or_coverage(item, 
+            key_reaction_scores.append(compute_structured_pathway_abundance_or_coverage(item,
                 key_reactions, reaction_abun, calc_coverage, median_value))
         else:
             reaction_score = reaction_abun[item]
@@ -1152,10 +1154,11 @@ def gap_fill(key_reactions, reaction_abun):
     key_reactions_abun = [key_reactions_abun[i] for i in key_abun_order]
 
     # Set key reaction with lowest abundance to have the same abundance as the
-    # second least abundant key reaction. 
+    # second least abundant key reaction.
     reaction_abun_gap_filled[key_reactions[0]] = key_reactions_abun[1]
 
     return reaction_abun_gap_filled
+
 
 def harmonic_mean(values, decimal_points=16):
     '''Returns harmonic mean of input list of numbers. Will round to specified
@@ -1176,6 +1179,7 @@ def harmonic_mean(values, decimal_points=16):
         hmean = len(values) / reciprocal_sum
 
     return hmean
+
 
 def calc_median_reaction_abun(reaction_abun, pathways_present, pathway_db):
     '''Calculate the median reaction abundance across all pathways (reactions
