@@ -658,6 +658,6 @@ class TemporaryDirectory(object):
 
             # Line added by Gavin Douglas to change permissions to 777 before
             # deleting:
-            system_call_check(["chmod", "-R", "777", self.name])
+            call(["chmod", "-R", "777", self.name])
 
             _shutil.rmtree(self.name)
