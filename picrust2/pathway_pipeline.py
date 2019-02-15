@@ -582,16 +582,16 @@ def minpath_wrapper(sample_id, unstrat_input, minpath_map, minpath_outdir,
     a set of all pathways called as present.'''
 
     # Define MinPath input and output filenames.
-    minpath_in = path.join(minpath_outdir, sample_id + extra_str +
+    minpath_in = path.join(minpath_outdir, str(sample_id) + extra_str +
                            "_minpath_in.txt")
 
-    minpath_report = path.join(minpath_outdir, sample_id +
+    minpath_report = path.join(minpath_outdir, str(sample_id) +
                                extra_str + "_minpath_report.txt")
 
-    minpath_details = path.join(minpath_outdir, sample_id +
+    minpath_details = path.join(minpath_outdir, str(sample_id) +
                                 extra_str + "_minpath_details.txt")
 
-    minpath_mps = path.join(minpath_outdir, sample_id + extra_str +
+    minpath_mps = path.join(minpath_outdir, str(sample_id) + extra_str +
                             "_minpath.mps")
 
     id_minpath_fh = open(minpath_in, "w")
