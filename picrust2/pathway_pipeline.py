@@ -935,14 +935,14 @@ def pathway_abun_and_coverage(pathway, pathway_db, reaction_abun, median_value,
         # Take mean for unstratified pathway abundance.
         pathway_abun = sum(subset_reaction_abun) / len(subset_reaction_abun)
 
-        # Get coverage of unstructured pathway by getting the proportion
-        # of reactions with scores greater than the median.
-        count_higher_than_median = 0
-        for abun in reaction_abun_only:
-            if abun > median_value:
-                count_higher_than_median += 1
-
         if calc_coverage:
+            # Get coverage of unstructured pathway by getting the proportion
+            # of reactions with scores greater than the median.
+            count_higher_than_median = 0
+            for abun in reaction_abun_only:
+                if abun > median_value:
+                    count_higher_than_median += 1
+
             pathway_cov = count_higher_than_median / len(reaction_abun_only)
 
     return(pathway_abun, pathway_cov)
