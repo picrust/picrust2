@@ -71,17 +71,17 @@ def castor_hsp_workflow(tree_path,
         predict_out_chunks.append(castor_out_raw[i][0])
         ci_out_chunks.append(castor_out_raw[i][1])
 
-    predict_out_combined = pd.concat(predict_out_chunks, axis=1)
+    predict_out_combined = pd.concat(predict_out_chunks, axis=1, sort=True)
 
     # Add NSTI as column as well if option specified.
     if calc_nsti:
         predict_out_combined = pd.concat([predict_out_combined, nsti_values],
-                                         axis=1)
+                                         axis=1, sort=True)
 
     ci_out_combined = None
 
     if calc_ci:
-        ci_out_combined = pd.concat(ci_out_chunks, axis=1)
+        ci_out_combined = pd.concat(ci_out_chunks, axis=1, sort=True)
 
     return(predict_out_combined, ci_out_combined)
     

@@ -11,11 +11,11 @@ import biom
 import pandas as pd
 import numpy as np
 from os import path
-from picrust2.util import (biom_to_pandas_df, make_output_dir,
+from picrust2.util import (read_seqabun, make_output_dir,
                            three_df_index_overlap_sort)
 
 
-def run_metagenome_pipeline(input_biom,
+def run_metagenome_pipeline(input_seqabun,
                             function,
                             marker,
                             max_nsti,
@@ -27,8 +27,9 @@ def run_metagenome_pipeline(input_biom,
     functions largely listed below. Will return predicted metagenomes
     straitifed and unstratified by contributing genomes (i.e. taxa).'''
 
-    # Read in input table of sequence abundances and convert to pandas df.
-    study_seq_counts = biom_to_pandas_df(biom.load_table(input_biom))
+    # Read in input table of sequence abundances.
+
+    study_seq_counts = read_seqabun(input_seqabun)
 
     # Read in predicted function and marker gene abundances.
     pred_function = pd.read_table(function, sep="\t", index_col="sequence")
@@ -105,7 +106,7 @@ def strat_funcs_by_samples(func_abun, sample_abun, rare_seqs=[],
 
     # Create combined stratified dataframe.
     strat_func = pd.concat((sample_abun.multiply(func_abun[func], axis=0) for func in func_abun.columns),
-                           ignore_index=True, axis=0)
+                           ignore_index=True, axis=0, sort=True)
 
     # Set multi-index labels to be sequence and function ids.
     strat_func.index = pd.MultiIndex.from_product((func_abun.columns,
@@ -129,7 +130,7 @@ def strat_funcs_by_samples(func_abun, sample_abun, rare_seqs=[],
         raw_seqs_slice.set_index('sequence', append=True, inplace=True)
 
         # Concat the RARE seqs to the full df.
-        strat_func = pd.concat([strat_func, raw_seqs_slice], axis=0)
+        strat_func = pd.concat([strat_func, raw_seqs_slice], axis=0, sort=True)
 
     # Remove rows that are all 0.
     strat_func = strat_func.loc[~(strat_func == 0).all(axis=1)]
@@ -139,6 +140,7 @@ def strat_funcs_by_samples(func_abun, sample_abun, rare_seqs=[],
         return(strat_func, strat_func.sum(level='function', axis=0))
     else:
         return(strat_func)
+
 
 def unstrat_funcs_only_by_samples(func_abun, sample_abun):
     '''Take in function table and study sequence abundance table. Returns
@@ -155,7 +157,7 @@ def unstrat_funcs_only_by_samples(func_abun, sample_abun):
         sample_funcs.append(func_abun.mul(sample_abun[sample], axis=0).sum(axis=0))
 
     # Build dataframe from these series.
-    unstrat_func = pd.concat(sample_funcs, axis=1)
+    unstrat_func = pd.concat(sample_funcs, axis=1, sort=True)
 
     unstrat_func = unstrat_func.loc[~(unstrat_func == 0).all(axis=1)]
 
