@@ -89,11 +89,15 @@ emp_prob_study_probs <- function(in_trait, in_tree, unknown_i, check_input) {
                          tree_tips=in_tree$tip.label))
 }
 
-
 # Order the trait table to match the tree tip labels. Set all tips without a value to be NA.
 unknown_tips_index <- which(! full_tree$tip.label %in% rownames(trait_values))
 unknown_tips <- full_tree$tip.label[unknown_tips_index]
 num_unknown = length(unknown_tips)
+
+# Throw error if all tips are unknown.
+if(num_unknown == length(full_tree$tip.label)) {
+  stop("None of the reference ids within the function abundance table are found within the input tree. This can occur when malformed or mismatched custom reference files are used.")
+}
 
 unknown_df <- as.data.frame(matrix(NA,
                                    nrow=num_unknown,
