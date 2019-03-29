@@ -10,21 +10,24 @@ from picrust2.util import (check_files_exist, convert_humann2_to_picrust2,
                            convert_picrust2_to_humann2_merged)
 
 CONVERSION_CHOICES = ['humann2_strat_to_picrust2',
-                      'humann2_unstrat_to_picrust2', 
+                      'humann2_unstrat_to_picrust2',
                       'picrust2_unstrat_to_humann2_split',
                       'picrust2_strat_to_humann2_split',
                       'picrust2_to_humann2_merged']
 
 parser = argparse.ArgumentParser(
 
-    description=
+    description =
     'Converts to and from PICRUSt2 function abundance table. Currently '
     'only converting to and from HUMAnN2 function tables are supported. Both '
     'stratified and unstratified tables are supported. Note that the '
     'categories like \"UNMAPPED\" in the HUMAnN2 tables will be removed '
     'if they have values of 0.',
+    epilog='''
 
-    formatter_class=argparse.RawDescriptionHelpFormatter)
+Usage example:
+convert_table.py -o output.tsv -c humann2_strat_to_picrust2 humann2_out/*.tsv
+''', formatter_class=argparse.RawDescriptionHelpFormatter)
 
 parser.add_argument('input_files', metavar='INPUT', type=str, nargs='+',
                     help='Input table to convert. If there are multiple input '
@@ -49,6 +52,7 @@ parser.add_argument('-c', '--conversion', metavar='CONVERSION', required=True,
 
 parser.add_argument('-v', '--version', default=False, action='version',
                     version='%(prog)s ' + __version__)
+
 
 def main():
 

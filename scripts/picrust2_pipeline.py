@@ -17,20 +17,36 @@ HSP_METHODS = ['mp', 'emp_prob', 'pic', 'scp', 'subtree_average']
 
 parser = argparse.ArgumentParser(
 
-    description="Wrapper for full PICRUSt2 pipeline. Will output "
-                "predictions for E.C. numbers, KEGG orthologs, and MetaCyc "
-                "pathway abundances and coverages by default. Note that this "
-                "is a convenience script and you can also run each step "
-                "individually.",
+    description="Wrapper for full PICRUSt2 pipeline. Run sequence placement "
+                "with EPA-NG and GAPPA to place study sequences (i.e. OTUs "
+                "and ASVs) into a reference tree. Then runs hidden-state "
+                "prediction with the castor R package to predict genome for "
+                "each study sequence. Metagenome profiles are then generated, "
+                "which can be optionally stratified by the contributing "
+                "sequence. Finally, pathway abundances are predicted based on "
+                "metagenome profiles. By default, output files include "
+                "predictions for EC numbers, KEGG orthologs, and MetaCyc "
+                "pathway abundances. However, this script enables users to "
+                "use custom reference and trait tables to customize analyses.",
+epilog='''
+Run full default pipeline with 10 cores (only unstratified output):
+picrust2_pipeline.py -s study_seqs.fna -i seqabun.biom -o picrust2_out --threads 10
 
-    formatter_class=argparse.RawDescriptionHelpFormatter)
+Run full default pipeline with 10 cores with stratified output (including pathway stratified output based on per-sequence contributions):
+picrust2_pipeline.py -s study_seqs.fna -i seqabun.biom -o picrust2_out --threads 10 --stratified --per_sequence_contrib
+
+Run full pipeline to generate EC number predictions for custom fungi ITS database:
+picrust2_pipeline.py -s study_seqs_ITS.fna -i seqabun_ITS.biom -o picrust2_out_ITS --ref_dir picrust2/picrust2/default_files/fungi/fungi_ref_ITS --custom_trait_tables picrust2/picrust2/default_files/fungi/ec_ITS_counts.txt.gz --marker_gene_table picrust2/picrust2/default_files/fungi/ITS_counts.txt.gz --pathway_map picrust2/picrust2/default_files/pathway_mapfiles/metacyc_path2rxn_struc_filt_fungi.txt
+
+''', formatter_class=argparse.RawDescriptionHelpFormatter)
 
 parser.add_argument('-s', '--study_fasta', metavar='PATH', required=True,
-                    type=str, help='FASTA of unaligned study sequences')
+                    type=str, help='FASTA of unaligned study sequences (i.e. '
+                                   'OTUs or ASVs).')
 
 parser.add_argument('-i', '--input', metavar='PATH', required=True, type=str,
-                    help='Input table of sequence abundances (BIOM or TSV '
-                         'format)')
+                    help='Input table of sequence abundances (BIOM, TSV or '
+                         'mothur shared file format)')
 
 parser.add_argument('-o', '--output', metavar='PATH', required=True,
                     type=str, help='Output folder for final files')

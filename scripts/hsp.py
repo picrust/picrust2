@@ -15,74 +15,72 @@ TRAIT_OPTIONS = ['16S', 'COG', 'EC', 'KO', 'PFAM', 'TIGRFAM']
 
 parser = argparse.ArgumentParser(
 
-    description="This script performs hidden state " +
-                "prediction on tips in the input tree " +
-                "with unknown trait values. Typically " +
-                "this script is used to predict the " +
-                "abundance of gene families present in " +
-                "each taxon, given a tree and a set of " +
-                "known trait values. This script " +
-                "outputs a table of trait predictions.",
+    description="This script performs hidden state prediction on tips in " +
+                "the input tree with unknown trait values. Typically this " +
+                "script is used to predict the abundance of gene families " +
+                "present in each taxon, given a tree and a set of known " +
+                "trait values. This script outputs a table of trait " +
+                "predictions.",
     epilog='''
-
 Usage example:
-hsp.py -t study.tre -i 16S -o 16S_predicted_traits
+hsp.py -t out.tre -i 16S -o 16S_predicted_traits.tsv
 
 ''', formatter_class=argparse.RawDescriptionHelpFormatter)
 
 parser.add_argument('-t', '--tree', metavar='PATH', required=True, type=str,
-                    help='The full reference tree, in newick format')
+                    help='The full reference tree with placed study sequence '
+                         '(i.e. ASVs or OTUs), in newick format.')
 
-parser.add_argument('-o', '--output', metavar='PATH', type=str,
-                    required=True, help='Output filename.')
+parser.add_argument('-o', '--output', metavar='PATH', type=str, required=True,
+                    help='Output table with predicted abundances per study '
+                         'sequence in input tree.')
 
 parser.add_argument('-i', '--in_trait', type=str.upper, choices=TRAIT_OPTIONS,
-                    help='Specifies which default trait table should be ' +
-                          'used. Use the --observed_trait_table option ' +
+                    help='Specifies which default trait table should be '
+                          'used. Use the --observed_trait_table option '
                           'to input a non-default trait table.')
 
 parser.add_argument('--observed_trait_table', metavar='PATH', type=str,
-                    help='The input trait table describing directly ' +
-                         'observed traits (e.g. sequenced genomes) in ' +
-                         'tab-delimited format. Necessary if you want to ' +
+                    help='The input trait table describing directly '
+                         'observed traits (e.g. sequenced genomes) in '
+                         'tab-delimited format. Necessary if you want to '
                          'use a custom table.')
 
 parser.add_argument('--chunk_size', default=500, type=int,
-                    help='Number of functions to run at a time on one ' +
-                         'processor. Note that you should consider how many ' +
-                         'processes you have specified before changing this ' +
-                         'option. E.g. if you specify the chunk_size to be ' +
-                         'the total number of functions, 1 processor will ' +
-                         'be used even if you specified more so the job will ' +
+                    help='Number of functions to run at a time on one '
+                         'processor. Note that you should consider how many '
+                         'processes you have specified before changing this '
+                         'option. E.g. if you specify the chunk_size to be '
+                         'the total number of functions, 1 processor will '
+                         'be used even if you specified more so the job will '
                          'be substantially slower (default: %(default)d).')
 
 parser.add_argument('-m', '--hsp_method', default='mp',
                     choices=HSP_METHODS,
                     help='HSP method to use.' +
-                    '"mp": predict discrete traits using max parsimony. ' +
-                    '"emp_prob": predict discrete traits based on empirical ' +
-                    'state probabilities across tips. "subtree_average": ' +
-                    'predict continuous traits using subtree averaging. ' +
-                    '"pic": predict continuous traits with phylogentic ' +
-                    'independent contrast. "scp": reconstruct continuous ' +
-                    'traits using squared-change parsimony (default: ' +
+                    '"mp": predict discrete traits using max parsimony. '
+                    '"emp_prob": predict discrete traits based on empirical '
+                    'state probabilities across tips. "subtree_average": '
+                    'predict continuous traits using subtree averaging. '
+                    '"pic": predict continuous traits with phylogentic '
+                    'independent contrast. "scp": reconstruct continuous '
+                    'traits using squared-change parsimony (default: '
                     '%(default)s).')
 
 parser.add_argument('-n', '--calculate_NSTI', default=False,
                     action='store_true',
-                    help='Calculate NSTI and add to output ' +
-                         'file')
+                    help='Calculate NSTI and add to output file')
 
 parser.add_argument('--check', default=False, action='store_true',
                     help='Check input trait table before HSP')
 
 parser.add_argument('-p', '--processes', default=1, type=int,
-                    help='Number of processes to run in parallel (default: ' +
+                    help='Number of processes to run in parallel (default: '
                     '%(default)d).')
 
 parser.add_argument('--seed', default=100, type=int,
-                    help='Seed to make output reproducible, which is ' +
-                         'necessary for the mp and emp_prob methods ' +
+                    help='Seed to make output reproducible, which is '
+                         'necessary for the emp_prob method '
                          '(default: %(default)d).')
 
 parser.add_argument('-v', '--version', default=False, action='version',
@@ -108,7 +106,7 @@ def main():
     # Check that input filenames exist.
     check_files_exist([args.tree, trait_table])
 
-    # No longer support outputting CIs with this script. 
+    # No longer support outputting CIs with this script.
     ci_setting = False
 
     hsp_table, ci_table = castor_hsp_workflow(tree_path=args.tree,
@@ -125,6 +123,7 @@ def main():
     make_output_dir_for_file(args.output)
     hsp_table.to_csv(path_or_buf=args.output, index_label="sequence",
                      sep="\t")
+
 
 if __name__ == "__main__":
     main()
