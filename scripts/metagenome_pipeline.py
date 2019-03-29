@@ -2,7 +2,7 @@
 
 __copyright__ = "Copyright 2018, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.1.1-b"
+__version__ = "2.1.2-b"
 
 import argparse
 from os import path
@@ -14,27 +14,32 @@ parser = argparse.ArgumentParser(
     description="Per-sample metagenome functional profiles are generated " +
                 "based on the predicted functions for each study sequence. " +
                 "Note that typically these sequences correspond to OTUs or " +
-                "ASVs. The specified sequence abundance table will be normalized " +
-                "by the predicted number of marker gene copies. Two main " +
-                "output files will be generated: one stratified and one " +
-                "non-stratified by contributing taxa",
+                "ASVs. The specified sequence abundance table will be " +
+                "normalized by the predicted number of marker gene copies " +
+                "before outputting the final files. Two main output files " +
+                "will be generated: one stratified and one non-stratified " +
+                "by contributing taxa",
 
+    epilog='''
+Usage example:
+metagenome_pipeline.py -i seqabun.biom -f predicted_EC.tsv -m predicted_16S.tsv --max_nsti 2.0 -o metagenome_out
+''',
     formatter_class=argparse.RawDescriptionHelpFormatter)
 
 parser.add_argument('-i', '--input', metavar='PATH',
                     required=True, type=str,
-                    help='Input table of sequence abundances (BIOM or TSV ' +
-                         'format)')
+                    help='Input table of sequence abundances (BIOM, TSV, or ' +
+                         'mothur shared file format).')
 
 parser.add_argument('-f', '--function', metavar='PATH',
                     required=True, type=str,
                     help='Table of predicted gene family copy numbers ' +
-                         '(output of hsp.py)')
+                         '(output of hsp.py).')
 
 parser.add_argument('-m', '--marker', metavar='PATH',
                     required=True, type=str,
                     help='Table of predicted marker gene copy numbers ' +
-                         '(output of hsp.py, typically for 16S)')
+                         '(output of hsp.py, typically for 16S).')
 
 parser.add_argument('--max_nsti', metavar='FLOAT', type=float, default=2.0,
                     help='Sequences with NSTI values above this value will ' +
@@ -63,6 +68,7 @@ parser.add_argument('-o', '--out_dir', metavar='PATH', type=str,
 parser.add_argument('-v', '--version', default=False, action='version',
                     version="%(prog)s " + __version__)
 
+
 def main():
 
     args = parser.parse_args()
@@ -72,7 +78,7 @@ def main():
 
     # Pass arguments to key function and get predicted functions
     # stratified and unstratified by genomes.
-    strat_pred, unstrat_pred = run_metagenome_pipeline(input_biom=args.input,
+    strat_pred, unstrat_pred = run_metagenome_pipeline(input_seqabun=args.input,
                                                        function=args.function,
                                                        marker=args.marker,
                                                        out_dir=args.out_dir,

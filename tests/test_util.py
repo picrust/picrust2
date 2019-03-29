@@ -9,14 +9,27 @@ from os import path
 import pandas as pd
 import hashlib
 import gzip
-from picrust2.util import (write_fasta, read_fasta, write_phylip, read_phylip,
-                           three_df_index_overlap_sort, add_descrip_col,
+from picrust2.util import (write_fasta,
+                           read_fasta,
+                           write_phylip,
+                           read_phylip,
+                           three_df_index_overlap_sort,
+                           add_descrip_col,
                            convert_humann2_to_picrust2,
                            convert_picrust2_to_humann2,
                            convert_picrust2_to_humann2_merged,
+                           read_seqabun,
                            TemporaryDirectory)
 
 from picrust2.default import default_map
+
+metagenome_pipeline_test_dir_path = path.join(path.dirname(path.abspath(__file__)),
+                                              "test_data",
+                                              "metagenome_pipeline")
+seqtab_biom = path.join(metagenome_pipeline_test_dir_path,
+                       "test_input_sequence_abun.biom")
+seqtab_msf = path.join(metagenome_pipeline_test_dir_path,
+                       "test_input_sequence_abun.msf")
 
 descrip_test_dir_path = path.join(path.dirname(path.abspath(__file__)),
                                   "test_data",
@@ -93,6 +106,17 @@ test3 = pd.DataFrame.from_dict({"e": [0, 5, 3],
 
 
 class util_test(unittest.TestCase):
+
+    def test_seqabun_reading(self):
+        '''Test that mothur shared format and BIOM tables read in
+        identically.'''
+
+        seqtab_biom_in = read_seqabun(seqtab_biom)
+
+        seqtab_msf_in = read_seqabun(seqtab_msf)
+
+        pd.testing.assert_frame_equal(seqtab_biom_in, seqtab_msf_in,
+                                      check_dtype=False)
 
     def test_read_write_fasta(self):
         '''Basic test that FASTA files are read and written correctly.'''

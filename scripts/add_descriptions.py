@@ -2,12 +2,11 @@
 
 __copyright__ = "Copyright 2018, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.1.1-b"
+__version__ = "2.1.2-b"
 
 import argparse
 from picrust2.default import default_map
 from picrust2.util import add_descrip_col, make_output_dir_for_file
-import pandas as pd
 import sys
 
 TRAIT_OPTIONS = ['METACYC', 'COG', 'EC', 'KO', 'PFAM', 'TIGRFAM']

@@ -2,7 +2,7 @@
 
 __copyright__ = "Copyright 2018, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.1.1-b"
+__version__ = "2.1.2-b"
 
 import sys
 from collections import defaultdict
@@ -482,7 +482,7 @@ def prep_pathway_df_out(in_tab, strat_index=False, num_digits=4):
     stratified format then convert them to columns.'''
 
     # Convert these returned lists of series into pandas dataframes.
-    in_tab_df = pd.concat(in_tab, axis=1)
+    in_tab_df = pd.concat(in_tab, axis=1, sort=True)
 
     # Replace all missing values (NaN)
     in_tab_df = in_tab_df.fillna(0)
@@ -817,7 +817,7 @@ def basic_strat_pathway_levels(sample_id, strat_input, minpath_map, out_dir,
                                                         unstrat_abun[pathway],
                                                         pathway)
 
-            strat_abun = pd.concat([strat_abun, strat_path_abun])
+            strat_abun = pd.concat([strat_abun, strat_path_abun], sort=True)
 
     # Return unstratified and stratified abundances and coverage scores.
     return([unstrat_abun, unstrat_cov, strat_abun])
@@ -978,7 +978,7 @@ def regroup_func_ids(in_df, is_strat, mapfile, proc):
                                     for func_subset in function_chunks)
 
     # Combine all returned DFs into a single DF.
-    raw_new_ids_combined = pd.concat(raw_new_ids_dfs)
+    raw_new_ids_combined = pd.concat(raw_new_ids_dfs, sort=True)
 
     if is_strat:
         regrouped_table = pd.pivot_table(raw_new_ids_combined,
@@ -1030,7 +1030,7 @@ def convert_func_ids(functions, strat_df, func_map):
         new_dfs += [new_df]
 
     # Concatenate these new dfs together for all input functions.
-    combined_new_df = pd.concat(new_dfs)
+    combined_new_df = pd.concat(new_dfs, sort=True)
 
     return(combined_new_df)
 

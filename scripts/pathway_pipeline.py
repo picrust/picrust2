@@ -2,7 +2,7 @@
 
 __copyright__ = "Copyright 2018, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.1.1-b"
+__version__ = "2.1.2-b"
 
 import argparse
 from picrust2.pathway_pipeline import pathway_pipeline
@@ -13,41 +13,55 @@ from os import path
 parser = argparse.ArgumentParser(
 
     description=
-    "Wrapper for MinPath to infer which pathways are present "
-    "given gene family abundances in a sample and to calculate the abundance "
-    "and coverage of these pathways. By default this script expects a table "
-    "of E.C. number abundances (as output by PICRUSt2). By default, these E.C. "
-    "numbers will first be regrouped to MetaCyc reactions, which are then "
+    "Script to infer the presence and abundances of pathways based on gene "
+    "family abundances in a sample. By default, this script expects a table "
+    "of EC number abundances (as output by PICRUSt2). However, alternative "
+    "reaction to pathways mapping files can also be specified. By default, EC "
+    "numbers are first regrouped to MetaCyc reactions, which are then "
     "linked to MetaCyc pathways through the default database.\n\n\n"
 
     "Stratified output will only be output if a stratified metagenome is "
-    "input. Note that by default, STRATIFIED "
-    "ABUNDANCES ARE BASED ON HOW MUCH THAT PREDICTED GENOME "
-    "(E.G. SEQUENCE) CONTRIBUTES TO THE COMMUNITY-WIDE ABUNDANCE, NOT THE "
-    "ABUNDANCE OF THE PATHWAY BASED ON THE PREDICTED GENES IN "
-    "THAT GENOME ALONE. In other words, a predicted genome might "
-    "be contributing a lot to the community-wide pathway "
-    "abundance simply because one required gene for that pathway "
-    "is at extremely high abundance in that genome even though no "
-    "other required genes for that pathway are present. In contrast, if you "
-    "use the --per_sequence_contrib option you will get the predicted abundance and "
-    "coverage of each pathway based on the predicted gene families WITHIN each "
-    "genome. Note that using this option will likely greatly increase runtime.",
+    "input. Please note that by default, stratified abundances are based on "
+    "how much predicted genomes (e.g. sequences) contribute to the "
+    "community-wide abundance, not the abundance of the pathway based on the "
+    "predicted genes in that genome alone. In other words, a predicted genome "
+    "might be contributing greatly to the community-wide pathway abundance "
+    "simply because one required gene for that pathway is at extremely high "
+    "abundance in that genome even though no other required genes for that "
+    "pathway are present. In contrast, the --per_sequence_contrib option "
+    "should be used to get the predicted abundance and coverage of each "
+    "pathway based on the predicted gene families WITHIN each genome. Note "
+    "that using the --per_sequence_contrib option can greatly increase "
+    "runtime.",
+epilog='''
+Usage examples:
 
-    formatter_class=argparse.RawDescriptionHelpFormatter)
+Default mapping of predicted EC number abundances to MetaCyc pathways:
+pathway_pipeline.py -i EC_metagenome_out/pred_metagenome_unstrat.tsv -o pathways_out
+
+Mapping predicted KO abundances to legacy KEGG pathways (with stratified output that represents contributions to community-wide abundances):
+pathway_pipeline.py -i KO_metagenome_out/pred_metagenome_strat.tsv -o KEGG_pathways_out --no_regroup --map picrust2/picrust2/default_files/pathway_mapfiles/KEGG_pathways_to_KO.tsv
+
+Map EC numbers to MetaCyc pathways and get stratified output corresponding to contribution of predicted gene family abundances within each predicted genome:
+pathway_pipeline.py -i EC_metagenome_out/pred_metagenome_unstrat.tsv -o pathways_out_per_seq --per_sequence_contrib --per_sequence_abun EC_metagenome_out/seqtab_norm.tsv --per_sequence_function EC_predicted.tsv
+
+
+''', formatter_class=argparse.RawDescriptionHelpFormatter)
 
 parser.add_argument('-i', '--input', metavar='IN_TABLE', required=True,
                     type=str,
-                    help='Input TSV table of gene family abundances')
+                    help='Input TSV table of gene family abundances (either '
+                         'the unstratified or stratified output of '
+                         'metagenome_pipeline.py')
 
 parser.add_argument('-o', '--out_dir', metavar='DIRECTORY', required=True,
                     type=str, help='Output folder for pathway abundance output')
 
 parser.add_argument('-m', '--map', metavar='MAP', type=str,
                     default=default_pathway_map, 
-                    help='MinPath mapfile. The default mapfile maps MetaCyc '
-                         'reactions to prokaryotic pathways '
-                         '(default: %(default)s).')
+                    help='Mapping of pathways to reactions. The default '
+                          'mapfile maps MetaCyc reactions to prokaryotic '
+                          'MetaCyc pathways (default: %(default)s).')
 
 parser.add_argument('--skip_minpath', default=False, action="store_true",
                     help='Do not run MinPath to identify which pathways are '
@@ -63,7 +77,8 @@ parser.add_argument('--intermediate', metavar='DIR', type=str, default=None,
                          'kept unless this option is set.')
 
 parser.add_argument('-p', '--proc', default=1, type=int,
-                    help='Number of processes to run (default: %(default)d).')
+                    help='Number of processes to run in parallel '
+                         '(default: %(default)d).')
 
 parser.add_argument('--no_regroup', default=False, action="store_true",
                     help='Do not regroup input gene families to reactions '

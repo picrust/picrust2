@@ -2,7 +2,7 @@
 
 __copyright__ = "Copyright 2018, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.1.1-b"
+__version__ = "2.1.2-b"
 
 import unittest
 from os import path
@@ -20,6 +20,8 @@ test_dir_path = path.join(path.dirname(path.abspath(__file__)), "test_data",
 
 seqtab_biom = path.join(test_dir_path, "test_input_sequence_abun.biom")
 seqtab_tsv = path.join(test_dir_path, "test_input_sequence_abun.tsv")
+seqtab_msf = path.join(test_dir_path, "test_input_sequence_abun.msf")
+
 func_predict = path.join(test_dir_path, "test_predicted_func.tsv")
 marker_predict = path.join(test_dir_path, "test_predicted_marker.tsv")
 
@@ -61,7 +63,7 @@ class metagenome_pipeline_test(unittest.TestCase):
         '''Test that run_metagenome_pipeline works on tsv input seqtab.'''
 
         with TemporaryDirectory() as temp_dir:
-            strat_out, unstrat_out = run_metagenome_pipeline(input_biom=seqtab_tsv,
+            strat_out, unstrat_out = run_metagenome_pipeline(input_seqabun=seqtab_tsv,
                                                              function=func_predict,
                                                              marker=marker_predict,
                                                              max_nsti=1.9,
@@ -78,7 +80,7 @@ class metagenome_pipeline_test(unittest.TestCase):
         strat_out=False.'''
 
         with TemporaryDirectory() as temp_dir:
-            strat_out, unstrat_out = run_metagenome_pipeline(input_biom=seqtab_tsv,
+            strat_out, unstrat_out = run_metagenome_pipeline(input_seqabun=seqtab_tsv,
                                                              function=func_predict,
                                                              marker=marker_predict,
                                                              max_nsti=2.1,
@@ -88,12 +90,28 @@ class metagenome_pipeline_test(unittest.TestCase):
         pd.testing.assert_frame_equal(unstrat_out, exp_unstrat_in,
                                       check_like=True)
 
+    def test_full_pipeline_unstrat_msf_when_no_strat(self):
+        '''Test that run_metagenome_pipeline works on mothur shared file input
+        seqtab when strat_out=False.'''
+
+        with TemporaryDirectory() as temp_dir:
+            strat_out, unstrat_out = run_metagenome_pipeline(input_seqabun=seqtab_msf,
+                                                             function=func_predict,
+                                                             marker=marker_predict,
+                                                             max_nsti=2.1,
+                                                             out_dir=temp_dir,
+                                                             strat_out=False)
+
+        pd.testing.assert_frame_equal(unstrat_out, exp_unstrat_in,
+                                      check_like=True)
+
+
     def test_full_pipeline_strat_biom(self):
         '''Test that run_metagenome_pipeline create corrected stratified output
         on biom input seqtab.'''
 
         with TemporaryDirectory() as temp_dir:
-            strat_out, unstrat_out = run_metagenome_pipeline(input_biom=seqtab_biom,
+            strat_out, unstrat_out = run_metagenome_pipeline(input_seqabun=seqtab_biom,
                                                              function=func_predict,
                                                              marker=marker_predict,
                                                              max_nsti=2.0,
@@ -107,7 +125,7 @@ class metagenome_pipeline_test(unittest.TestCase):
         output on biom input seqtab when strat_out=False.'''
 
         with TemporaryDirectory() as temp_dir:
-            strat_out, unstrat_out = run_metagenome_pipeline(input_biom=seqtab_biom,
+            strat_out, unstrat_out = run_metagenome_pipeline(input_seqabun=seqtab_biom,
                                                              function=func_predict,
                                                              marker=marker_predict,
                                                              max_nsti=1.8,
@@ -122,7 +140,7 @@ class metagenome_pipeline_test(unittest.TestCase):
         output on biom input seqtab.'''
 
         with TemporaryDirectory() as temp_dir:
-            strat_out, unstrat_out = run_metagenome_pipeline(input_biom=seqtab_biom,
+            strat_out, unstrat_out = run_metagenome_pipeline(input_seqabun=seqtab_biom,
                                                              function=func_predict,
                                                              marker=marker_predict,
                                                              max_nsti=2.1,
@@ -232,7 +250,7 @@ class rare_seqs_test(unittest.TestCase):
         rare seqs are collapsed into RARE category'''
 
         with TemporaryDirectory() as temp_dir:
-            strat_out, unstrat_out = run_metagenome_pipeline(input_biom=seqtab_tsv,
+            strat_out, unstrat_out = run_metagenome_pipeline(input_seqabun=seqtab_tsv,
                                                              function=func_predict,
                                                              marker=marker_predict,
                                                              max_nsti=2.1,

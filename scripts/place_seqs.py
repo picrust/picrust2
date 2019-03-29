@@ -2,7 +2,7 @@
 
 __copyright__ = "Copyright 2018, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.1.1-b"
+__version__ = "2.1.2-b"
 
 import argparse
 from picrust2.place_seqs import place_seqs_pipeline
@@ -11,14 +11,17 @@ from picrust2.util import make_output_dir, TemporaryDirectory
 
 parser = argparse.ArgumentParser(
 
-    description="Wrapper to prep tree before HSP steps. Requires unaligned " +
-                "FASTA of study sequences. Users can specify a non-default " +
-                "reference fasta and treefile if needed. Note that typically " +
-                "the input study sequences are representive sequences of " +
-                "operational taxonomic units or amplicon sequence variants.",
+    description="Script to run EPA-NG and GAPPA to place study sequences "
+                "(i.e. OTUs or ASVs) into a reference tree. This is "
+                "typically done to prep for subsequent hidden-state "
+                "prediction with PICRUSt2. Requires unaligned FASTA of study "
+                "sequences. Users can specify a non-default reference fasta "
+                "and treefile if needed.",
+epilog='''
+Usage example:
+place_seqs.py -s study_seqs.fna -o placed_seqs.tre --threads 1 --intermediate placement_working
 
-    formatter_class=argparse.RawDescriptionHelpFormatter)
-
+''', formatter_class=argparse.RawDescriptionHelpFormatter)
 
 parser.add_argument('-s', '--study_fasta', metavar='PATH', required=True,
                     type=str, help='FASTA of unaligned study sequences')
