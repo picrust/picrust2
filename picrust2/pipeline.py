@@ -173,7 +173,7 @@ def full_pipeline(study_fasta,
 
         # Run marker on only 1 processor.
         if func == "marker":
-            hsp_cmd += ["--processes", 1] 
+            hsp_cmd += ["--processes", "1"] 
         else:
             hsp_cmd += ["--processes", str(threads)] 
 

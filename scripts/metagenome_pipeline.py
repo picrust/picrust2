@@ -78,7 +78,7 @@ def main():
 
     # Pass arguments to key function and get predicted functions
     # stratified and unstratified by genomes.
-    strat_pred, unstrat_pred = run_metagenome_pipeline(input_biom=args.input,
+    strat_pred, unstrat_pred = run_metagenome_pipeline(input_seqabun=args.input,
                                                        function=args.function,
                                                        marker=args.marker,
                                                        out_dir=args.out_dir,
