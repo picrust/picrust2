@@ -5,7 +5,7 @@ __license__ = "GPL"
 __version__ = "2.1.1-b"
 
 from os import makedirs, chmod
-from os.path import abspath, dirname, isdir, join, exists
+from os.path import abspath, dirname, isdir, join, exists, splitext
 from collections import defaultdict
 from subprocess import call
 import stat
@@ -14,6 +14,7 @@ import weakref as _weakref
 import warnings as _warnings
 import pandas as pd
 import numpy as np
+import biom
 import tempfile
 import gzip
 import sys
@@ -236,12 +237,12 @@ def system_call_check(cmd, print_out=False, print_stderr=False):
 
             # Print out stdout and stderr.
             with open(stdout_file, 'r') as f:
-                print("\nSTDOUT of failed command:", file=sys.stderr)
-                print(f.read(), file=sys.stderr)
+                print("\nStandard output of failed command:", file=sys.stderr)
+                print("\"" + f.read() + "\"", file=sys.stderr)
 
             with open(stderr_file, 'r') as f:
-                print("\nSTDERR of failed command:", file=sys.stderr)
-                print(f.read(), file=sys.stderr)
+                print("\nStandard error of failed command:", file=sys.stderr)
+                print("\"" + f.read() + "\"", file=sys.stderr)
 
             sys.exit(1)
 
@@ -251,6 +252,7 @@ def system_call_check(cmd, print_out=False, print_stderr=False):
                 print(f.read(), file=sys.stderr)
 
     return(return_value)
+
 
 def make_output_dir(dirpath, strict=False):
     """Make an output directory if it doesn't exist
@@ -305,10 +307,45 @@ def biom_to_pandas_df(biom_tab):
 
     # Note this is based on James Morton's blog post:
     # http://mortonjt.blogspot.ca/2016/07/behind-scenes-with-biom-tables.html)
-
     return(pd.DataFrame(np.array(biom_tab.matrix_data.todense()),
                                  index=biom_tab.ids(axis='observation'),
                                  columns=biom_tab.ids(axis='sample')))
+
+
+def read_seqabun(infile):
+    '''Will read in sequence abundance table in either TSV, BIOM, or mothur
+    shared format.'''
+
+    # First check extension of input file. If extension is "biom" then read in
+    # as BIOM table and return. This is expected to be the most common input.
+    in_name, in_ext = splitext(infile)
+    if in_ext == "biom":
+        return(biom_to_pandas_df(biom.load_table(infile)))
+
+    # Next check if input file is a mothur shared file or not by read in first
+    # row only.
+    mothur_format = False
+    try:
+        in_test = pd.read_table(filepath_or_buffer=infile, sep="\t", nrows=1)
+        in_test_col = list(in_test.columns.values) 
+        if len(in_test_col) >= 4 and (in_test_col[0] == "label" and \
+                                      in_test_col[1] == "Group" and \
+                                      in_test_col[2] == "numOtus"):
+            mothur_format = True
+    except Exception:
+        pass
+
+    # If identified to be mothur format then remove extra columns, set "Group"
+    # to be index (i.e. row) names and then transpose.
+    if mothur_format:
+        input_seqabun = pd.read_table(filepath_or_buffer=infile, sep="\t")
+        input_seqabun.drop(labels=["label", "numOtus"], axis=1, inplace=True)
+        input_seqabun.set_index(keys="Group", drop=True, inplace=True, 
+                                verify_integrity=True)
+        input_seqabun.index.name = None
+        return(input_seqabun.transpose())
+    else:
+        return(biom_to_pandas_df(biom.load_table(infile)))
 
 
 def three_df_index_overlap_sort(df1, df2, df3):
@@ -412,7 +449,7 @@ def convert_humann2_to_picrust2(infiles, outfile, stratified):
     index_name = infile_index_names[0]
 
     # Concatenate all sample dfs into a single table.
-    humann2_combined = pd.concat(humann2_samples, axis=1)
+    humann2_combined = pd.concat(humann2_samples, axis=1, sort=True)
 
     # Fill in zeros for missing data.
     humann2_combined = humann2_combined.fillna(0)
@@ -524,7 +561,7 @@ def convert_picrust2_to_humann2(infiles, outfolder, stratified):
         in_tab2 = set_picrust2_tab_index(in_tab2)
 
         # Concatenate these tables.
-        in_tab = pd.concat([in_tab1, in_tab2])
+        in_tab = pd.concat([in_tab1, in_tab2], sort=True)
 
     # Determine name of first column of output table.
     if index_name == 'pathway':
@@ -590,7 +627,7 @@ def convert_picrust2_to_humann2_merged(infiles, outfile):
 
         # Concantenate into new table if it exists already.
         if new_tab is not None:
-            new_tab = pd.concat([new_tab, in_table], axis=1)
+            new_tab = pd.concat([new_tab, in_table], axis=1, sort=True)
         else:
             new_tab = in_table
 

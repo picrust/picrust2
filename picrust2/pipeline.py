@@ -6,11 +6,10 @@ __version__ = "2.1.1-b"
 
 from os import path
 import sys
-import biom
 from picrust2.default import default_tables
 from picrust2.place_seqs import identify_ref_files
 from picrust2.util import (make_output_dir, check_files_exist, read_fasta,
-                           system_call_check)
+                           system_call_check, read_seqabun)
 
 
 def full_pipeline(study_fasta,
@@ -75,7 +74,6 @@ def full_pipeline(study_fasta,
         func_tables = default_tables
 
     else:
-
         # Split paths to input custom trait tables and take the basename to be
         # the function id. The first table specified is assumed to be used
         # for inferring pathways.
@@ -112,7 +110,7 @@ def full_pipeline(study_fasta,
     check_files_exist(files2check)
 
     # Check that sequence names in FASTA overlap with input table.
-    check_overlapping_seqs(study_fasta, input_table)
+    check_overlapping_seqs(study_fasta, input_table, verbose)
 
     if verbose:
         print("Placing sequences onto reference tree", file=sys.stderr)
@@ -144,8 +142,12 @@ def full_pipeline(study_fasta,
     # Get predictions for all specified functions and keep track of outfiles.
     predicted_funcs = {}
 
-    for func in funcs:
+    # Make sure marker database is first in the list. This is because this will
+    # be run on a single core and so will be easier to identify any errors
+    # if the program exits when working on this function type.
+    funcs.insert(0, funcs.pop(funcs.index("marker")))
 
+    for func in funcs:
         # Change output filename for NSTI and non-NSTI containing files.
         hsp_outfile = path.join(output_folder, func + "_predicted")
 
@@ -163,12 +165,17 @@ def full_pipeline(study_fasta,
                    "--output", hsp_outfile,
                    "--observed_trait_table", func_tables[func],
                    "--hsp_method", hsp_method,
-                   "--processes", str(threads),
                    "--seed", "100"]
 
         # Add flags to command if specified.
         if func == "marker" and not skip_nsti:
             hsp_cmd.append("--calculate_NSTI")
+
+        # Run marker on only 1 processor.
+        if func == "marker":
+            hsp_cmd += ["--processes", 1] 
+        else:
+            hsp_cmd += ["--processes", str(threads)] 
 
         system_call_check(hsp_cmd, print_out=verbose)
 
@@ -296,22 +303,25 @@ def full_pipeline(study_fasta,
     return(func_output, pathway_outfiles)
 
 
-def check_overlapping_seqs(in_seq, in_tab):
+def check_overlapping_seqs(in_seq, in_tab, verbose):
     '''Check that ASV ids overlap between the input FASTA and sequence
     abundance table. Will throw an error if none overlap and will otherwise
     print number of overlapping ids to STDERR.'''
 
     FASTA_ASVs = set(read_fasta(in_seq).keys())
 
-    BIOM_ASVs = set(biom.load_table(in_tab).ids(axis='observation'))
+    table_ASVs = set(read_seqabun(in_tab).index.values)
 
-    num_ASV_overlap = len(BIOM_ASVs.intersection(FASTA_ASVs))
+    num_ASV_overlap = len(table_ASVs.intersection(FASTA_ASVs))
 
     # Throw error if 0 ASVs overlap between the two files.
     if num_ASV_overlap == 0:
         sys.exit("Stopping - no ASV ids overlap between input FASTA and "
                  "sequence abundance table")
 
-    # Otherwise print to STDER how many ASVs overlap between the two files.
-    print(str(num_ASV_overlap) + " of " + str(len(BIOM_ASVs)) + " sequence "
-          "ids overlap between input table and FASTA.\n", file=sys.stderr)
+    # Otherwise print to STDERR how many ASVs overlap between the two files
+    # if verbose set.
+    if verbose:
+        print(str(num_ASV_overlap) + " of " + str(len(table_ASVs)) +
+              " sequence ids overlap between input table and FASTA.\n",
+              file=sys.stderr)
