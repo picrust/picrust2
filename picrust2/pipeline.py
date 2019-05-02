@@ -6,7 +6,8 @@ __version__ = "2.1.2-b"
 
 from os import path
 import sys
-from picrust2.default import default_tables
+from picrust2.default import (default_tables, default_pathway_map,
+                              default_ref_dir)
 from picrust2.place_seqs import identify_ref_files
 from picrust2.util import (make_output_dir, check_files_exist, read_fasta,
                            system_call_check, read_seqabun)
@@ -103,6 +104,14 @@ def full_pipeline(study_fasta,
     if not no_pathways:
         files2check.append(pathway_map)
 
+        # Throw warning if default pathway mapfile used with non-default
+        # reference files.
+        if pathway_map == default_pathway_map and ref_dir != default_ref_dir:
+            print("Warning - non-default reference files specified with "
+                  "default pathway mapfile of prokaryote-specific MetaCyc "
+                  "pathways (--pathway_map option). This usage may be "
+                  "unintended.", file=sys.stderr)
+
         if not no_regroup:
             files2check.append(regroup_map)
 
@@ -173,9 +182,9 @@ def full_pipeline(study_fasta,
 
         # Run marker on only 1 processor.
         if func == "marker":
-            hsp_cmd += ["--processes", "1"] 
+            hsp_cmd += ["--processes", "1"]
         else:
-            hsp_cmd += ["--processes", str(threads)] 
+            hsp_cmd += ["--processes", str(threads)]
 
         system_call_check(hsp_cmd, print_out=verbose)
 
