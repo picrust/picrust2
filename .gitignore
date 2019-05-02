@@ -8,3 +8,4 @@ testing_datasets/
 picrust2/default_files/prokaryotic/untracked/
 example_files/old/
 tests/test_data/pathway_pipeline/per_seq_contrib_input/humann2_run/humann2_raw_output
+picrust2/default_files/prokaryotic/pro_ref/pro_ref.fna.COPY
