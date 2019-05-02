@@ -83,6 +83,7 @@ class workflow_test(unittest.TestCase):
                               " -r " + test_ref_dir +
                               " --custom_trait_tables " + test_known_traits +
                               " --marker_gene_table " + test_known_marker +
+                              " --reaction_func " + test_known_traits +
                               " --max_nsti 1.9" +
                               " --min_reads 2" +
                               " --min_samples 2" +

@@ -90,6 +90,16 @@ parser.add_argument('--pathway_map', metavar='MAP', type=str,
                          'reactions to prokaryotic pathways '
                          '(default: %(default)s).')
 
+parser.add_argument('--reaction_func', metavar='MAP', type=str, default="EC",
+                    help='Functional database to use as reactions for '
+                         'inferring pathway abundances (default: '
+                         '%(default)s). This should be either the short-form '
+                         'of the database as specified in --in_traits, or the '
+                         'path to the file as would be specified for '
+                         '--custom_trait_tables. Note that when functions '
+                         'besides the default EC numbers are used typically '
+                         'the --no_regroup option would also be set.')
+
 parser.add_argument('--no_pathways', default=False, action='store_true',
                     help='Flag to indicate that pathways should NOT be '
                          'inferred (otherwise they will be inferred by '
@@ -196,6 +206,7 @@ def main():
                                                     custom_trait_tables=args.custom_trait_tables,
                                                     marker_gene_table=args.marker_gene_table,
                                                     pathway_map=args.pathway_map,
+                                                    rxn_func=args.reaction_func,
                                                     no_pathways=args.no_pathways,
                                                     regroup_map=args.regroup_map,
                                                     skip_minpath=args.skip_minpath,
@@ -213,7 +224,9 @@ def main():
 
     # Print out elapsed time.
     elapsed_time = time.time() - start_time
-    print("Completed PICRUSt2 pipeline in " + "%.2f" % elapsed_time + " seconds.")
+    print("Completed PICRUSt2 pipeline in " + "%.2f" % elapsed_time +
+          " seconds.", file=sys.stderr)
+
 
 if __name__ == "__main__":
     main()

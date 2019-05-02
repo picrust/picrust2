@@ -22,6 +22,7 @@ def full_pipeline(study_fasta,
                   custom_trait_tables,
                   marker_gene_table,
                   pathway_map,
+                  rxn_func,
                   no_pathways,
                   regroup_map,
                   no_regroup,
@@ -66,22 +67,13 @@ def full_pipeline(study_fasta,
                 sys.exit("Error - specified category " + func + " is not " +
                          "one of the default categories.")
 
-        # Add EC to this set if pathways are to be predicted.
-        if "EC" not in funcs and not no_pathways:
-            funcs.append("EC")
-
-        rxn_func = "EC"
-
         func_tables = default_tables
 
     else:
         # Split paths to input custom trait tables and take the basename to be
-        # the function id. The first table specified is assumed to be used
-        # for inferring pathways.
+        # the function id.
         funcs = []
         func_tables = {}
-
-        table_i = 0
 
         for custom in custom_trait_tables.split(","):
 
@@ -89,9 +81,15 @@ def full_pipeline(study_fasta,
             funcs.append(func_id)
             func_tables[func_id] = custom
 
-            if table_i == 0:
-                rxn_func = func_id
-                table_i += 1
+    # Add reaction function to be in set of gene families if it is not already
+    # and as long as pathways are also to be predicted.
+    if rxn_func not in funcs and not no_pathways:
+        orig_rxn_func = rxn_func
+        rxn_func = path.splitext(path.basename(rxn_func))[0]
+        funcs.append(rxn_func)
+
+        if rxn_func not in func_tables:
+            func_tables[rxn_func] = orig_rxn_func
 
     # Append marker as well, since this also needs to be run.
     funcs.append("marker")
