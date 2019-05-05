@@ -46,7 +46,9 @@ default_tables = {"16S": path.join(prokaryotic_dir, "16S.txt.gz"),
 
                   "PFAM": path.join(prokaryotic_dir, "pfam.txt.gz"),
 
-                  "TIGRFAM": path.join(prokaryotic_dir, "tigrfam.txt.gz")}
+                  "TIGRFAM": path.join(prokaryotic_dir, "tigrfam.txt.gz"),
+
+                  "PHENO": path.join(prokaryotic_dir, "pheno.txt.gz")}
 
 
 # Initialize default mapfiles to be used with add_descriptions.py
