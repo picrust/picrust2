@@ -8,10 +8,11 @@ import unittest
 from os import path
 import pandas as pd
 import biom
-from picrust2.util import biom_to_pandas_df, TemporaryDirectory
+from picrust2.util import TemporaryDirectory
 from picrust2.metagenome_pipeline import (run_metagenome_pipeline,
                                           norm_by_marker_copies,
-                                          calc_weighted_nsti, id_rare_seqs,
+                                          calc_weighted_nsti,
+                                          id_rare_seqs,
                                           drop_tips_by_nsti)
 
 # Set paths to test files.
@@ -153,7 +154,7 @@ class metagenome_pipeline_test(unittest.TestCase):
     def test_norm_by_marker_copies(self):
         '''Test that expected normalized sequence abundance table generated.'''
 
-        seqtab_in = biom_to_pandas_df(biom.load_table(seqtab_biom))
+        seqtab_in = biom.load_table(seqtab_biom).to_dataframe(dense=True)
 
         # Get output index labels in same order as expected.
         seqtab_in = seqtab_in.reindex(exp_norm_in.index)
@@ -229,7 +230,7 @@ class rare_seqs_test(unittest.TestCase):
         '''Check that correct sequences are identified as rare when a cut-off
         of 4 reads is used.'''
 
-        seqtab_in = biom_to_pandas_df(biom.load_table(seqtab_biom))
+        seqtab_in = biom.load_table(seqtab_biom).to_dataframe(dense=True)
 
         rare_seqs = id_rare_seqs(seqtab_in, 4, 1)
 
@@ -239,10 +240,10 @@ class rare_seqs_test(unittest.TestCase):
         '''Check that correct sequences are identified as rare when a cut-off
         of 2 samples is used.'''
 
-        seqtab_in = biom_to_pandas_df(biom.load_table(seqtab_biom))
+        seqtab_in = biom.load_table(seqtab_biom).to_dataframe(dense=True)
 
         rare_seqs = id_rare_seqs(seqtab_in, 1, 2)
-
+        
         self.assertSetEqual(set(rare_seqs), set(["2558860574", "2571042244"]))
 
     def test_full_pipeline_strat_tsv_rare_category(self):
