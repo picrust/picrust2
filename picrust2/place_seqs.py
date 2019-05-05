@@ -1,11 +1,13 @@
 #!/usr/bin/env python
 
-__copyright__ = "Copyright 2018, The PICRUSt Project"
+__copyright__ = "Copyright 2018-2019, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.1.2-b"
+__version__ = "2.1.3-b"
 
 import sys
 from os import path, chdir, getcwd
+import json
+import numpy as np
 from picrust2.util import (system_call_check, make_output_dir, read_fasta,
                            read_phylip, write_fasta, write_phylip,
                            read_stockholm)
@@ -54,7 +56,7 @@ def place_seqs_pipeline(study_fasta,
                chunk_size=chunk_size, threads=threads, out_dir=epa_out_dir,
                print_cmds=print_cmds)
 
-    jplace_outfile = path.join(epa_out_dir, "epa_result.jplace")
+    jplace_outfile = path.join(epa_out_dir, "epa_result_parsed.jplace")
 
     gappa_jplace_to_newick(jplace_file=jplace_outfile, outfile=out_tree,
                            print_cmds=print_cmds)
@@ -120,12 +122,22 @@ def run_epa_ng(tree: str, ref_msa_fastafile: str, study_msa_fastafile: str,
 
     make_output_dir(out_dir)
 
-    epa_ng_command = ["epa-ng", "--tree", tree, "--ref-msa", ref_msa_fastafile,
-                      "--query", study_msa_fastafile, "--chunk-size",
-                      str(chunk_size), "-T", str(threads), "-m", model, "-w",
-                      out_dir, "--filter-acc-lwr", "0.5", "--filter-max", "20"]
+    epa_ng_command = ["epa-ng", "--tree", tree,
+                      "--ref-msa", ref_msa_fastafile,
+                      "--query", study_msa_fastafile,
+                      "--chunk-size", str(chunk_size),
+                      "-T", str(threads),
+                      "-m", model,
+                      "-w", out_dir,
+                      "--filter-acc-lwr", "0.99",
+                      "--filter-max", "100"]
 
     system_call_check(epa_ng_command, print_out=print_cmds)
+
+    # Parse jplace file so that output is reprodicible.
+    jplace_orig = path.join(out_dir, "epa_result.jplace")
+    jplace_parsed = path.join(out_dir, "epa_result_parsed.jplace")
+    parse_jplace(jplace_orig, jplace_parsed)
 
 def gappa_jplace_to_newick(jplace_file: str, outfile: str, print_cmds=False):
     '''System call to gappa binary to convert jplace object to newick
@@ -213,3 +225,53 @@ def identify_ref_files(in_dir):
                  "this specified directory: " + in_dir)
 
     return(path2return)
+
+def parse_jplace(jplace_in, jplace_out):
+    '''Parse jplace file to retain only a single placement per ASV (with the
+    highest likelihood and highest edge number). Also, will order that the
+    ASVs are reported in the file alphanumerically. This is needed so that
+    GAPPA constructs a newick treefile consistently. Requires input and output
+    jplace filenames to be specified.'''
+
+    # Read in jplace file as JSON object.
+    with open(jplace_in, 'r') as f:
+        datastore = json.load(f)
+
+    # Loop through all ASV placements and parse out ASV names and info.
+    placement_names = []
+
+    for i in range(len(datastore["placements"])):
+
+        placement_names.append(datastore["placements"][i]["n"][0])
+
+        asv_placements = datastore["placements"][i]["p"]
+        
+        # For ASVs with multiple placements only retain a single placement.
+        if len(asv_placements) == 1:
+            next
+        else:
+            placement_info = np.array(asv_placements)
+
+            # First identify all indices matching the max likelihood.
+            max_lik = np.amax(placement_info[:, 1])
+
+            max_lik_i = np.where(placement_info[:, 1] == max_lik)
+
+            # Then figure out the highest edge number of all placements with
+            # this likelihood and retain only that placement.
+            max_edge_num = np.amax(placement_info[max_lik_i, 0])
+
+            placement2keep = np.where(placement_info[:, 0] == max_edge_num)[0]
+
+            if len(placement2keep) != 1:
+                sys.exit("Multiple ASVs on same edge in jplace file.")
+
+            datastore["placements"][i]["p"] = [datastore["placements"][i]["p"][placement2keep[0]]]
+
+    # Sort placements by ASV names.
+    placement_names_sorted_i = np.argsort(placement_names)
+    datastore["placements"] = [datastore["placements"][i] for i in placement_names_sorted_i]
+
+    # Write out sorted and parsed jplace object.
+    with open(jplace_out, 'w') as f:
+        json.dump(datastore, f, indent=4, sort_keys=False)

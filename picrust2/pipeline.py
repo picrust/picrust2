@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 
-__copyright__ = "Copyright 2018, The PICRUSt Project"
+__copyright__ = "Copyright 2018-2019, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.1.2-b"
+__version__ = "2.1.3-b"
 
 from os import path
 import sys
-from picrust2.default import default_tables
+from picrust2.default import (default_tables, default_pathway_map,
+                              default_ref_dir)
 from picrust2.place_seqs import identify_ref_files
 from picrust2.util import (make_output_dir, check_files_exist, read_fasta,
                            system_call_check, read_seqabun)
@@ -15,12 +16,13 @@ from picrust2.util import (make_output_dir, check_files_exist, read_fasta,
 def full_pipeline(study_fasta,
                   input_table,
                   output_folder,
-                  threads,
+                  processes,
                   ref_dir,
                   in_traits,
                   custom_trait_tables,
                   marker_gene_table,
                   pathway_map,
+                  rxn_func,
                   no_pathways,
                   regroup_map,
                   no_regroup,
@@ -65,22 +67,13 @@ def full_pipeline(study_fasta,
                 sys.exit("Error - specified category " + func + " is not " +
                          "one of the default categories.")
 
-        # Add EC to this set if pathways are to be predicted.
-        if "EC" not in funcs and not no_pathways:
-            funcs.append("EC")
-
-        rxn_func = "EC"
-
         func_tables = default_tables
 
     else:
         # Split paths to input custom trait tables and take the basename to be
-        # the function id. The first table specified is assumed to be used
-        # for inferring pathways.
+        # the function id.
         funcs = []
         func_tables = {}
-
-        table_i = 0
 
         for custom in custom_trait_tables.split(","):
 
@@ -88,9 +81,15 @@ def full_pipeline(study_fasta,
             funcs.append(func_id)
             func_tables[func_id] = custom
 
-            if table_i == 0:
-                rxn_func = func_id
-                table_i += 1
+    # Add reaction function to be in set of gene families if it is not already
+    # and as long as pathways are also to be predicted.
+    if rxn_func not in funcs and not no_pathways:
+        orig_rxn_func = rxn_func
+        rxn_func = path.splitext(path.basename(rxn_func))[0]
+        funcs.append(rxn_func)
+
+        if rxn_func not in func_tables:
+            func_tables[rxn_func] = orig_rxn_func
 
     # Append marker as well, since this also needs to be run.
     funcs.append("marker")
@@ -102,6 +101,14 @@ def full_pipeline(study_fasta,
 
     if not no_pathways:
         files2check.append(pathway_map)
+
+        # Throw warning if default pathway mapfile used with non-default
+        # reference files.
+        if pathway_map == default_pathway_map and ref_dir != default_ref_dir:
+            print("Warning - non-default reference files specified with "
+                  "default pathway mapfile of prokaryote-specific MetaCyc "
+                  "pathways (--pathway_map option). This usage may be "
+                  "unintended.", file=sys.stderr)
 
         if not no_regroup:
             files2check.append(regroup_map)
@@ -126,7 +133,7 @@ def full_pipeline(study_fasta,
                       "--study_fasta", study_fasta,
                       "--ref_dir", ref_dir,
                       "--out_tree", out_tree,
-                      "--threads", str(threads),
+                      "--processes", str(processes),
                       "--intermediate", place_seqs_intermediate,
                       "--chunk_size", str(5000)]
 
@@ -173,9 +180,9 @@ def full_pipeline(study_fasta,
 
         # Run marker on only 1 processor.
         if func == "marker":
-            hsp_cmd += ["--processes", "1"] 
+            hsp_cmd += ["--processes", "1"]
         else:
-            hsp_cmd += ["--processes", str(threads)] 
+            hsp_cmd += ["--processes", str(processes)]
 
         system_call_check(hsp_cmd, print_out=verbose)
 
@@ -245,7 +252,7 @@ def full_pipeline(study_fasta,
                                 "--out_dir", path_output_dir,
                                 "--map", pathway_map,
                                 "--intermediate", pathways_intermediate,
-                                "--proc", str(threads)]
+                                "--proc", str(processes)]
 
         if no_gap_fill:
             pathway_pipeline_cmd.append("--no_gap_fill")

@@ -1,18 +1,19 @@
 #!/usr/bin/env python
 
-__copyright__ = "Copyright 2018, The PICRUSt Project"
+__copyright__ = "Copyright 2018-2019, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.1.2-b"
+__version__ = "2.1.3-b"
 
 import unittest
 import gzip
+import hashlib
 from os import path
 from picrust2.util import read_phylip, read_fasta, TemporaryDirectory
 from picrust2.default import (default_ref_dir, default_fasta, default_tree,
-                              default_hmm, default_model) 
+                              default_hmm, default_model)
 from picrust2.place_seqs import (place_seqs_pipeline, split_ref_study_papara,
                                  run_epa_ng, gappa_jplace_to_newick,
-                                 identify_ref_files)
+                                 identify_ref_files, parse_jplace)
 
 # Set paths to test files.
 test_dir_path = path.join(path.dirname(path.abspath(__file__)), "test_data",
@@ -41,16 +42,16 @@ exp_jplace = path.join(test_dir_path, "place_seqs_output",
                        "place_seqs_working",
                        "epa_out", "epa_result.jplace")
 
+test_jplace1 = path.join(test_dir_path, "jplace_files", "epa_result1.jplace")
+
+test_jplace2 = path.join(test_dir_path, "jplace_files", "epa_result2.jplace")
+
 
 class place_seqs_tests(unittest.TestCase):
     '''Tests for place seqs pipeline (functions in picrust2/place_seqs.py)'''
 
     def test_default_md5sum(self):
         '''Test that default files match expected md5sum values.'''
-
-        from picrust2.default import (default_fasta, default_tree, default_hmm,
-                                      default_model)
-        import hashlib
 
         # Calculate md5sum for fasta and treefile respectively.
         fasta_hash = hashlib.md5()
@@ -77,6 +78,35 @@ class place_seqs_tests(unittest.TestCase):
                           'f247071837f74c156dc530736cb6d453',
                           'd50b0dac445b5243e86816dbdeadf898',
                           '478b5011ea8aeb0c720e9bb68774fabd'])
+
+
+    def test_jplace_parse(self):
+        '''Test that jplace files are being parsed consistently.'''
+
+        with TemporaryDirectory() as temp_dir:
+
+            test_jplace1_out = temp_dir + path.basename(test_jplace1) +\
+                               "_parsed"
+
+            test_jplace2_out = temp_dir + path.basename(test_jplace2) +\
+                               "_parsed"
+
+            parse_jplace(test_jplace1, test_jplace1_out)
+
+            parse_jplace(test_jplace2, test_jplace2_out)
+
+            test_jplace1_hash = hashlib.md5()
+            test_jplace2_hash = hashlib.md5()
+
+            with open(test_jplace1_out, 'rt') as out1:
+                test_jplace1_hash.update(out1.read().encode())
+
+            with open(test_jplace2_out, 'rt') as out2:
+                test_jplace2_hash.update(out2.read().encode())
+
+        self.assertEqual(test_jplace1_hash.hexdigest(),
+                         test_jplace2_hash.hexdigest())
+
 
     def test_gappa_jplace_to_newick(self):
         '''Basic test for gappa_jplace_to_newick function.'''

@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-__copyright__ = "Copyright 2018, The PICRUSt Project"
+__copyright__ = "Copyright 2018-2019, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.1.2-b"
+__version__ = "2.1.3-b"
 
 from os import makedirs, chmod
 from os.path import abspath, dirname, isdir, join, exists, splitext
@@ -302,16 +302,6 @@ def generate_temp_filename(temp_dir=None, prefix="", suffix=""):
                 next(tempfile._get_candidate_names()) + suffix))
 
 
-def biom_to_pandas_df(biom_tab):
-    '''Will convert from biom Table object to pandas dataframe.'''
-
-    # Note this is based on James Morton's blog post:
-    # http://mortonjt.blogspot.ca/2016/07/behind-scenes-with-biom-tables.html)
-    return(pd.DataFrame(np.array(biom_tab.matrix_data.todense()),
-                                 index=biom_tab.ids(axis='observation'),
-                                 columns=biom_tab.ids(axis='sample')))
-
-
 def read_seqabun(infile):
     '''Will read in sequence abundance table in either TSV, BIOM, or mothur
     shared format.'''
@@ -320,7 +310,7 @@ def read_seqabun(infile):
     # as BIOM table and return. This is expected to be the most common input.
     in_name, in_ext = splitext(infile)
     if in_ext == "biom":
-        return(biom_to_pandas_df(biom.load_table(infile)))
+        return(biom.load_table(infile).to_dataframe(dense=True))
 
     # Next check if input file is a mothur shared file or not by read in first
     # row only.
@@ -345,7 +335,7 @@ def read_seqabun(infile):
         input_seqabun.index.name = None
         return(input_seqabun.transpose())
     else:
-        return(biom_to_pandas_df(biom.load_table(infile)))
+        return(biom.load_table(infile).to_dataframe(dense=True))
 
 
 def three_df_index_overlap_sort(df1, df2, df3):

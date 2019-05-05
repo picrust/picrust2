@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-__copyright__ = "Copyright 2018, The PICRUSt Project"
+__copyright__ = "Copyright 2018-2019, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.1.2-b"
+__version__ = "2.1.3-b"
 
 import unittest
 from os import path
@@ -14,7 +14,6 @@ from picrust2.wrap_hsp import (castor_hsp_workflow,
                                castor_nsti)
 
 # Read in expected output files.
-
 test_dir_path = path.join(path.dirname(path.abspath(__file__)), "test_data",
                           "hsp")
 
@@ -151,6 +150,7 @@ class table_mdf5sum_tests(unittest.TestCase):
         cog_hash = hashlib.md5()
         pfam_hash = hashlib.md5()
         tigrfam_hash = hashlib.md5()
+        pheno_hash = hashlib.md5()
 
         with gzip.open(default_tables["16S"], 'rt') as marker_16S_in:
             marker_16S_hash.update(marker_16S_in.read().encode())
@@ -170,16 +170,21 @@ class table_mdf5sum_tests(unittest.TestCase):
         with gzip.open(default_tables["TIGRFAM"], 'rt') as tigrfam_in:
             tigrfam_hash.update(tigrfam_in.read().encode())
 
+        with gzip.open(default_tables["PHENO"], 'rt') as pheno_in:
+            pheno_hash.update(pheno_in.read().encode())
+
         obs_hash = [marker_16S_hash.hexdigest(), ec_hash.hexdigest(),
                     ko_hash.hexdigest(), cog_hash.hexdigest(),
-                    pfam_hash.hexdigest(), tigrfam_hash.hexdigest()]
+                    pfam_hash.hexdigest(), tigrfam_hash.hexdigest(),
+                    pheno_hash.hexdigest()]
 
         exp_hash = ["a0acd4dbc3501b271ade941bf308643e",
                     "85fcd6ac08ba324c6c14699fcee92725",
                     "46540c1eb6e7f22feaa50893dc74a6d7",
                     "c50eaa4565804b6fe880e81044d33276",
                     "420605c3afe98a585f4f006f8aa8c4f3",
-                    "ca5871bac44593c009b5f7838efb2772"]
+                    "ca5871bac44593c009b5f7838efb2772",
+                    "8da3d7f5be4f02898f9fd24fdb75f20e"]
 
         # Check that md5sum values match expected values.
         self.assertEqual(obs_hash, exp_hash)

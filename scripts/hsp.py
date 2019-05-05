@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-__copyright__ = "Copyright 2018, The PICRUSt Project"
+__copyright__ = "Copyright 2018-2019, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.1.2-b"
+__version__ = "2.1.3-b"
 
 import argparse
 from picrust2.wrap_hsp import castor_hsp_workflow
@@ -11,7 +11,7 @@ from picrust2.default import default_tables
 
 HSP_METHODS = ['mp', 'emp_prob', 'pic', 'scp', 'subtree_average']
 
-TRAIT_OPTIONS = ['16S', 'COG', 'EC', 'KO', 'PFAM', 'TIGRFAM']
+TRAIT_OPTIONS = ['16S', 'COG', 'EC', 'KO', 'PFAM', 'TIGRFAM', 'PHENO']
 
 parser = argparse.ArgumentParser(
 
@@ -23,7 +23,7 @@ parser = argparse.ArgumentParser(
                 "predictions.",
     epilog='''
 Usage example:
-hsp.py -t out.tre -i 16S -o 16S_predicted_traits.tsv
+hsp.py -n -t out.tre -i 16S -o 16S_predicted_and_nsti.tsv
 
 ''', formatter_class=argparse.RawDescriptionHelpFormatter)
 

@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-__copyright__ = "Copyright 2018, The PICRUSt Project"
+__copyright__ = "Copyright 2018-2019, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.1.2-b"
+__version__ = "2.1.3-b"
 
 from os import path
 
@@ -46,7 +46,9 @@ default_tables = {"16S": path.join(prokaryotic_dir, "16S.txt.gz"),
 
                   "PFAM": path.join(prokaryotic_dir, "pfam.txt.gz"),
 
-                  "TIGRFAM": path.join(prokaryotic_dir, "tigrfam.txt.gz")}
+                  "TIGRFAM": path.join(prokaryotic_dir, "tigrfam.txt.gz"),
+
+                  "PHENO": path.join(prokaryotic_dir, "pheno.txt.gz")}
 
 
 # Initialize default mapfiles to be used with add_descriptions.py

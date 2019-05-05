@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-__copyright__ = "Copyright 2018, The PICRUSt Project"
+__copyright__ = "Copyright 2018-2019, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.1.2-b"
+__version__ = "2.1.3-b"
 
 import argparse
 from picrust2.place_seqs import place_seqs_pipeline
@@ -36,8 +36,11 @@ parser.add_argument('-r', '--ref_dir', metavar='PATH', type=str,
 parser.add_argument('-o', '--out_tree', metavar='PATH', required=True,
                     type=str, help='Name of final output tree')
 
-parser.add_argument('--threads', type=int, default=1,
-                    help='Number of threads to use (default: %(default)d).')
+parser.add_argument('-p', '--processes', type=int, default=1,
+                    help='Number of processes to run in parallel (default: '
+                         '%(default)d). Note that this refers to '
+                         'multithreading rather than multiprocessing when '
+                         'running EPA-NG and GAPPA.')
 
 parser.add_argument('--intermediate', metavar='PATH', type=str, default=None,
                     help='Output folder for intermediate files (will not be ' +
@@ -66,7 +69,7 @@ def main():
         place_seqs_pipeline(study_fasta=args.study_fasta,
                             ref_dir=args.ref_dir,
                             out_tree=args.out_tree,
-                            threads=args.threads,
+                            threads=args.processes,
                             out_dir=args.intermediate,
                             chunk_size=args.chunk_size,
                             print_cmds=args.print_cmds)
@@ -76,7 +79,7 @@ def main():
                 place_seqs_pipeline(study_fasta=args.study_fasta,
                                     ref_dir=args.ref_dir,
                                     out_tree=args.out_tree,
-                                    threads=args.threads,
+                                    threads=args.processes,
                                     out_dir=temp_dir,
                                     chunk_size=args.chunk_size,
                                     print_cmds=args.print_cmds)

@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-__copyright__ = "Copyright 2018, The PICRUSt Project"
+__copyright__ = "Copyright 2018-2019, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.1.2-b"
+__version__ = "2.1.3-b"
 
 import argparse
 from os import path
@@ -51,8 +51,9 @@ parser.add_argument('-i', '--input', metavar='PATH', required=True, type=str,
 parser.add_argument('-o', '--output', metavar='PATH', required=True,
                     type=str, help='Output folder for final files')
 
-parser.add_argument('--threads', type=int, default=1,
-                    help='Number of threads to use (default: %(default)d).')
+parser.add_argument('-p', '--processes', type=int, default=1,
+                    help='Number of processes to run in parallel (default: '
+                         '%(default)d).')
 
 parser.add_argument('-r', '--ref_dir', metavar='PATH', type=str,
                     default=default_ref_dir,
@@ -89,6 +90,16 @@ parser.add_argument('--pathway_map', metavar='MAP', type=str,
                     help='MinPath mapfile. The default mapfile maps MetaCyc '
                          'reactions to prokaryotic pathways '
                          '(default: %(default)s).')
+
+parser.add_argument('--reaction_func', metavar='MAP', type=str, default="EC",
+                    help='Functional database to use as reactions for '
+                         'inferring pathway abundances (default: '
+                         '%(default)s). This should be either the short-form '
+                         'of the database as specified in --in_traits, or the '
+                         'path to the file as would be specified for '
+                         '--custom_trait_tables. Note that when functions '
+                         'besides the default EC numbers are used typically '
+                         'the --no_regroup option would also be set.')
 
 parser.add_argument('--no_pathways', default=False, action='store_true',
                     help='Flag to indicate that pathways should NOT be '
@@ -190,12 +201,13 @@ def main():
     func_outfiles, pathway_outfiles = full_pipeline(study_fasta=args.study_fasta,
                                                     input_table=args.input,
                                                     output_folder=args.output,
-                                                    threads=args.threads,
+                                                    processes=args.processes,
                                                     ref_dir=args.ref_dir,
                                                     in_traits=args.in_traits,
                                                     custom_trait_tables=args.custom_trait_tables,
                                                     marker_gene_table=args.marker_gene_table,
                                                     pathway_map=args.pathway_map,
+                                                    rxn_func=args.reaction_func,
                                                     no_pathways=args.no_pathways,
                                                     regroup_map=args.regroup_map,
                                                     skip_minpath=args.skip_minpath,
@@ -213,7 +225,9 @@ def main():
 
     # Print out elapsed time.
     elapsed_time = time.time() - start_time
-    print("Completed PICRUSt2 pipeline in " + "%.2f" % elapsed_time + " seconds.")
+    print("Completed PICRUSt2 pipeline in " + "%.2f" % elapsed_time +
+          " seconds.", file=sys.stderr)
+
 
 if __name__ == "__main__":
     main()

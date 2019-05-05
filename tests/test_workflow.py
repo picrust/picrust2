@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-__copyright__ = "Copyright 2018, The PICRUSt Project"
+__copyright__ = "Copyright 2018-2019, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.1.2-b"
+__version__ = "2.1.3-b"
 
 import unittest
 from os import path
@@ -81,8 +81,10 @@ class workflow_test(unittest.TestCase):
                               " -i " + test_seq_abun_tsv +
                               " -o " + out_dir +
                               " -r " + test_ref_dir +
+                              " -p 1" +
                               " --custom_trait_tables " + test_known_traits +
                               " --marker_gene_table " + test_known_marker +
+                              " --reaction_func " + test_known_traits +
                               " --max_nsti 1.9" +
                               " --min_reads 2" +
                               " --min_samples 2" +
