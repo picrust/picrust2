@@ -51,8 +51,9 @@ parser.add_argument('-i', '--input', metavar='PATH', required=True, type=str,
 parser.add_argument('-o', '--output', metavar='PATH', required=True,
                     type=str, help='Output folder for final files')
 
-parser.add_argument('--threads', type=int, default=1,
-                    help='Number of threads to use (default: %(default)d).')
+parser.add_argument('-p', '--processes', type=int, default=1,
+                    help='Number of processes to run in parallel (default: '
+                         '%(default)d).')
 
 parser.add_argument('-r', '--ref_dir', metavar='PATH', type=str,
                     default=default_ref_dir,
@@ -200,7 +201,7 @@ def main():
     func_outfiles, pathway_outfiles = full_pipeline(study_fasta=args.study_fasta,
                                                     input_table=args.input,
                                                     output_folder=args.output,
-                                                    threads=args.threads,
+                                                    processes=args.processes,
                                                     ref_dir=args.ref_dir,
                                                     in_traits=args.in_traits,
                                                     custom_trait_tables=args.custom_trait_tables,

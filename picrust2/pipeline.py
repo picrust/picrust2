@@ -16,7 +16,7 @@ from picrust2.util import (make_output_dir, check_files_exist, read_fasta,
 def full_pipeline(study_fasta,
                   input_table,
                   output_folder,
-                  threads,
+                  processes,
                   ref_dir,
                   in_traits,
                   custom_trait_tables,
@@ -133,7 +133,7 @@ def full_pipeline(study_fasta,
                       "--study_fasta", study_fasta,
                       "--ref_dir", ref_dir,
                       "--out_tree", out_tree,
-                      "--threads", str(threads),
+                      "--processes", str(processes),
                       "--intermediate", place_seqs_intermediate,
                       "--chunk_size", str(5000)]
 
@@ -182,7 +182,7 @@ def full_pipeline(study_fasta,
         if func == "marker":
             hsp_cmd += ["--processes", "1"]
         else:
-            hsp_cmd += ["--processes", str(threads)]
+            hsp_cmd += ["--processes", str(processes)]
 
         system_call_check(hsp_cmd, print_out=verbose)
 
@@ -252,7 +252,7 @@ def full_pipeline(study_fasta,
                                 "--out_dir", path_output_dir,
                                 "--map", pathway_map,
                                 "--intermediate", pathways_intermediate,
-                                "--proc", str(threads)]
+                                "--proc", str(processes)]
 
         if no_gap_fill:
             pathway_pipeline_cmd.append("--no_gap_fill")

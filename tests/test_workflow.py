@@ -81,6 +81,7 @@ class workflow_test(unittest.TestCase):
                               " -i " + test_seq_abun_tsv +
                               " -o " + out_dir +
                               " -r " + test_ref_dir +
+                              " -p 1" +
                               " --custom_trait_tables " + test_known_traits +
                               " --marker_gene_table " + test_known_marker +
                               " --reaction_func " + test_known_traits +

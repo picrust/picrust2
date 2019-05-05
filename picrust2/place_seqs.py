@@ -129,7 +129,7 @@ def run_epa_ng(tree: str, ref_msa_fastafile: str, study_msa_fastafile: str,
                       "-T", str(threads),
                       "-m", model,
                       "-w", out_dir,
-                      "--filter-acc-lwr", "0.5",
+                      "--filter-acc-lwr", "0.99",
                       "--filter-max", "100"]
 
     system_call_check(epa_ng_command, print_out=print_cmds)
