@@ -3,7 +3,7 @@
 from setuptools import setup
 from glob import glob
 
-__copyright__ = "Copyright 2018, The PICRUSt Project"
+__copyright__ = "Copyright 2018-2019, The PICRUSt Project"
 __license__ = "GPL"
 __version__ = "2.1.3-b"
 __maintainer__ = "Gavin Douglas"
