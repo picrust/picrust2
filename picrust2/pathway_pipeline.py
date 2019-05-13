@@ -514,7 +514,7 @@ def read_metagenome_input(filename):
     value for whether the table is in stratified format.'''
 
     # Read in input file as pandas dataframe.
-    input_df = pd.read_table(filename, sep="\t")
+    input_df = pd.read_csv(filename, sep="\t")
 
     # Check that required column is present:
     if "function" not in input_df.columns:
@@ -635,7 +635,7 @@ def per_sequence_contrib_levels(sequence_abun, sequence_func,
                                 regroup_map, print_opt=False):
 
     # Read in function and sequence abundance tables.
-    study_seq_counts = pd.read_table(sequence_abun, sep="\t", index_col=0)
+    study_seq_counts = pd.read_csv(sequence_abun, sep="\t", index_col=0)
 
     # Index name should be "normalized" or throw error.
     if study_seq_counts.index.name != "normalized":
@@ -648,7 +648,7 @@ def per_sequence_contrib_levels(sequence_abun, sequence_func,
     study_seq_counts.index.name = "sequence"
 
     # Read in predicted function abundances by sequence.
-    pred_function = pd.read_table(sequence_func, sep="\t",
+    pred_function = pd.read_csv(sequence_func, sep="\t",
                                   index_col="sequence")
 
     # Drop metadata_NSTI column if it in this table.

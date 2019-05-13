@@ -40,22 +40,22 @@ exp_strat_rare = path.join(test_dir_path, "metagenome_out",
 exp_norm = path.join(test_dir_path, "metagenome_out", "seqtab_norm.tsv")
 
 # Read in test inputs and expected files.
-func_predict_in = pd.read_table(func_predict, sep="\t", index_col="sequence")
-marker_predict_in = pd.read_table(marker_predict, sep="\t",
+func_predict_in = pd.read_csv(func_predict, sep="\t", index_col="sequence")
+marker_predict_in = pd.read_csv(marker_predict, sep="\t",
                                   index_col="sequence")
 
-exp_strat_in = pd.read_table(exp_strat, sep="\t")
+exp_strat_in = pd.read_csv(exp_strat, sep="\t")
 exp_strat_in = exp_strat_in.set_index(["function", "sequence"])
 
-exp_strat_in_rare = pd.read_table(exp_strat_rare, sep="\t")
+exp_strat_in_rare = pd.read_csv(exp_strat_rare, sep="\t")
 exp_strat_in_rare = exp_strat_in_rare.set_index(["function", "sequence"])
 
 
-exp_unstrat_in = pd.read_table(exp_unstrat, sep="\t", index_col="function")
+exp_unstrat_in = pd.read_csv(exp_unstrat, sep="\t", index_col="function")
 
-exp_norm_in = pd.read_table(exp_norm, sep="\t", index_col="normalized")
+exp_norm_in = pd.read_csv(exp_norm, sep="\t", index_col="normalized")
 
-nsti_in = pd.read_table(nsti_in_path, sep="\t", index_col="sequence")
+nsti_in = pd.read_csv(nsti_in_path, sep="\t", index_col="sequence")
 
 
 class metagenome_pipeline_test(unittest.TestCase):

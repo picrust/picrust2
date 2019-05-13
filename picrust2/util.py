@@ -316,7 +316,7 @@ def read_seqabun(infile):
     # row only.
     mothur_format = False
     try:
-        in_test = pd.read_table(filepath_or_buffer=infile, sep="\t", nrows=1)
+        in_test = pd.read_csv(filepath_or_buffer=infile, sep="\t", nrows=1)
         in_test_col = list(in_test.columns.values) 
         if len(in_test_col) >= 4 and (in_test_col[0] == "label" and \
                                       in_test_col[1] == "Group" and \
@@ -328,7 +328,7 @@ def read_seqabun(infile):
     # If identified to be mothur format then remove extra columns, set "Group"
     # to be index (i.e. row) names and then transpose.
     if mothur_format:
-        input_seqabun = pd.read_table(filepath_or_buffer=infile, sep="\t")
+        input_seqabun = pd.read_csv(filepath_or_buffer=infile, sep="\t")
         input_seqabun.drop(labels=["label", "numOtus"], axis=1, inplace=True)
         input_seqabun.set_index(keys="Group", drop=True, inplace=True, 
                                 verify_integrity=True)
@@ -393,9 +393,9 @@ def add_descrip_col(inputfile, mapfile, in_df=False):
     if in_df:
         function_tab = inputfile
     else:
-        function_tab = pd.read_table(inputfile, sep="\t")
+        function_tab = pd.read_csv(inputfile, sep="\t")
     
-    map_tab = pd.read_table(mapfile, sep="\t", index_col=0, header=None,
+    map_tab = pd.read_csv(mapfile, sep="\t", index_col=0, header=None,
                             names=["function", "description"])
 
     # Check to see if any of the mapfile row indices are in the function table
@@ -422,7 +422,7 @@ def convert_humann2_to_picrust2(infiles, outfile, stratified):
 
     # Loop over all sample infiles and add their data to this list.
     for infile in infiles:
-        humann2_samples.append(pd.read_table(infile, sep="\t", index_col=0))
+        humann2_samples.append(pd.read_csv(infile, sep="\t", index_col=0))
 
     # Get the index name for each table and make sure they are identical.
     infile_index_names = []
@@ -486,7 +486,7 @@ def convert_picrust2_to_humann2(infiles, outfolder, stratified):
             sys.exit('Stopping - only expected one input file when converting '
                      'from PICRUSt2 unstratified table to HUMAnN2 format')
 
-        in_tab = pd.read_table(infiles[0], sep="\t", index_col=0)
+        in_tab = pd.read_csv(infiles[0], sep="\t", index_col=0)
 
         # Double-check that this table isn't stratified.
         if 'sequence' in in_tab.columns:
@@ -505,8 +505,8 @@ def convert_picrust2_to_humann2(infiles, outfolder, stratified):
                      'HUMAnN2 stratified format')
 
         # Read in both input tables.
-        in_tab1 = pd.read_table(infiles[0], sep="\t")
-        in_tab2 = pd.read_table(infiles[1], sep="\t")
+        in_tab1 = pd.read_csv(infiles[0], sep="\t")
+        in_tab2 = pd.read_csv(infiles[1], sep="\t")
 
         # Make sure that only 1 input table is stratified.
         strat_table_count = 0
@@ -597,7 +597,7 @@ def convert_picrust2_to_humann2_merged(infiles, outfile):
         
     for infile in infiles:
 
-        in_table = pd.read_table(infile, sep="\t")
+        in_table = pd.read_csv(infile, sep="\t")
 
         infile_index_names.append(in_table.columns[0])
 

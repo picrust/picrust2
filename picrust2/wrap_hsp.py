@@ -26,7 +26,7 @@ def castor_hsp_workflow(tree_path,
     a single table of predictions and also a table of CIs (if specified).'''
 
     # Read in trait table as pandas dataframe.
-    trait_tab = pd.read_table(trait_table_path, sep="\t", index_col="assembly",
+    trait_tab = pd.read_csv(trait_table_path, sep="\t", index_col="assembly",
                               dtype={'assembly' : str})
 
     # Calculate NSTI values if option set.
@@ -126,14 +126,14 @@ def castor_hsp_wrapper(tree_path, trait_tab, hsp_method, calc_ci=False,
 
         # Load the output into Table objects
         try:
-            asr_table = pd.read_table(filepath_or_buffer=output_count_path,
+            asr_table = pd.read_csv(filepath_or_buffer=output_count_path,
                                   sep="\t", index_col="sequence")
         except IOError:
             raise ValueError("Cannot read in expected output file" +
                             output_ci_path)
 
         if calc_ci:
-            asr_ci_table = pd.read_table(filepath_or_buffer=output_ci_path,
+            asr_ci_table = pd.read_csv(filepath_or_buffer=output_ci_path,
                                   sep="\t", index_col="sequence")
         else:
             asr_ci_table = None
@@ -168,7 +168,7 @@ def castor_nsti(tree_path,
                                     nsti_tmp_out]))
 
         # Read in calculated NSTI values.
-        nsti_out = pd.read_table(nsti_tmp_out, sep="\t", index_col="sequence")
+        nsti_out = pd.read_csv(nsti_tmp_out, sep="\t", index_col="sequence")
 
     # Make sure that the table has the correct number of rows.
     if len(known_tips) != nsti_out.shape[0]:

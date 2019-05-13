@@ -32,19 +32,19 @@ hsp_scp_pred = path.join(test_dir_path, "hsp_output", "scp_pred_out.tsv")
 hsp_subtree_average_pred = path.join(test_dir_path, "hsp_output",
                                      "subtree_average_pred_out.tsv")
 
-hsp_mp_pred_in = pd.read_table(hsp_mp_pred, sep="\t", index_col="sequence")
+hsp_mp_pred_in = pd.read_csv(hsp_mp_pred, sep="\t", index_col="sequence")
 
-hsp_mp_pred_in_nsti = pd.read_table(hsp_mp_pred_nsti, sep="\t",
+hsp_mp_pred_in_nsti = pd.read_csv(hsp_mp_pred_nsti, sep="\t",
                                     index_col="sequence")
 
-hsp_emp_prob_pred_in_ci = pd.read_table(hsp_emp_prob_pred_ci, sep="\t",
+hsp_emp_prob_pred_in_ci = pd.read_csv(hsp_emp_prob_pred_ci, sep="\t",
                                   index_col="sequence")
 
-hsp_emp_prob_pred_in = pd.read_table(hsp_emp_prob_pred, sep="\t",
+hsp_emp_prob_pred_in = pd.read_csv(hsp_emp_prob_pred, sep="\t",
                                      index_col="sequence")
-hsp_pic_pred_in = pd.read_table(hsp_pic_pred, sep="\t", index_col="sequence")
-hsp_scp_pred_in = pd.read_table(hsp_scp_pred, sep="\t", index_col="sequence")
-hsp_subtree_average_pred_in = pd.read_table(hsp_subtree_average_pred, sep="\t",
+hsp_pic_pred_in = pd.read_csv(hsp_pic_pred, sep="\t", index_col="sequence")
+hsp_scp_pred_in = pd.read_csv(hsp_scp_pred, sep="\t", index_col="sequence")
+hsp_subtree_average_pred_in = pd.read_csv(hsp_subtree_average_pred, sep="\t",
                                             index_col="sequence")
 
 class castor_hsp_workflow_tests(unittest.TestCase):

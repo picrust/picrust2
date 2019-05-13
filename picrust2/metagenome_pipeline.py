@@ -32,8 +32,8 @@ def run_metagenome_pipeline(input_seqabun,
     study_seq_counts = read_seqabun(input_seqabun)
 
     # Read in predicted function and marker gene abundances.
-    pred_function = pd.read_table(function, sep="\t", index_col="sequence")
-    pred_marker = pd.read_table(marker, sep="\t", index_col="sequence")
+    pred_function = pd.read_csv(function, sep="\t", index_col="sequence")
+    pred_marker = pd.read_csv(marker, sep="\t", index_col="sequence")
 
     pred_function.index = pred_function.index.astype(str)
     pred_marker.index = pred_marker.index.astype(str)
