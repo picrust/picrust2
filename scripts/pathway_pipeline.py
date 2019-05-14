@@ -73,8 +73,8 @@ parser.add_argument('--no_gap_fill', default=False, action="store_true",
                          'default.')
 
 parser.add_argument('--intermediate', metavar='DIR', type=str, default=None,
-                    help='Output folder for intermediate files (wont be ' +
-                         'kept unless this option is set.')
+                    help='Output folder for intermediate files (will be ' +
+                         'deleted otherwise).')
 
 parser.add_argument('-p', '--proc', default=1, type=int,
                     help='Number of processes to run in parallel '
