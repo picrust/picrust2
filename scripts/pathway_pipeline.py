@@ -187,25 +187,25 @@ def main():
     make_output_dir(args.out_dir)
 
     # Write output files.
-    unstrat_abun_outfile = path.join(args.out_dir, "path_abun_unstrat.tsv")
+    unstrat_abun_outfile = path.join(args.out_dir, "path_abun_unstrat.tsv.gz")
     unstrat_abun.to_csv(path_or_buf=unstrat_abun_outfile,  sep="\t",
-                       index_label="pathway")
+                       index_label="pathway", compression="gzip")
 
     if args.coverage:
-        unstrat_cov_outfile = path.join(args.out_dir, "path_cov_unstrat.tsv")
+        unstrat_cov_outfile = path.join(args.out_dir, "path_cov_unstrat.tsv.gz")
         unstrat_cov.to_csv(path_or_buf=unstrat_cov_outfile,  sep="\t",
-                           index_label="pathway")
+                           index_label="pathway", compression="gzip")
 
     # Write stratified output only if something besides None was returned.
     if strat_abun is not None:
-        strat_abun_outfile = path.join(args.out_dir, "path_abun_strat.tsv")
+        strat_abun_outfile = path.join(args.out_dir, "path_abun_strat.tsv.gz")
         strat_abun.to_csv(path_or_buf=strat_abun_outfile,  sep="\t",
-                          index=False)
+                          index=False, compression="gzip")
 
     if args.coverage and strat_cov is not None:
-        strat_cov_outfile = path.join(args.out_dir, "path_cov_strat.tsv")
+        strat_cov_outfile = path.join(args.out_dir, "path_cov_strat.tsv.gz")
         strat_cov.to_csv(path_or_buf=strat_cov_outfile,  sep="\t",
-                         index=False)
+                         index=False, compression="gzip")
 
 if __name__ == "__main__":
     main()

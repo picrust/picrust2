@@ -122,7 +122,7 @@ def main():
     # Output the table to file.
     make_output_dir_for_file(args.output)
     hsp_table.to_csv(path_or_buf=args.output, index_label="sequence",
-                     sep="\t")
+                     sep="\t", compression="infer")
 
 
 if __name__ == "__main__":

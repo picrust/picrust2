@@ -88,14 +88,15 @@ def main():
                                                        strat_out=args.strat_out)
 
     # Generate output table filepaths and write out pandas dataframe.
-    unstrat_outfile = path.join(args.out_dir, "pred_metagenome_unstrat.tsv")
+    unstrat_outfile = path.join(args.out_dir, "pred_metagenome_unstrat.tsv.gz")
     unstrat_pred.to_csv(path_or_buf=unstrat_outfile, sep="\t", index=True,
-                        index_label="function")
+                        index_label="function", compression="gzip")
 
     # Write out stratified table only if that option was specified.
     if args.strat_out:
-        strat_outfile = path.join(args.out_dir, "pred_metagenome_strat.tsv")
-        strat_pred.to_csv(path_or_buf=strat_outfile, sep="\t", index=True)
+        strat_outfile = path.join(args.out_dir, "pred_metagenome_strat.tsv.gz")
+        strat_pred.to_csv(path_or_buf=strat_outfile, sep="\t", index=True,
+                          compression="gzip")
 
 
 if __name__ == "__main__":
