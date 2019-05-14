@@ -184,6 +184,11 @@ parser.add_argument('--per_sequence_contrib', default=False,
                     'sequence will also be output when --coverage is set '
                     '(default: %(default)s).')
 
+parser.add_argument('--remove_intermediate', default=False,
+                    action='store_true',
+                    help='Remove the intermediate outfiles of the sequence '
+                         'placement and pathway inference steps.')
+
 parser.add_argument('--verbose', default=False, action='store_true',
                     help='If specified, print out wrapped commands to screen')
 
@@ -221,6 +226,7 @@ def main():
                                                     skip_nsti=args.skip_nsti,
                                                     no_gap_fill=args.no_gap_fill,
                                                     per_sequence_contrib=args.per_sequence_contrib,
+                                                    remove_intermediate=args.remove_intermediate,
                                                     verbose=args.verbose)
 
     # Print out elapsed time.

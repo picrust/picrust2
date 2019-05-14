@@ -90,7 +90,8 @@ class workflow_test(unittest.TestCase):
                               " --min_samples 2" +
                               " --skip_minpath" +
                               " --no_gap_fill" +
-                              " --coverage" +
+                              " --coverage " +
+                              " --remove_intermediate " +
                               " --verbose")
 
 if __name__ == '__main__':

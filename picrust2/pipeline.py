@@ -36,6 +36,7 @@ def full_pipeline(study_fasta,
                   no_gap_fill,
                   coverage,
                   per_sequence_contrib,
+                  remove_intermediate,
                   verbose):
     '''Function that contains wrapper commands for full PICRUSt2 pipeline.
     Descriptions of all of these input arguments/options are given in the
@@ -122,11 +123,15 @@ def full_pipeline(study_fasta,
     if verbose:
         print("Placing sequences onto reference tree", file=sys.stderr)
 
-    # Define folders for intermediate files.
-    intermediate_dir = path.join(output_folder, "intermediate")
-    make_output_dir(intermediate_dir)
-
-    place_seqs_intermediate = path.join(intermediate_dir, "place_seqs")
+    # Define folders for intermediate files (unless --remove_intermediate set).
+    if remove_intermediate:
+        place_seqs_intermediate = ""
+        pathways_intermediate = ""
+    else:
+        intermediate_dir = path.join(output_folder, "intermediate")
+        make_output_dir(intermediate_dir)
+        place_seqs_intermediate = path.join(intermediate_dir, "place_seqs")
+        pathways_intermediate = path.join(intermediate_dir, "pathways")
 
     # Run place_seqs.py.
     place_seqs_cmd = ["place_seqs.py",
@@ -235,7 +240,6 @@ def full_pipeline(study_fasta,
 
     if not no_pathways:
 
-        pathways_intermediate = path.join(intermediate_dir, "pathways")
         path_output_dir = path.join(output_folder, "pathways_out")
 
         if verbose:
