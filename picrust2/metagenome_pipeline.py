@@ -89,9 +89,9 @@ def run_metagenome_pipeline(input_seqabun,
 
     # Output metagenome contributions table if specified.
     if metagenome_contrib:
-        metagenome_contib_output = metagenome_contib(func_abun=pred_function,
-                                                     sample_abun=study_seq_counts,
-                                                     rare_seqs=rare_seqs)
+        metagenome_contib_output = metagenome_contrib(func_abun=pred_function,
+                                                      sample_abun=study_seq_counts,
+                                                      rare_seqs=rare_seqs)
 
         metagenome_contib_outfile = path.join(out_dir,
                                               "metagenome_contrib.tsv.gz")
@@ -274,7 +274,7 @@ def id_rare_seqs(in_counts, min_reads, min_samples):
     return(list(low_freq_seq.union(few_samples_seq)))
 
 
-def metagenome_contib(func_abun, sample_abun, rare_seqs=[]):
+def metagenome_contrib(func_abun, sample_abun, rare_seqs=[]):
     '''Take in function table and study sequence abundance table. Returns
     long-form table of how each sequence contributes functions in each
     sample. Note that the old format of columns (such as calling the sequences
