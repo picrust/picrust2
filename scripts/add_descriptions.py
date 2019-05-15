@@ -22,7 +22,7 @@ parser = argparse.ArgumentParser(
                 "mapfile.",
     epilog='''
 
-Usage example:
+Usage:
 add_descriptions.py -i IN_TABLE -m KO -o OUT_TABLE
 
 ''', formatter_class=argparse.RawDescriptionHelpFormatter)

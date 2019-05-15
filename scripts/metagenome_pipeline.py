@@ -22,7 +22,7 @@ parser = argparse.ArgumentParser(
 
     epilog='''
 Usage example:
-metagenome_pipeline.py -i seqabun.biom -f predicted_EC.tsv -m predicted_16S.tsv --max_nsti 2.0 -o metagenome_out
+metagenome_pipeline.py -i seqabun.biom -f predicted_EC.tsv.gz -m predicted_16S.tsv.gz --max_nsti 2.0 -o metagenome_out
 ''',
     formatter_class=argparse.RawDescriptionHelpFormatter)
 

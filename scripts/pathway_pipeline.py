@@ -37,13 +37,13 @@ epilog='''
 Usage examples:
 
 Default mapping of predicted EC number abundances to MetaCyc pathways:
-pathway_pipeline.py -i EC_metagenome_out/pred_metagenome_unstrat.tsv -o pathways_out
+pathway_pipeline.py -i EC_metagenome_out/pred_metagenome_unstrat.tsv.gz -o pathways_out
 
 Mapping predicted KO abundances to legacy KEGG pathways (with stratified output that represents contributions to community-wide abundances):
-pathway_pipeline.py -i KO_metagenome_out/pred_metagenome_strat.tsv -o KEGG_pathways_out --no_regroup --map picrust2/picrust2/default_files/pathway_mapfiles/KEGG_pathways_to_KO.tsv
+pathway_pipeline.py -i KO_metagenome_out/pred_metagenome_strat.tsv.gz -o KEGG_pathways_out --no_regroup --map picrust2/picrust2/default_files/pathway_mapfiles/KEGG_pathways_to_KO.tsv
 
 Map EC numbers to MetaCyc pathways and get stratified output corresponding to contribution of predicted gene family abundances within each predicted genome:
-pathway_pipeline.py -i EC_metagenome_out/pred_metagenome_unstrat.tsv -o pathways_out_per_seq --per_sequence_contrib --per_sequence_abun EC_metagenome_out/seqtab_norm.tsv --per_sequence_function EC_predicted.tsv
+pathway_pipeline.py -i EC_metagenome_out/pred_metagenome_unstrat.tsv.gz -o pathways_out_per_seq --per_sequence_contrib --per_sequence_abun EC_metagenome_out/seqtab_norm.tsv.gz --per_sequence_function EC_predicted.tsv.gz
 
 
 ''', formatter_class=argparse.RawDescriptionHelpFormatter)

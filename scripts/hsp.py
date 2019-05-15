@@ -23,7 +23,7 @@ parser = argparse.ArgumentParser(
                 "predictions.",
     epilog='''
 Usage example:
-hsp.py -n -t out.tre -i 16S -o 16S_predicted_and_nsti.tsv
+hsp.py -n -t out.tre -i 16S -o 16S_predicted_and_nsti.tsv.gz
 
 ''', formatter_class=argparse.RawDescriptionHelpFormatter)
 
