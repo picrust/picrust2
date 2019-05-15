@@ -2,18 +2,19 @@
 
 __copyright__ = "Copyright 2018-2019, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.1.3-b"
+__version__ = "2.1.4-b"
 
 import unittest
 from os import path
 import pandas as pd
 import biom
-from picrust2.util import TemporaryDirectory
+from picrust2.util import TemporaryDirectory, read_seqabun
 from picrust2.metagenome_pipeline import (run_metagenome_pipeline,
                                           norm_by_marker_copies,
                                           calc_weighted_nsti,
                                           id_rare_seqs,
-                                          drop_tips_by_nsti)
+                                          drop_tips_by_nsti,
+                                          metagenome_contributions)
 
 # Set paths to test files.
 test_dir_path = path.join(path.dirname(path.abspath(__file__)), "test_data",
@@ -40,22 +41,36 @@ exp_strat_rare = path.join(test_dir_path, "metagenome_out",
 exp_norm = path.join(test_dir_path, "metagenome_out", "seqtab_norm.tsv")
 
 # Read in test inputs and expected files.
-func_predict_in = pd.read_table(func_predict, sep="\t", index_col="sequence")
-marker_predict_in = pd.read_table(marker_predict, sep="\t",
+func_predict_in = pd.read_csv(func_predict, sep="\t", index_col="sequence")
+marker_predict_in = pd.read_csv(marker_predict, sep="\t",
                                   index_col="sequence")
 
-exp_strat_in = pd.read_table(exp_strat, sep="\t")
+exp_strat_in = pd.read_csv(exp_strat, sep="\t")
 exp_strat_in = exp_strat_in.set_index(["function", "sequence"])
 
-exp_strat_in_rare = pd.read_table(exp_strat_rare, sep="\t")
+exp_strat_in_rare = pd.read_csv(exp_strat_rare, sep="\t")
 exp_strat_in_rare = exp_strat_in_rare.set_index(["function", "sequence"])
 
 
-exp_unstrat_in = pd.read_table(exp_unstrat, sep="\t", index_col="function")
+exp_unstrat_in = pd.read_csv(exp_unstrat, sep="\t", index_col="function")
 
-exp_norm_in = pd.read_table(exp_norm, sep="\t", index_col="normalized")
+exp_norm_in = pd.read_csv(exp_norm, sep="\t", index_col="normalized")
 
-nsti_in = pd.read_table(nsti_in_path, sep="\t", index_col="sequence")
+nsti_in = pd.read_csv(nsti_in_path, sep="\t", index_col="sequence")
+
+
+# Metagenome contribution files:
+seqtab_tsv_simple = path.join(test_dir_path, "metagenome_contrib",
+                              "test_sequence_abun_simple.txt.gz")
+
+func_simple_in = path.join(test_dir_path, "metagenome_contrib",
+                           "test_predicted_func_test.txt.gz")
+
+exp_meta_contrib = path.join(test_dir_path, "metagenome_contrib",
+                             "expected_metagenome_contrib.txt.gz")
+
+exp_meta_contrib_rare = path.join(test_dir_path, "metagenome_contrib",
+                                  "expected_metagenome_contrib_rare.txt.gz")
 
 
 class metagenome_pipeline_test(unittest.TestCase):
@@ -265,6 +280,49 @@ class rare_seqs_test(unittest.TestCase):
 
         pd.testing.assert_frame_equal(unstrat_out, exp_unstrat_in,
                                       check_like=True)   
+
+
+class metagenome_contrib_tests(unittest.TestCase):
+    '''Checks that metagenome contributions are calculated correctly.'''
+
+    def test_metagenome_contrib(self):
+        '''Basic test for metagenome contributions.'''
+
+        study_seq_counts = read_seqabun(seqtab_tsv_simple)
+        pred_function = pd.read_csv(func_simple_in, sep="\t",
+                                    index_col="sequence")
+
+        metagenome_contib_out = metagenome_contributions(func_abun=pred_function,
+                                                         sample_abun=study_seq_counts,
+                                                         rare_seqs=[])
+
+        exp_metagenome_contrib_out = pd.read_csv(exp_meta_contrib, sep="\t")
+
+        pd.testing.assert_frame_equal(exp_metagenome_contrib_out.reset_index(drop=True),
+                                      metagenome_contib_out.reset_index(drop=True),
+                                      check_like=True)
+
+
+    def test_metagenome_contrib_rare(self):
+        '''Test for metagenome contributions when rare sequences are
+        specified'''
+
+        study_seq_counts = read_seqabun(seqtab_tsv_simple)
+        pred_function = pd.read_csv(func_simple_in, sep="\t",
+                                    index_col="sequence")
+
+        rare_seqs = ['2568526487_cluster', '2593338844', '2558860574']
+
+        metagenome_contib_out_rare = metagenome_contributions(func_abun=pred_function,
+                                                              sample_abun=study_seq_counts,
+                                                              rare_seqs=rare_seqs)
+
+        exp_metagenome_contrib_out_rare = pd.read_csv(exp_meta_contrib_rare,
+                                                      sep="\t")
+
+        pd.testing.assert_frame_equal(exp_metagenome_contrib_out_rare.reset_index(drop=True),
+                                      metagenome_contib_out_rare.reset_index(drop=True),
+                                      check_like=True)
 
 
 if __name__ == '__main__':

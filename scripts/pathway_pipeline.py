@@ -2,7 +2,7 @@
 
 __copyright__ = "Copyright 2018-2019, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.1.3-b"
+__version__ = "2.1.4-b"
 
 import argparse
 from picrust2.pathway_pipeline import pathway_pipeline
@@ -73,8 +73,8 @@ parser.add_argument('--no_gap_fill', default=False, action="store_true",
                          'default.')
 
 parser.add_argument('--intermediate', metavar='DIR', type=str, default=None,
-                    help='Output folder for intermediate files (wont be ' +
-                         'kept unless this option is set.')
+                    help='Output folder for intermediate files (will be ' +
+                         'deleted otherwise).')
 
 parser.add_argument('-p', '--proc', default=1, type=int,
                     help='Number of processes to run in parallel '
@@ -187,25 +187,25 @@ def main():
     make_output_dir(args.out_dir)
 
     # Write output files.
-    unstrat_abun_outfile = path.join(args.out_dir, "path_abun_unstrat.tsv")
+    unstrat_abun_outfile = path.join(args.out_dir, "path_abun_unstrat.tsv.gz")
     unstrat_abun.to_csv(path_or_buf=unstrat_abun_outfile,  sep="\t",
-                       index_label="pathway")
+                       index_label="pathway", compression="gzip")
 
     if args.coverage:
-        unstrat_cov_outfile = path.join(args.out_dir, "path_cov_unstrat.tsv")
+        unstrat_cov_outfile = path.join(args.out_dir, "path_cov_unstrat.tsv.gz")
         unstrat_cov.to_csv(path_or_buf=unstrat_cov_outfile,  sep="\t",
-                           index_label="pathway")
+                           index_label="pathway", compression="gzip")
 
     # Write stratified output only if something besides None was returned.
     if strat_abun is not None:
-        strat_abun_outfile = path.join(args.out_dir, "path_abun_strat.tsv")
+        strat_abun_outfile = path.join(args.out_dir, "path_abun_strat.tsv.gz")
         strat_abun.to_csv(path_or_buf=strat_abun_outfile,  sep="\t",
-                          index=False)
+                          index=False, compression="gzip")
 
     if args.coverage and strat_cov is not None:
-        strat_cov_outfile = path.join(args.out_dir, "path_cov_strat.tsv")
+        strat_cov_outfile = path.join(args.out_dir, "path_cov_strat.tsv.gz")
         strat_cov.to_csv(path_or_buf=strat_cov_outfile,  sep="\t",
-                         index=False)
+                         index=False, compression="gzip")
 
 if __name__ == "__main__":
     main()

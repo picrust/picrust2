@@ -2,7 +2,7 @@
 
 __copyright__ = "Copyright 2018-2019, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.1.3-b"
+__version__ = "2.1.4-b"
 
 import unittest
 from os import path
@@ -46,8 +46,8 @@ class workflow_test(unittest.TestCase):
             system_call_check("place_seqs.py -s " + test_study_seqs + " -r " +
                               test_ref_dir + " -o " + out_tree)
 
-            traits_predict = path.join(temp_dir, "hsp_out.ts")
-            marker_predict = path.join(temp_dir, "hsp_out_marker.tsv")
+            traits_predict = path.join(temp_dir, "hsp_out.tsv.gz")
+            marker_predict = path.join(temp_dir, "hsp_out_marker.tsv.gz")
 
             system_call_check("hsp.py -t " + out_tree +
                               " --observed_trait_table " + test_known_traits +
@@ -64,7 +64,7 @@ class workflow_test(unittest.TestCase):
                               marker_predict + " -o " + metagenome_out)
 
             metagenome_outfile = path.join(metagenome_out,
-                                           "pred_metagenome_strat.tsv")
+                                           "pred_metagenome_strat.tsv.gz")
 
             system_call_check("pathway_pipeline.py -i " + metagenome_outfile +
                               " -o " + temp_dir)
@@ -90,7 +90,8 @@ class workflow_test(unittest.TestCase):
                               " --min_samples 2" +
                               " --skip_minpath" +
                               " --no_gap_fill" +
-                              " --coverage" +
+                              " --coverage " +
+                              " --remove_intermediate " +
                               " --verbose")
 
 if __name__ == '__main__':

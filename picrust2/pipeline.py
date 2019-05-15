@@ -2,7 +2,7 @@
 
 __copyright__ = "Copyright 2018-2019, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.1.3-b"
+__version__ = "2.1.4-b"
 
 from os import path
 import sys
@@ -26,6 +26,7 @@ def full_pipeline(study_fasta,
                   no_pathways,
                   regroup_map,
                   no_regroup,
+                  metagenome_contrib,
                   stratified,
                   max_nsti,
                   min_reads,
@@ -36,6 +37,7 @@ def full_pipeline(study_fasta,
                   no_gap_fill,
                   coverage,
                   per_sequence_contrib,
+                  remove_intermediate,
                   verbose):
     '''Function that contains wrapper commands for full PICRUSt2 pipeline.
     Descriptions of all of these input arguments/options are given in the
@@ -122,11 +124,15 @@ def full_pipeline(study_fasta,
     if verbose:
         print("Placing sequences onto reference tree", file=sys.stderr)
 
-    # Define folders for intermediate files.
-    intermediate_dir = path.join(output_folder, "intermediate")
-    make_output_dir(intermediate_dir)
-
-    place_seqs_intermediate = path.join(intermediate_dir, "place_seqs")
+    # Define folders for intermediate files (unless --remove_intermediate set).
+    if remove_intermediate:
+        place_seqs_intermediate = ""
+        pathways_intermediate = ""
+    else:
+        intermediate_dir = path.join(output_folder, "intermediate")
+        make_output_dir(intermediate_dir)
+        place_seqs_intermediate = path.join(intermediate_dir, "place_seqs")
+        pathways_intermediate = path.join(intermediate_dir, "pathways")
 
     # Run place_seqs.py.
     place_seqs_cmd = ["place_seqs.py",
@@ -159,9 +165,9 @@ def full_pipeline(study_fasta,
         hsp_outfile = path.join(output_folder, func + "_predicted")
 
         if func == "marker" and not skip_nsti:
-            hsp_outfile = hsp_outfile + "_and_nsti.tsv"
+            hsp_outfile = hsp_outfile + "_and_nsti.tsv.gz"
         else:
-            hsp_outfile = hsp_outfile + ".tsv"
+            hsp_outfile = hsp_outfile + ".tsv.gz"
 
         # Keep track of output filename for next step of pipeline.
         predicted_funcs[func] = hsp_outfile
@@ -215,7 +221,10 @@ def full_pipeline(study_fasta,
         func_output[func] = [None, None]
 
         func_output[func][0] = path.join(func_output_dir,
-                                         "pred_metagenome_unstrat.tsv")
+                                         "pred_metagenome_unstrat.tsv.gz")
+
+        if metagenome_contrib:
+            metagenome_pipeline_cmd.append("--metagenome_contrib")
 
         if not skip_nsti:
             metagenome_pipeline_cmd += ["--max_nsti", str(max_nsti)]
@@ -223,7 +232,7 @@ def full_pipeline(study_fasta,
         if stratified:
             metagenome_pipeline_cmd.append("--strat_out")
             func_output[func][1] = path.join(func_output_dir,
-                                             "pred_metagenome_strat.tsv")
+                                             "pred_metagenome_strat.tsv.gz")
 
         # Note that STDERR is printed for this command since it outputs how
         # many ASVs were above the NSTI cut-off (if specified).
@@ -235,7 +244,6 @@ def full_pipeline(study_fasta,
 
     if not no_pathways:
 
-        pathways_intermediate = path.join(intermediate_dir, "pathways")
         path_output_dir = path.join(output_folder, "pathways_out")
 
         if verbose:
@@ -294,15 +302,15 @@ def full_pipeline(study_fasta,
         pathway_outfiles = {}
 
         pathway_outfiles["unstrat_abun"] = path.join(path_output_dir,
-                                                     "path_abun_unstrat.tsv")
+                                                     "path_abun_unstrat.tsv.gz")
         pathway_outfiles["unstrat_cov"] = path.join(path_output_dir,
-                                                    "path_cov_unstrat.tsv")
+                                                    "path_cov_unstrat.tsv.gz")
 
         if stratified:
             pathway_outfiles["strat_abun"] = path.join(path_output_dir,
-                                                       "path_abun_strat.tsv")
+                                                       "path_abun_strat.tsv.gz")
             pathway_outfiles["strat_cov"] = path.join(path_output_dir,
-                                                      "path_cov_strat.tsv")
+                                                      "path_cov_strat.tsv.gz")
         else:
             pathway_outfiles["strat_abun"] = None
             pathway_outfiles["strat_cov"] = None

@@ -2,7 +2,7 @@
 
 __copyright__ = "Copyright 2018-2019, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.1.3-b"
+__version__ = "2.1.4-b"
 
 import argparse
 from os import path
@@ -121,6 +121,13 @@ parser.add_argument('--no_regroup', default=False, action="store_true",
                          'should only be used if you are using custom '
                          'reference and/or mapping files.')
 
+parser.add_argument('--metagenome_contrib', default=False, action='store_true',
+                    help='Output long-form gzipped table called '
+                         '\"metagenome_contrib.tsv.gz\" that breaks down how '
+                         'each input ASV is contributing to each predicted '
+                         'gene family. Note that the column names of this '
+                         'file refers to OTUs for backwards compatability.')
+
 parser.add_argument('--stratified', default=False, action='store_true',
                     help='Flag to indicate that stratified tables should be '
                          'generated at all steps (will increase run-time)')
@@ -184,6 +191,11 @@ parser.add_argument('--per_sequence_contrib', default=False,
                     'sequence will also be output when --coverage is set '
                     '(default: %(default)s).')
 
+parser.add_argument('--remove_intermediate', default=False,
+                    action='store_true',
+                    help='Remove the intermediate outfiles of the sequence '
+                         'placement and pathway inference steps.')
+
 parser.add_argument('--verbose', default=False, action='store_true',
                     help='If specified, print out wrapped commands to screen')
 
@@ -213,6 +225,7 @@ def main():
                                                     skip_minpath=args.skip_minpath,
                                                     no_regroup=args.no_regroup,
                                                     coverage=args.coverage,
+                                                    metagenome_contrib=args.metagenome_contrib,
                                                     stratified=args.stratified,
                                                     max_nsti=args.max_nsti,
                                                     min_reads=args.min_reads,
@@ -221,12 +234,14 @@ def main():
                                                     skip_nsti=args.skip_nsti,
                                                     no_gap_fill=args.no_gap_fill,
                                                     per_sequence_contrib=args.per_sequence_contrib,
+                                                    remove_intermediate=args.remove_intermediate,
                                                     verbose=args.verbose)
 
-    # Print out elapsed time.
-    elapsed_time = time.time() - start_time
-    print("Completed PICRUSt2 pipeline in " + "%.2f" % elapsed_time +
-          " seconds.", file=sys.stderr)
+    if args.verbose:
+        # Print out elapsed time if verbose option set.
+        elapsed_time = time.time() - start_time
+        print("Completed PICRUSt2 pipeline in " + "%.2f" % elapsed_time +
+              " seconds.", file=sys.stderr)
 
 
 if __name__ == "__main__":

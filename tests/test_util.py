@@ -193,7 +193,7 @@ class add_description_tests(unittest.TestCase):
         obs_out = add_descrip_col(ec_unstrat_in, default_map["EC"])
 
         # Read in expected out.
-        exp_out = pd.read_table(ec_unstrat_exp, sep='\t')
+        exp_out = pd.read_csv(ec_unstrat_exp, sep='\t')
 
         pd.testing.assert_frame_equal(obs_out, exp_out, check_like=True)
 
@@ -205,7 +205,7 @@ class add_description_tests(unittest.TestCase):
         obs_out = add_descrip_col(ec_strat_in, default_map["EC"])
 
         # Read in expected out.
-        exp_out = pd.read_table(ec_strat_exp, sep='\t')
+        exp_out = pd.read_csv(ec_strat_exp, sep='\t')
 
         pd.testing.assert_frame_equal(obs_out, exp_out, check_like=True)
 
@@ -223,7 +223,7 @@ class add_description_tests(unittest.TestCase):
         obs_out = add_descrip_col(metacyc_unstrat_in, default_map["METACYC"])
 
         # Read in expected out.
-        exp_out = pd.read_table(metacyc_unstrat_exp, sep='\t')
+        exp_out = pd.read_csv(metacyc_unstrat_exp, sep='\t')
 
         pd.testing.assert_frame_equal(obs_out, exp_out, check_like=True)
 
@@ -233,7 +233,7 @@ class add_description_tests(unittest.TestCase):
         obs_out = add_descrip_col(cog_unstrat_in, default_map["COG"])
 
         # Read in expected out.
-        exp_out = pd.read_table(cog_unstrat_exp, sep='\t')
+        exp_out = pd.read_csv(cog_unstrat_exp, sep='\t')
 
         pd.testing.assert_frame_equal(obs_out, exp_out, check_like=True)
 
@@ -243,7 +243,7 @@ class add_description_tests(unittest.TestCase):
         obs_out = add_descrip_col(ko_unstrat_in, default_map["KO"])
 
         # Read in expected out.
-        exp_out = pd.read_table(ko_unstrat_exp, sep='\t')
+        exp_out = pd.read_csv(ko_unstrat_exp, sep='\t')
 
         pd.testing.assert_frame_equal(obs_out, exp_out, check_like=True)
 
@@ -253,7 +253,7 @@ class add_description_tests(unittest.TestCase):
         obs_out = add_descrip_col(pfam_unstrat_in, default_map["PFAM"])
 
         # Read in expected out.
-        exp_out = pd.read_table(pfam_unstrat_exp, sep='\t')
+        exp_out = pd.read_csv(pfam_unstrat_exp, sep='\t')
 
         pd.testing.assert_frame_equal(obs_out, exp_out, check_like=True)
 
@@ -264,7 +264,7 @@ class add_description_tests(unittest.TestCase):
         obs_out = add_descrip_col(tigrfam_unstrat_in, default_map["TIGRFAM"])
 
         # Read in expected out.
-        exp_out = pd.read_table(tigrfam_unstrat_exp, sep='\t')
+        exp_out = pd.read_csv(tigrfam_unstrat_exp, sep='\t')
 
         pd.testing.assert_frame_equal(obs_out, exp_out, check_like=True)
 
@@ -319,9 +319,9 @@ class convert_table_tests(unittest.TestCase):
             convert_picrust2_to_humann2_merged([picrust2_unstrat_in1,
                                                 picrust2_unstrat_in2],
                                                outfile)
-            obs_out = pd.read_table(outfile, sep="\t", index_col=0)
+            obs_out = pd.read_csv(outfile, sep="\t", index_col=0)
 
-        exp_out = pd.read_table(picrust2_unstrat_exp, sep="\t", index_col=0)
+        exp_out = pd.read_csv(picrust2_unstrat_exp, sep="\t", index_col=0)
 
         pd.testing.assert_frame_equal(obs_out, exp_out, check_like=True)
 
@@ -331,13 +331,13 @@ class convert_table_tests(unittest.TestCase):
             outfolder = path.join(temp_dir, "outfiles")
             convert_picrust2_to_humann2([picrust2_strat_in,
                                          picrust2_unstrat_in1], outfolder, True)
-            obs_out1 = pd.read_table(path.join(outfolder, "sample1_humann2-format.tsv"), sep="\t", index_col=0)
-            obs_out2 = pd.read_table(path.join(outfolder, "sample2_humann2-format.tsv"), sep="\t", index_col=0)
-            obs_out3 = pd.read_table(path.join(outfolder, "sample3_humann2-format.tsv"), sep="\t", index_col=0)
+            obs_out1 = pd.read_csv(path.join(outfolder, "sample1_humann2-format.tsv"), sep="\t", index_col=0)
+            obs_out2 = pd.read_csv(path.join(outfolder, "sample2_humann2-format.tsv"), sep="\t", index_col=0)
+            obs_out3 = pd.read_csv(path.join(outfolder, "sample3_humann2-format.tsv"), sep="\t", index_col=0)
 
-        exp_out1 = pd.read_table(picrust2_strat_exp1, sep="\t", index_col=0)
-        exp_out2 = pd.read_table(picrust2_strat_exp2, sep="\t", index_col=0)
-        exp_out3 = pd.read_table(picrust2_strat_exp3, sep="\t", index_col=0)
+        exp_out1 = pd.read_csv(picrust2_strat_exp1, sep="\t", index_col=0)
+        exp_out2 = pd.read_csv(picrust2_strat_exp2, sep="\t", index_col=0)
+        exp_out3 = pd.read_csv(picrust2_strat_exp3, sep="\t", index_col=0)
 
         pd.testing.assert_frame_equal(obs_out1, exp_out1, check_like=True)
         pd.testing.assert_frame_equal(obs_out2, exp_out2, check_like=True)
@@ -350,9 +350,9 @@ class convert_table_tests(unittest.TestCase):
             outfile = path.join(temp_dir, "test_out")
             convert_humann2_to_picrust2([humann2_unstrat_in], outfile, False)
 
-            obs_out = pd.read_table(outfile, sep="\t", index_col=0)
+            obs_out = pd.read_csv(outfile, sep="\t", index_col=0)
 
-        exp_out = pd.read_table(humann2_unstrat_exp, sep="\t", index_col=0)
+        exp_out = pd.read_csv(humann2_unstrat_exp, sep="\t", index_col=0)
 
         pd.testing.assert_frame_equal(obs_out, exp_out, check_like=True)
 
@@ -363,9 +363,9 @@ class convert_table_tests(unittest.TestCase):
             outfile = path.join(temp_dir, "test_out")
             convert_humann2_to_picrust2([humann2_strat_in], outfile, True)
 
-            obs_out = pd.read_table(outfile, sep="\t", index_col=[0, 1])
+            obs_out = pd.read_csv(outfile, sep="\t", index_col=[0, 1])
 
-        exp_out = pd.read_table(humann2_strat_exp, sep="\t", index_col=[0, 1])
+        exp_out = pd.read_csv(humann2_strat_exp, sep="\t", index_col=[0, 1])
 
         pd.testing.assert_frame_equal(obs_out, exp_out, check_like=True)
 
@@ -379,9 +379,9 @@ class convert_table_tests(unittest.TestCase):
                                          humann2_strat_in_split3],
                                         outfile, True)
 
-            obs_out = pd.read_table(outfile, sep="\t", index_col=[0, 1])
+            obs_out = pd.read_csv(outfile, sep="\t", index_col=[0, 1])
 
-        exp_out = pd.read_table(humann2_strat_split_exp, sep="\t", index_col=[0, 1])
+        exp_out = pd.read_csv(humann2_strat_split_exp, sep="\t", index_col=[0, 1])
 
         pd.testing.assert_frame_equal(obs_out, exp_out, check_like=True)
 

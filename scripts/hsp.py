@@ -2,7 +2,7 @@
 
 __copyright__ = "Copyright 2018-2019, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.1.3-b"
+__version__ = "2.1.4-b"
 
 import argparse
 from picrust2.wrap_hsp import castor_hsp_workflow
@@ -33,7 +33,8 @@ parser.add_argument('-t', '--tree', metavar='PATH', required=True, type=str,
 
 parser.add_argument('-o', '--output', metavar='PATH', type=str, required=True,
                     help='Output table with predicted abundances per study '
-                         'sequence in input tree.')
+                         'sequence in input tree. If the extension \".gz\" '
+                         'is added the table will automatically be gzipped.')
 
 parser.add_argument('-i', '--in_trait', type=str.upper, choices=TRAIT_OPTIONS,
                     help='Specifies which default trait table should be '
@@ -122,7 +123,7 @@ def main():
     # Output the table to file.
     make_output_dir_for_file(args.output)
     hsp_table.to_csv(path_or_buf=args.output, index_label="sequence",
-                     sep="\t")
+                     sep="\t", compression="infer")
 
 
 if __name__ == "__main__":

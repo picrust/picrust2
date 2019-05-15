@@ -2,7 +2,7 @@
 
 __copyright__ = "Copyright 2018-2019, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.1.3-b"
+__version__ = "2.1.4-b"
 
 import argparse
 from picrust2.place_seqs import place_seqs_pipeline
@@ -43,8 +43,8 @@ parser.add_argument('-p', '--processes', type=int, default=1,
                          'running EPA-NG and GAPPA.')
 
 parser.add_argument('--intermediate', metavar='PATH', type=str, default=None,
-                    help='Output folder for intermediate files (will not be ' +
-                         'kept unless this option is set.')
+                    help='Output folder for intermediate files (will be '
+                         'deleted otherwise).')
 
 parser.add_argument('--chunk_size', type=int, default=5000,
                     help='Number of query seqs to read in at once for EPA-ng ' +
