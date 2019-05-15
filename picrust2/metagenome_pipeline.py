@@ -62,7 +62,7 @@ def run_metagenome_pipeline(input_seqabun,
     make_output_dir(out_dir)
 
     # Create normalized sequence abundance filename.
-    norm_output = path.join(out_dir, "seqtab_norm.tsv")
+    norm_output = path.join(out_dir, "seqtab_norm.tsv.gz")
 
     # Normalize input study sequence abundances by predicted abundance of
     # marker genes and output normalized table if specified.
@@ -72,7 +72,7 @@ def run_metagenome_pipeline(input_seqabun,
 
     # If NSTI column input then output weighted NSTI values.
     if not nsti_val.empty:
-        weighted_nsti_out = path.join(out_dir, "weighted_nsti.tsv")
+        weighted_nsti_out = path.join(out_dir, "weighted_nsti.tsv.gz")
         calc_weighted_nsti(seq_counts=study_seq_counts,
                            nsti_input=nsti_val,
                            outfile=weighted_nsti_out)
@@ -230,7 +230,7 @@ def calc_weighted_nsti(seq_counts, nsti_input, outfile=None, return_df=False):
     # Write to outfile if specified.
     if outfile:
         weighted_nsti.to_csv(path_or_buf=outfile, sep="\t", header=True,
-                             index_label="sample")
+                             index_label="sample", compression="infer")
     if return_df:
         return(weighted_nsti)
 
@@ -255,7 +255,8 @@ def norm_by_marker_copies(input_seq_counts,
     if norm_filename:
         input_seq_counts.to_csv(path_or_buf=norm_filename,
                                 index_label="normalized",
-                                sep="\t")
+                                sep="\t",
+                                compression="infer")
 
     return(input_seq_counts)
 
