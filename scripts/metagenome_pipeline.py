@@ -2,7 +2,7 @@
 
 __copyright__ = "Copyright 2018-2019, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.1.3-b"
+__version__ = "2.1.4-b"
 
 import argparse
 from os import path
@@ -57,6 +57,13 @@ parser.add_argument('--min_samples', metavar='INT', type=int, default=1,
                          'counted as part of the \"RARE\" category in the ' +
                          'stratified output (default: %(default)d).')
 
+parser.add_argument('--metagenome_contrib', default=False, action='store_true',
+                    help='Output long-form gzipped table called '
+                         '\"metagenome_contrib.tsv.gz\" that breaks down how '
+                         'each input ASV is contributing to each predicted '
+                         'gene family. Note that the column names of this '
+                         'file refers to OTUs for backwards compatability.')
+
 parser.add_argument('--strat_out', default=False, action='store_true',
                     help='Output table stratified by sequences as well.')
 
@@ -85,6 +92,7 @@ def main():
                                                        max_nsti=args.max_nsti,
                                                        min_reads=args.min_reads,
                                                        min_samples=args.min_samples,
+                                                       metagenome_contrib=args.metagenome_contrib,
                                                        strat_out=args.strat_out)
 
     # Generate output table filepaths and write out pandas dataframe.

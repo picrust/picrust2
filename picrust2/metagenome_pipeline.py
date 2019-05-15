@@ -2,7 +2,7 @@
 
 __copyright__ = "Copyright 2018-2019, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.1.3-b"
+__version__ = "2.1.4-b"
 
 import sys
 import biom
@@ -19,6 +19,7 @@ def run_metagenome_pipeline(input_seqabun,
                             max_nsti,
                             min_reads=1,
                             min_samples=1,
+                            metagenome_contrib=False,
                             strat_out=False,
                             out_dir='metagenome_out'):
     '''Main function to run full metagenome pipeline. Meant to run modular
@@ -76,16 +77,32 @@ def run_metagenome_pipeline(input_seqabun,
                            nsti_input=nsti_val,
                            outfile=weighted_nsti_out)
 
-    # Generate tables of functions by sample and return (either stratified or
-    # not).
-    if strat_out:
+    # Determine which sequences should be in the "RARE" category if either
+    # the metagenome contributions table or stratified table is requested.
+    if metagenome_contrib or strat_out:
         rare_seqs = []
 
-        # Determine which sequences should be in the "RARE" category.
         if min_reads != 1 or min_samples != 1:
             rare_seqs = id_rare_seqs(in_counts=study_seq_counts,
                                      min_reads=min_reads,
                                      min_samples=min_samples)
+
+    # Output metagenome contributions table if specified.
+    if metagenome_contrib:
+        metagenome_contib_output = metagenome_contib(func_abun=pred_function,
+                                                     sample_abun=study_seq_counts,
+                                                     rare_seqs=rare_seqs)
+
+        metagenome_contib_outfile = path.join(out_dir,
+                                              "metagenome_contrib.tsv.gz")
+
+        metagenome_contib_output.to_csv(path_or_buf=metagenome_contib_outfile,
+                                        sep="\t", index=False,
+                                        compression="gzip")
+
+    # Generate tables of functions by sample and return (either stratified or
+    # not).
+    if strat_out:
 
         return(strat_funcs_by_samples(pred_function, study_seq_counts,
                                       rare_seqs))
@@ -256,4 +273,66 @@ def id_rare_seqs(in_counts, min_reads, min_samples):
 
     return(list(low_freq_seq.union(few_samples_seq)))
 
+
+def metagenome_contib(func_abun, sample_abun, rare_seqs=[]):
+    '''Take in function table and study sequence abundance table. Returns
+    long-form table of how each sequence contributes functions in each
+    sample. Note that the old format of columns (such as calling the sequences
+    "OTUs" is retained here for backwards compatability. A subset of input
+    sequences will be collapsed to a single category called "RARE" if a
+    non-empty list is input for the rare_seqs option.'''
+
+    # Convert sample abundance table to relative abundance since this is
+    # expected by many tools that use the metagenome contributions table.
+    sample_abun = sample_abun.div(sample_abun.sum(axis=0), axis=1) * 100
+
+    # Counter used to identify the first sample.
+    s_i = 0
+
+    for sample in sample_abun.columns:
+        single_abun = sample_abun[sample]
+        single_abun = single_abun.iloc[single_abun.to_numpy().nonzero()]
+
+        func_abun_subset = func_abun.loc[single_abun.index, :]
+
+        # Melt function table sto be long format.
+        func_abun_subset['OTU'] = func_abun_subset.index.to_list()
+
+        func_abun_subset_melt = pd.melt(func_abun_subset, id_vars='OTU',
+                                        value_name='GeneCountPerGenome',
+                                        var_name='Gene')
+
+        # Remove rows where gene count is 0.
+        func_abun_subset_melt = func_abun_subset_melt[func_abun_subset_melt.GeneCountPerGenome != 0]
+
+        func_abun_subset_melt['OTUAbundanceInSample'] = single_abun.loc[func_abun_subset_melt['OTU'].to_list()].to_list()
+
+        func_abun_subset_melt['CountContributedByOTU'] = func_abun_subset_melt['GeneCountPerGenome'] * func_abun_subset_melt['OTUAbundanceInSample']
+
+        # Collapse sequences identified as "rare" to the same category.
+        rare_seqs = [r for r in rare_seqs if r in func_abun_subset_melt['OTU']]
+
+        if len(rare_seqs) > 0:
+            func_abun_subset_melt.loc[func_abun_subset_melt['OTU'].isin(rare_seqs), 'OTU'] = 'RARE' 
+            func_abun_subset_melt = func_abun_subset_melt.groupby(['Gene', 'OTU'], as_index=False).sum()
+
+        func_abun_subset_melt['Sample'] = sample
+
+        # Order column names.
+        func_abun_subset_melt = func_abun_subset_melt[['Sample',
+                                                       'Gene',
+                                                       'OTU',
+                                                       'OTUAbundanceInSample',
+                                                       'GeneCountPerGenome',
+                                                       'CountContributedByOTU']]
+
+        if s_i > 0:
+            metagenome_contrib_out = pd.concat([metagenome_contrib_out,
+                                                func_abun_subset_melt],
+                                                axis=0)
+        else:
+            metagenome_contrib_out = func_abun_subset_melt.copy()
+            s_i += 1
+
+    return(metagenome_contrib_out)
 
