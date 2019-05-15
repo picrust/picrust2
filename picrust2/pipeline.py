@@ -26,6 +26,7 @@ def full_pipeline(study_fasta,
                   no_pathways,
                   regroup_map,
                   no_regroup,
+                  metagenome_contrib,
                   stratified,
                   max_nsti,
                   min_reads,
@@ -221,6 +222,9 @@ def full_pipeline(study_fasta,
 
         func_output[func][0] = path.join(func_output_dir,
                                          "pred_metagenome_unstrat.tsv.gz")
+
+        if metagenome_contrib:
+            metagenome_pipeline_cmd.append("--metagenome_contrib")
 
         if not skip_nsti:
             metagenome_pipeline_cmd += ["--max_nsti", str(max_nsti)]

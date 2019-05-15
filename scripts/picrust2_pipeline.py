@@ -121,6 +121,13 @@ parser.add_argument('--no_regroup', default=False, action="store_true",
                          'should only be used if you are using custom '
                          'reference and/or mapping files.')
 
+parser.add_argument('--metagenome_contrib', default=False, action='store_true',
+                    help='Output long-form gzipped table called '
+                         '\"metagenome_contrib.tsv.gz\" that breaks down how '
+                         'each input ASV is contributing to each predicted '
+                         'gene family. Note that the column names of this '
+                         'file refers to OTUs for backwards compatability.')
+
 parser.add_argument('--stratified', default=False, action='store_true',
                     help='Flag to indicate that stratified tables should be '
                          'generated at all steps (will increase run-time)')
@@ -218,6 +225,7 @@ def main():
                                                     skip_minpath=args.skip_minpath,
                                                     no_regroup=args.no_regroup,
                                                     coverage=args.coverage,
+                                                    metagenome_contrib=args.metagenome_contrib,
                                                     stratified=args.stratified,
                                                     max_nsti=args.max_nsti,
                                                     min_reads=args.min_reads,
