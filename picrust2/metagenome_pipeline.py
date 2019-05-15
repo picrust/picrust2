@@ -310,7 +310,7 @@ def metagenome_contrib(func_abun, sample_abun, rare_seqs=[]):
         func_abun_subset_melt['CountContributedByOTU'] = func_abun_subset_melt['GeneCountPerGenome'] * func_abun_subset_melt['OTUAbundanceInSample']
 
         # Collapse sequences identified as "rare" to the same category.
-        rare_seqs = [r for r in rare_seqs if r in func_abun_subset_melt['OTU']]
+        rare_seqs = [r for r in rare_seqs if r in func_abun_subset_melt['OTU'].to_list()]
 
         if len(rare_seqs) > 0:
             func_abun_subset_melt.loc[func_abun_subset_melt['OTU'].isin(rare_seqs), 'OTU'] = 'RARE' 
