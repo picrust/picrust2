@@ -33,7 +33,8 @@ parser.add_argument('-t', '--tree', metavar='PATH', required=True, type=str,
 
 parser.add_argument('-o', '--output', metavar='PATH', type=str, required=True,
                     help='Output table with predicted abundances per study '
-                         'sequence in input tree.')
+                         'sequence in input tree. If the extension \".gz\" '
+                         'is added the table will automatically be gzipped.')
 
 parser.add_argument('-i', '--in_trait', type=str.upper, choices=TRAIT_OPTIONS,
                     help='Specifies which default trait table should be '

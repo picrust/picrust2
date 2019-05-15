@@ -31,16 +31,17 @@ parser.add_argument('-i', '--input', metavar='PATH', required=True, type=str,
                     help='Input function abundance table.')
 
 parser.add_argument('-o', '--output', metavar='PATH', type=str, required=True,
-                    help='Output function abundance table with added ' +
-                         'description column.')
+                    help='Output function abundance table with added '
+                         'description column. If the extension \".gz\" '
+                         'is added the table will automatically be gzipped.')
 
 parser.add_argument('-m', '--map_type', type=str.upper, choices=TRAIT_OPTIONS,
-                    help='Specifies which default mapping table should be ' +
-                          'used. Use the --custom_map_table option ' +
+                    help='Specifies which default mapping table should be '
+                          'used. Use the --custom_map_table option '
                           'to input a non-default mapping table.')
 
 parser.add_argument('--custom_map_table', metavar='PATH', type=str,
-                    help='An input map table linking function ids to ' +
+                    help='An input map table linking function ids to '
                          'descriptions for each function. ')
 
 parser.add_argument('-v', '--version', default=False, action='version',
@@ -66,7 +67,8 @@ def main():
 
     # Output the table to file.
     make_output_dir_for_file(args.output)
-    tab_w_descrip.to_csv(path_or_buf=args.output, sep="\t", index=False)
+    tab_w_descrip.to_csv(path_or_buf=args.output, sep="\t",
+                         index=False, compression="infer")
 
 
 if __name__ == "__main__":
