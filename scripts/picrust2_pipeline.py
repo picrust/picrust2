@@ -237,10 +237,11 @@ def main():
                                                     remove_intermediate=args.remove_intermediate,
                                                     verbose=args.verbose)
 
-    # Print out elapsed time.
-    elapsed_time = time.time() - start_time
-    print("Completed PICRUSt2 pipeline in " + "%.2f" % elapsed_time +
-          " seconds.", file=sys.stderr)
+    if args.verbose:
+        # Print out elapsed time if verbose option set.
+        elapsed_time = time.time() - start_time
+        print("Completed PICRUSt2 pipeline in " + "%.2f" % elapsed_time +
+              " seconds.", file=sys.stderr)
 
 
 if __name__ == "__main__":
