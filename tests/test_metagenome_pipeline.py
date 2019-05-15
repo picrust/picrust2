@@ -14,7 +14,7 @@ from picrust2.metagenome_pipeline import (run_metagenome_pipeline,
                                           calc_weighted_nsti,
                                           id_rare_seqs,
                                           drop_tips_by_nsti,
-                                          metagenome_contrib)
+                                          metagenome_contributions)
 
 # Set paths to test files.
 test_dir_path = path.join(path.dirname(path.abspath(__file__)), "test_data",
@@ -292,8 +292,9 @@ class metagenome_contrib_tests(unittest.TestCase):
         pred_function = pd.read_csv(func_simple_in, sep="\t",
                                     index_col="sequence")
 
-        metagenome_contib_out = metagenome_contrib(func_abun=pred_function,
-                                                   sample_abun=study_seq_counts)
+        metagenome_contib_out = metagenome_contributions(func_abun=pred_function,
+                                                         sample_abun=study_seq_counts,
+                                                         rare_seqs=[])
 
         exp_metagenome_contrib_out = pd.read_csv(exp_meta_contrib, sep="\t")
 
@@ -312,9 +313,9 @@ class metagenome_contrib_tests(unittest.TestCase):
 
         rare_seqs = ['2568526487_cluster', '2593338844', '2558860574']
 
-        metagenome_contib_out_rare = metagenome_contrib(func_abun=pred_function,
-                                                        sample_abun=study_seq_counts,
-                                                        rare_seqs=rare_seqs)
+        metagenome_contib_out_rare = metagenome_contributions(func_abun=pred_function,
+                                                              sample_abun=study_seq_counts,
+                                                              rare_seqs=rare_seqs)
 
         exp_metagenome_contrib_out_rare = pd.read_csv(exp_meta_contrib_rare,
                                                       sep="\t")
