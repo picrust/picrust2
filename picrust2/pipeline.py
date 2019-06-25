@@ -281,7 +281,7 @@ def full_pipeline(study_fasta,
 
             norm_sequence_abun = path.join(output_folder,
                                            rxn_func + "_metagenome_out",
-                                           "seqtab_norm.tsv")
+                                           "seqtab_norm.tsv.gz")
 
             pathway_pipeline_cmd += ["--per_sequence_abun", norm_sequence_abun]
 
