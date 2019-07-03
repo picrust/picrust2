@@ -330,10 +330,12 @@ def read_seqabun(infile):
     if mothur_format:
         input_seqabun = pd.read_csv(filepath_or_buffer=infile, sep="\t")
         input_seqabun.drop(labels=["label", "numOtus"], axis=1, inplace=True)
-        input_seqabun.set_index(keys="Group", drop=True, inplace=True, 
+        input_seqabun.set_index(keys="Group", drop=True, inplace=True,
                                 verify_integrity=True)
         input_seqabun.index.name = None
-        return(input_seqabun.transpose())
+        input_seqabun = input_seqabun.transpose()
+        input_seqabun.index.astype('str', copy=False)
+        return(input_seqabun)
     else:
         return(biom.load_table(infile).to_dataframe(dense=True))
 

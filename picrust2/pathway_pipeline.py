@@ -525,6 +525,7 @@ def read_metagenome_input(filename):
     # Check whether table is stratified based on presence of "sequence" column.
     if "sequence" in input_df.columns:
         strat_tab = True
+        input_df.sequence = input_df.sequence.astype('str')
 
     return(input_df, strat_tab)
 
