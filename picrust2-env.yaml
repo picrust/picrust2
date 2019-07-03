@@ -19,7 +19,7 @@ dependencies:
 - pandas >=0.24.2
 - pytest >=4.4.1
 - pytest-cov >=2.6.1
-- python >=3.5
+- python >=3.5,<3.7
 - r-base >=3.5.1
 - r-castor=1.4.1
 - scipy >=1.2.1
