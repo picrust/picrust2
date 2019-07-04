@@ -284,9 +284,8 @@ def metagenome_contributions(func_abun, sample_abun, rare_seqs=[]):
     sequences will be collapsed to a single category called "RARE" if a
     non-empty list is input for the rare_seqs option.'''
 
-    # Convert sample abundance table to relative abundance since this is
-    # expected by many tools that use the metagenome contributions table.
-    sample_abun = sample_abun.div(sample_abun.sum(axis=0), axis=1) * 100
+    # Make copy of sample abundance that is in terms of relative abundances.
+    sample_relabun = sample_abun.div(sample_abun.sum(axis=0), axis=1) * 100
 
     # Counter used to identify the first sample.
     s_i = 0
@@ -295,38 +294,47 @@ def metagenome_contributions(func_abun, sample_abun, rare_seqs=[]):
         single_abun = sample_abun[sample]
         single_abun = single_abun.iloc[single_abun.to_numpy().nonzero()]
 
+        single_relabun = sample_relabun[sample]
+        single_relabun = single_relabun.iloc[single_relabun.to_numpy().nonzero()]
+
         func_abun_subset = func_abun.loc[single_abun.index, :]
 
         # Melt function table to be long format.
-        func_abun_subset['OTU'] = func_abun_subset.index.to_list()
+        func_abun_subset['taxon'] = func_abun_subset.index.to_list()
 
-        func_abun_subset_melt = pd.melt(func_abun_subset, id_vars='OTU',
-                                        value_name='GeneCountPerGenome',
-                                        var_name='Gene')
+        func_abun_subset_melt = pd.melt(func_abun_subset, id_vars='taxon',
+                                        value_name='genome_func_count',
+                                        var_name='func')
 
         # Remove rows where gene count is 0.
-        func_abun_subset_melt = func_abun_subset_melt[func_abun_subset_melt.GeneCountPerGenome != 0]
+        func_abun_subset_melt = func_abun_subset_melt[func_abun_subset_melt.genome_func_count != 0]
 
-        func_abun_subset_melt['OTUAbundanceInSample'] = single_abun.loc[func_abun_subset_melt['OTU'].to_list()].to_list()
+        func_abun_subset_melt['taxon_abun'] = single_abun.loc[func_abun_subset_melt['taxon'].to_list()].to_list()
 
-        func_abun_subset_melt['CountContributedByOTU'] = func_abun_subset_melt['GeneCountPerGenome'] * func_abun_subset_melt['OTUAbundanceInSample']
+        func_abun_subset_melt['taxon_rel_abun'] = single_relabun.loc[func_abun_subset_melt['taxon'].to_list()].to_list()
+
+        func_abun_subset_melt['taxon_func_abun'] = func_abun_subset_melt['genome_func_count'] * func_abun_subset_melt['taxon_abun']
+
+        func_abun_subset_melt['taxon_rel_func_abun'] = func_abun_subset_melt['genome_func_count'] * func_abun_subset_melt['taxon_rel_abun']
 
         # Collapse sequences identified as "rare" to the same category.
-        rare_seqs = [r for r in rare_seqs if r in func_abun_subset_melt['OTU'].to_list()]
+        rare_seqs = [r for r in rare_seqs if r in func_abun_subset_melt['taxon'].to_list()]
 
         if len(rare_seqs) > 0:
-            func_abun_subset_melt.loc[func_abun_subset_melt['OTU'].isin(rare_seqs), 'OTU'] = 'RARE'
-            func_abun_subset_melt = func_abun_subset_melt.groupby(['Gene', 'OTU'], as_index=False).sum()
+            func_abun_subset_melt.loc[func_abun_subset_melt['taxon'].isin(rare_seqs), 'taxon'] = 'RARE'
+            func_abun_subset_melt = func_abun_subset_melt.groupby(['func', 'taxon'], as_index=False).sum()
 
-        func_abun_subset_melt['Sample'] = sample
+        func_abun_subset_melt['sample'] = sample
 
         # Order column names.
-        func_abun_subset_melt = func_abun_subset_melt[['Sample',
-                                                       'Gene',
-                                                       'OTU',
-                                                       'OTUAbundanceInSample',
-                                                       'GeneCountPerGenome',
-                                                       'CountContributedByOTU']]
+        func_abun_subset_melt = func_abun_subset_melt[['sample',
+                                                       'func',
+                                                       'taxon',
+                                                       'taxon_abun',
+                                                       'taxon_rel_abun',
+                                                       'genome_func_count',
+                                                       'taxon_func_abun',
+                                                       'taxon_rel_func_abun']]
 
         if s_i > 0:
             metagenome_contrib_out = pd.concat([metagenome_contrib_out,
