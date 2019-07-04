@@ -297,7 +297,7 @@ def metagenome_contributions(func_abun, sample_abun, rare_seqs=[]):
 
         func_abun_subset = func_abun.loc[single_abun.index, :]
 
-        # Melt function table sto be long format.
+        # Melt function table to be long format.
         func_abun_subset['OTU'] = func_abun_subset.index.to_list()
 
         func_abun_subset_melt = pd.melt(func_abun_subset, id_vars='OTU',
@@ -315,7 +315,7 @@ def metagenome_contributions(func_abun, sample_abun, rare_seqs=[]):
         rare_seqs = [r for r in rare_seqs if r in func_abun_subset_melt['OTU'].to_list()]
 
         if len(rare_seqs) > 0:
-            func_abun_subset_melt.loc[func_abun_subset_melt['OTU'].isin(rare_seqs), 'OTU'] = 'RARE' 
+            func_abun_subset_melt.loc[func_abun_subset_melt['OTU'].isin(rare_seqs), 'OTU'] = 'RARE'
             func_abun_subset_melt = func_abun_subset_melt.groupby(['Gene', 'OTU'], as_index=False).sum()
 
         func_abun_subset_melt['Sample'] = sample
