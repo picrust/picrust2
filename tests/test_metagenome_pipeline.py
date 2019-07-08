@@ -21,56 +21,60 @@ test_dir_path = path.join(path.dirname(path.abspath(__file__)), "test_data",
                           "metagenome_pipeline")
 
 seqtab_biom = path.join(test_dir_path, "test_input_sequence_abun.biom")
-seqtab_tsv = path.join(test_dir_path, "test_input_sequence_abun.tsv")
+seqtab_tsv = path.join(test_dir_path, "test_input_sequence_abun.tsv.gz")
 seqtab_msf = path.join(test_dir_path, "test_input_sequence_abun.msf")
 
-func_predict = path.join(test_dir_path, "test_predicted_func.tsv")
-marker_predict = path.join(test_dir_path, "test_predicted_marker.tsv")
+func_predict = path.join(test_dir_path, "test_predicted_func.tsv.gz")
+marker_predict = path.join(test_dir_path, "test_predicted_marker.tsv.gz")
 
-nsti_in_path = path.join(test_dir_path, "test_nsti_in.tsv")
+nsti_in_path = path.join(test_dir_path, "test_nsti_in.tsv.gz")
 
-exp_strat = path.join(test_dir_path, "metagenome_out",
-                      "pred_metagenome_strat.tsv")
+seqtab_tsv_simple = path.join(test_dir_path, "test_sequence_abun_simple.txt.gz")
+
+func_simple_in = path.join(test_dir_path, "test_predicted_func_simple.txt.gz")
+
+marker_simple_in = path.join(test_dir_path, "test_predicted_marker_simple.txt.gz")
+
+exp_strat_simple = path.join(test_dir_path, "metagenome_out",
+                             "expected_metagenome_contrib.txt.gz")
+
+exp_strat_wide = path.join(test_dir_path, "metagenome_out",
+                           "pred_metagenome_strat.tsv.gz")
+
+exp_unstrat_simple = path.join(test_dir_path, "metagenome_out",
+                               "pred_metagenome_unstrat_simple.tsv.gz")
 
 exp_unstrat = path.join(test_dir_path, "metagenome_out",
-                        "pred_metagenome_unstrat.tsv")
+                        "pred_metagenome_unstrat.tsv.gz")
 
-exp_strat_rare = path.join(test_dir_path, "metagenome_out",
-                           "pred_metagenome_strat_RARE.tsv")
+exp_unstrat = path.join(test_dir_path, "metagenome_out",
+                        "pred_metagenome_unstrat.tsv.gz")
 
-exp_norm = path.join(test_dir_path, "metagenome_out", "seqtab_norm.tsv")
+exp_strat_simple_rare = path.join(test_dir_path, "metagenome_out",
+                                  "expected_metagenome_contrib_rare.txt.gz")
+
+exp_norm = path.join(test_dir_path, "metagenome_out", "seqtab_norm.tsv.gz")
 
 # Read in test inputs and expected files.
 func_predict_in = pd.read_csv(func_predict, sep="\t", index_col="sequence")
 marker_predict_in = pd.read_csv(marker_predict, sep="\t",
                                   index_col="sequence")
 
-exp_strat_in = pd.read_csv(exp_strat, sep="\t")
-exp_strat_in = exp_strat_in.set_index(["function", "sequence"])
+exp_strat_simple_in = pd.read_csv(exp_strat_simple, sep="\t")
 
-exp_strat_in_rare = pd.read_csv(exp_strat_rare, sep="\t")
-exp_strat_in_rare = exp_strat_in_rare.set_index(["function", "sequence"])
+exp_strat_simple_rare_in = pd.read_csv(exp_strat_simple_rare, sep="\t")
 
+exp_strat_wide_in = pd.read_csv(exp_strat_wide, sep="\t")
+exp_strat_wide_in = exp_strat_wide_in.set_index(["function", "sequence"])
 
 exp_unstrat_in = pd.read_csv(exp_unstrat, sep="\t", index_col="function")
+
+exp_unstrat_simple_in = pd.read_csv(exp_unstrat_simple, sep="\t",
+                                    index_col="function")
 
 exp_norm_in = pd.read_csv(exp_norm, sep="\t", index_col="normalized")
 
 nsti_in = pd.read_csv(nsti_in_path, sep="\t", index_col="sequence")
-
-
-# Metagenome contribution files:
-seqtab_tsv_simple = path.join(test_dir_path, "metagenome_contrib",
-                              "test_sequence_abun_simple.txt.gz")
-
-func_simple_in = path.join(test_dir_path, "metagenome_contrib",
-                           "test_predicted_func_test.txt.gz")
-
-exp_meta_contrib = path.join(test_dir_path, "metagenome_contrib",
-                             "expected_metagenome_contrib.txt.gz")
-
-exp_meta_contrib_rare = path.join(test_dir_path, "metagenome_contrib",
-                                  "expected_metagenome_contrib_rare.txt.gz")
 
 
 class metagenome_pipeline_test(unittest.TestCase):
@@ -79,14 +83,35 @@ class metagenome_pipeline_test(unittest.TestCase):
         '''Test that run_metagenome_pipeline works on tsv input seqtab.'''
 
         with TemporaryDirectory() as temp_dir:
+            strat_out, unstrat_out = run_metagenome_pipeline(input_seqabun=seqtab_tsv_simple,
+                                                             function=func_simple_in,
+                                                             marker=marker_simple_in,
+                                                             max_nsti=1.9,
+                                                             out_dir=temp_dir,
+                                                             strat_out=True,
+                                                             wide_table=False)
+
+        pd.testing.assert_frame_equal(strat_out.reset_index(drop=True),
+                                      exp_strat_simple_in.reset_index(drop=True),
+                                      check_like=True)
+        pd.testing.assert_frame_equal(unstrat_out, exp_unstrat_simple_in,
+                                      check_like=True)
+
+    def test_full_pipeline_strat_wide_tsv(self):
+        '''Test that run_metagenome_pipeline works on tsv input seqtab. Compare
+        with wide-format table in this case.'''
+
+        with TemporaryDirectory() as temp_dir:
             strat_out, unstrat_out = run_metagenome_pipeline(input_seqabun=seqtab_tsv,
                                                              function=func_predict,
                                                              marker=marker_predict,
                                                              max_nsti=1.9,
                                                              out_dir=temp_dir,
-                                                             strat_out=True)
+                                                             strat_out=True,
+                                                             wide_table=True)
 
-        pd.testing.assert_frame_equal(strat_out, exp_strat_in, check_like=True)
+        pd.testing.assert_frame_equal(strat_out, exp_strat_wide_in,
+                                      check_like=True)
 
         pd.testing.assert_frame_equal(unstrat_out, exp_unstrat_in,
                                       check_like=True)
@@ -122,9 +147,9 @@ class metagenome_pipeline_test(unittest.TestCase):
                                       check_like=True)
 
 
-    def test_full_pipeline_strat_biom(self):
-        '''Test that run_metagenome_pipeline create corrected stratified output
-        on biom input seqtab.'''
+    def test_full_pipeline_strat_wide_biom(self):
+        '''Test that run_metagenome_pipeline creates correct stratified output
+        on biom input seqtab. Compare with wide-format table in this case.'''
 
         with TemporaryDirectory() as temp_dir:
             strat_out, unstrat_out = run_metagenome_pipeline(input_seqabun=seqtab_biom,
@@ -132,9 +157,11 @@ class metagenome_pipeline_test(unittest.TestCase):
                                                              marker=marker_predict,
                                                              max_nsti=2.0,
                                                              out_dir=temp_dir,
-                                                             strat_out=True)
+                                                             strat_out=True,
+                                                             wide_table=True)
 
-        pd.testing.assert_frame_equal(strat_out, exp_strat_in, check_like=True)
+        pd.testing.assert_frame_equal(strat_out, exp_strat_wide_in,
+                                      check_like=True)
 
     def test_full_pipeline_unstrat_biom_when_no_strat(self):
         '''Test that run_metagenome_pipeline create corrected unstratified
@@ -261,67 +288,26 @@ class rare_seqs_test(unittest.TestCase):
         
         self.assertSetEqual(set(rare_seqs), set(["2558860574", "2571042244"]))
 
-    def test_full_pipeline_strat_tsv_rare_category(self):
+    def test_full_pipeline_strat_rare_category_tsv(self):
         '''Test that run_metagenome_pipeline works on tsv input seqtab and when
         rare seqs are collapsed into RARE category'''
 
         with TemporaryDirectory() as temp_dir:
-            strat_out, unstrat_out = run_metagenome_pipeline(input_seqabun=seqtab_tsv,
-                                                             function=func_predict,
-                                                             marker=marker_predict,
+            strat_out, unstrat_out = run_metagenome_pipeline(input_seqabun=seqtab_tsv_simple,
+                                                             function=func_simple_in,
+                                                             marker=marker_simple_in,
                                                              max_nsti=2.1,
-                                                             min_reads=4,
+                                                             min_reads=10,
                                                              min_samples=2,
                                                              out_dir=temp_dir,
-                                                             strat_out=True)
+                                                             strat_out=True,
+                                                             wide_table=False)
 
-        pd.testing.assert_frame_equal(strat_out, exp_strat_in_rare,
+        pd.testing.assert_frame_equal(strat_out.reset_index(drop=True),
+                                      exp_strat_simple_rare_in.reset_index(drop=True),
                                       check_like=True)
 
-        pd.testing.assert_frame_equal(unstrat_out, exp_unstrat_in,
-                                      check_like=True)   
-
-
-class metagenome_contrib_tests(unittest.TestCase):
-    '''Checks that metagenome contributions are calculated correctly.'''
-
-    def test_metagenome_contrib(self):
-        '''Basic test for metagenome contributions.'''
-
-        study_seq_counts = read_seqabun(seqtab_tsv_simple)
-        pred_function = pd.read_csv(func_simple_in, sep="\t",
-                                    index_col="sequence")
-
-        metagenome_contib_out = metagenome_contributions(func_abun=pred_function,
-                                                         sample_abun=study_seq_counts,
-                                                         rare_seqs=[])
-
-        exp_metagenome_contrib_out = pd.read_csv(exp_meta_contrib, sep="\t")
-
-        pd.testing.assert_frame_equal(exp_metagenome_contrib_out.reset_index(drop=True),
-                                      metagenome_contib_out.reset_index(drop=True),
-                                      check_like=True)
-
-
-    def test_metagenome_contrib_rare(self):
-        '''Test for metagenome contributions when rare sequences are
-        specified'''
-
-        study_seq_counts = read_seqabun(seqtab_tsv_simple)
-        pred_function = pd.read_csv(func_simple_in, sep="\t",
-                                    index_col="sequence")
-
-        rare_seqs = ['2568526487_cluster', '2593338844', '2558860574']
-
-        metagenome_contib_out_rare = metagenome_contributions(func_abun=pred_function,
-                                                              sample_abun=study_seq_counts,
-                                                              rare_seqs=rare_seqs)
-
-        exp_metagenome_contrib_out_rare = pd.read_csv(exp_meta_contrib_rare,
-                                                      sep="\t")
-
-        pd.testing.assert_frame_equal(exp_metagenome_contrib_out_rare.reset_index(drop=True),
-                                      metagenome_contib_out_rare.reset_index(drop=True),
+        pd.testing.assert_frame_equal(unstrat_out, exp_unstrat_simple_in,
                                       check_like=True)
 
 
