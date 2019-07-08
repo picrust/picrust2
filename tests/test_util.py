@@ -396,14 +396,13 @@ class convert_table_tests(unittest.TestCase):
     def test_contrib_to_legacy(self):
 
         with TemporaryDirectory() as temp_dir:
-            temp_dir = "/home/gavin/tmp/test"
+
             outfile = path.join(temp_dir, "test_out.gz")
             contrib_to_legacy([metagenome_contrib_in], outfile, True)
 
-            obs_out = pd.read_csv(outfile, sep="\t", index_col=[0, 1])
+            obs_out = pd.read_csv(outfile, sep="\t")
 
-        exp_out = pd.read_csv(metagenome_contrib_legacy, sep="\t",
-                              index_col=[0, 1])
+        exp_out = pd.read_csv(metagenome_contrib_legacy, sep="\t")
 
         pd.testing.assert_frame_equal(obs_out, exp_out, check_like=True)
 
