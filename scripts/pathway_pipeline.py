@@ -6,19 +6,20 @@ __version__ = "2.1.4-b"
 
 import argparse
 from picrust2.pathway_pipeline import pathway_pipeline
-from picrust2.util import make_output_dir, check_files_exist, TemporaryDirectory
+from picrust2.util import (make_output_dir, check_files_exist,
+                           TemporaryDirectory)
 from picrust2.default import default_regroup_map, default_pathway_map
 from os import path
 
 parser = argparse.ArgumentParser(
 
-    description=
-    "Script to infer the presence and abundances of pathways based on gene "
-    "family abundances in a sample. By default, this script expects a table "
-    "of EC number abundances (as output by PICRUSt2). However, alternative "
-    "reaction to pathways mapping files can also be specified. By default, EC "
-    "numbers are first regrouped to MetaCyc reactions, which are then "
-    "linked to MetaCyc pathways through the default database.\n\n\n"
+    description="Script to infer the presence and abundances of pathways "
+    "based on gene family abundances in a sample. By default, this script "
+    "expects a table of EC number abundances (as output by PICRUSt2). "
+    "However, alternative reaction to pathways mapping files can also be "
+    "specified. By default, EC numbers are first regrouped to MetaCyc "
+    "reactions, which are then linked to MetaCyc pathways through the default "
+    "database.\n\n\n"
 
     "Stratified output will only be output if a stratified metagenome is "
     "input. Please note that by default, stratified abundances are based on "
@@ -33,18 +34,17 @@ parser = argparse.ArgumentParser(
     "pathway based on the predicted gene families WITHIN each genome. Note "
     "that using the --per_sequence_contrib option can greatly increase "
     "runtime.",
-epilog='''
-Usage examples:
+    epilog='''
+    Usage examples:
 
-Default mapping of predicted EC number abundances to MetaCyc pathways:
-pathway_pipeline.py -i EC_metagenome_out/pred_metagenome_unstrat.tsv.gz -o pathways_out
+    Default mapping of predicted EC number abundances to MetaCyc pathways:
+    pathway_pipeline.py -i EC_metagenome_out/pred_metagenome_unstrat.tsv.gz -o pathways_out
 
-Mapping predicted KO abundances to legacy KEGG pathways (with stratified output that represents contributions to community-wide abundances):
-pathway_pipeline.py -i KO_metagenome_out/pred_metagenome_strat.tsv.gz -o KEGG_pathways_out --no_regroup --map picrust2/picrust2/default_files/pathway_mapfiles/KEGG_pathways_to_KO.tsv
+    Mapping predicted KO abundances to legacy KEGG pathways (with stratified output that represents contributions to community-wide abundances):
+    pathway_pipeline.py -i KO_metagenome_out/pred_metagenome_strat.tsv.gz -o KEGG_pathways_out --no_regroup --map picrust2/picrust2/default_files/pathway_mapfiles/KEGG_pathways_to_KO.tsv
 
-Map EC numbers to MetaCyc pathways and get stratified output corresponding to contribution of predicted gene family abundances within each predicted genome:
-pathway_pipeline.py -i EC_metagenome_out/pred_metagenome_unstrat.tsv.gz -o pathways_out_per_seq --per_sequence_contrib --per_sequence_abun EC_metagenome_out/seqtab_norm.tsv.gz --per_sequence_function EC_predicted.tsv.gz
-
+    Map EC numbers to MetaCyc pathways and get stratified output corresponding to contribution of predicted gene family abundances within each predicted genome:
+    pathway_pipeline.py -i EC_metagenome_out/pred_metagenome_unstrat.tsv.gz -o pathways_out_per_seq --per_sequence_contrib --per_sequence_abun EC_metagenome_out/seqtab_norm.tsv.gz --per_sequence_function EC_predicted.tsv.gz
 
 ''', formatter_class=argparse.RawDescriptionHelpFormatter)
 
@@ -58,7 +58,7 @@ parser.add_argument('-o', '--out_dir', metavar='DIRECTORY', required=True,
                     type=str, help='Output folder for pathway abundance output')
 
 parser.add_argument('-m', '--map', metavar='MAP', type=str,
-                    default=default_pathway_map, 
+                    default=default_pathway_map,
                     help='Mapping of pathways to reactions. The default '
                           'mapfile maps MetaCyc reactions to prokaryotic '
                           'MetaCyc pathways (default: %(default)s).')
@@ -68,12 +68,12 @@ parser.add_argument('--skip_minpath', default=False, action="store_true",
                          'present as a first pass (on by default).')
 
 parser.add_argument('--no_gap_fill', default=False, action="store_true",
-                    help='Do not perform gap filling before predicting ' +
-                         'pathway abundances (Gap filling is on otherwise by ' +
+                    help='Do not perform gap filling before predicting '
+                         'pathway abundances (Gap filling is on otherwise by '
                          'default.')
 
 parser.add_argument('--intermediate', metavar='DIR', type=str, default=None,
-                    help='Output folder for intermediate files (will be ' +
+                    help='Output folder for intermediate files (will be '
                          'deleted otherwise).')
 
 parser.add_argument('-p', '--proc', default=1, type=int,
@@ -144,6 +144,7 @@ parser.add_argument('--print_cmds', default=False, action="store_true",
 parser.add_argument('-v', '--version', default=False, action='version',
                     version="%(prog)s " + __version__)
 
+
 def main():
 
     args = parser.parse_args()
@@ -162,46 +163,48 @@ def main():
         make_output_dir(args.intermediate)
 
         unstrat_abun, \
-        unstrat_cov, \
-        strat_abun, \
-        strat_cov, \
-        path_abun_by_seq, \
-        path_cov_by_seq = pathway_pipeline(inputfile=args.input,
-                                           mapfile=args.map,
-                                           regroup_mapfile=args.regroup_map,
-                                           proc=args.proc,
-                                           out_dir=args.intermediate,
-                                           run_minpath=run_minpath_opt,
-                                           coverage=args.coverage,
-                                           gap_fill_on=gap_fill_opt,
-                                           no_regroup=args.no_regroup,
-                                           per_sequence_contrib=args.per_sequence_contrib,
-                                           per_sequence_abun=args.per_sequence_abun,
-                                           per_sequence_function=args.per_sequence_function,
-                                           wide_table=args.wide_table,
-                                           print_cmds=args.print_cmds)
-    else:
-        with TemporaryDirectory() as temp_dir:
-            unstrat_abun, \
             unstrat_cov, \
             strat_abun, \
             strat_cov, \
             path_abun_by_seq, \
-            path_cov_by_seq, \
-            unstrat_abun_per_seq = pathway_pipeline(inputfile=args.input,
-                                                    mapfile=args.map,
-                                                    regroup_mapfile=args.regroup_map,
-                                                    proc=args.proc,
-                                                    out_dir=temp_dir,
-                                                    run_minpath=run_minpath_opt,
-                                                    coverage=args.coverage,
-                                                    gap_fill_on=gap_fill_opt,
-                                                    no_regroup=args.no_regroup,
-                                                    per_sequence_contrib=args.per_sequence_contrib,
-                                                    per_sequence_abun=args.per_sequence_abun,
-                                                    per_sequence_function=args.per_sequence_function,
-                                                    wide_table=args.wide_table,
-                                                    print_cmds=args.print_cmds)
+            path_cov_by_seq = pathway_pipeline(
+                            inputfile=args.input,
+                            mapfile=args.map,
+                            regroup_mapfile=args.regroup_map,
+                            proc=args.proc,
+                            out_dir=args.intermediate,
+                            run_minpath=run_minpath_opt,
+                            coverage=args.coverage,
+                            gap_fill_on=gap_fill_opt,
+                            no_regroup=args.no_regroup,
+                            per_sequence_contrib=args.per_sequence_contrib,
+                            per_sequence_abun=args.per_sequence_abun,
+                            per_sequence_function=args.per_sequence_function,
+                            wide_table=args.wide_table,
+                            print_cmds=args.print_cmds)
+    else:
+        with TemporaryDirectory() as temp_dir:
+            unstrat_abun, \
+                unstrat_cov, \
+                strat_abun, \
+                strat_cov, \
+                path_abun_by_seq, \
+                path_cov_by_seq, \
+                unstrat_abun_per_seq = pathway_pipeline(
+                            inputfile=args.input,
+                            mapfile=args.map,
+                            regroup_mapfile=args.regroup_map,
+                            proc=args.proc,
+                            out_dir=temp_dir,
+                            run_minpath=run_minpath_opt,
+                            coverage=args.coverage,
+                            gap_fill_on=gap_fill_opt,
+                            no_regroup=args.no_regroup,
+                            per_sequence_contrib=args.per_sequence_contrib,
+                            per_sequence_abun=args.per_sequence_abun,
+                            per_sequence_function=args.per_sequence_function,
+                            wide_table=args.wide_table,
+                            print_cmds=args.print_cmds)
 
     make_output_dir(args.out_dir)
 
@@ -212,7 +215,8 @@ def main():
                         index_label="pathway", compression="gzip")
 
     if args.coverage:
-        unstrat_cov_outfile = path.join(args.out_dir, "path_cov_unstrat.tsv.gz")
+        unstrat_cov_outfile = path.join(args.out_dir,
+                                        "path_cov_unstrat.tsv.gz")
         unstrat_cov.to_csv(path_or_buf=unstrat_cov_outfile, sep="\t",
                            index_label="pathway", compression="gzip")
 
@@ -259,6 +263,7 @@ def main():
         unstrat_abun_per_seq.to_csv(path_or_buf=unstrat_abun_per_seq_outfile,
                                     sep="\t", index_label="pathway",
                                     compression="gzip")
+
 
 if __name__ == "__main__":
     main()
