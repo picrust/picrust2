@@ -18,6 +18,7 @@ from picrust2.util import (write_fasta,
                            convert_humann2_to_picrust2,
                            convert_picrust2_to_humann2,
                            convert_picrust2_to_humann2_merged,
+                           contrib_to_legacy,
                            read_seqabun,
                            TemporaryDirectory)
 
@@ -86,7 +87,14 @@ picrust2_strat_exp3 = path.join(convert_test_dir_out_path, "picrust2_strat_to_hu
 
 picrust2_unstrat_in1 = path.join(convert_test_dir_path, "picrust2_unstrat_tmp1.tsv")
 picrust2_unstrat_in2 = path.join(convert_test_dir_path, "picrust2_unstrat_tmp2.tsv")
-picrust2_unstrat_exp = path.join(convert_test_dir_out_path, "picrust2_unstrat_tmp1_tmp2_humann2-format.tsv")
+picrust2_unstrat_exp = path.join(convert_test_dir_out_path,
+                                 "picrust2_unstrat_tmp1_tmp2_humann2-format.tsv")
+
+metagenome_contrib_in = path.join(convert_test_dir_path,
+                                  "metagenome_contrib_test.tsv.gz")
+
+metagenome_contrib_legacy = path.join(convert_test_dir_path,
+                                      "metagenome_contrib_legacy.tsv.gz")
 
 # Inititalize 3 test pandas dataframes.
 test1 = pd.DataFrame.from_dict({"a": [1, 2, 3],
@@ -382,6 +390,20 @@ class convert_table_tests(unittest.TestCase):
             obs_out = pd.read_csv(outfile, sep="\t", index_col=[0, 1])
 
         exp_out = pd.read_csv(humann2_strat_split_exp, sep="\t", index_col=[0, 1])
+
+        pd.testing.assert_frame_equal(obs_out, exp_out, check_like=True)
+
+    def test_contrib_to_legacy(self):
+
+        with TemporaryDirectory() as temp_dir:
+            temp_dir = "/home/gavin/tmp/test"
+            outfile = path.join(temp_dir, "test_out.gz")
+            contrib_to_legacy([metagenome_contrib_in], outfile, True)
+
+            obs_out = pd.read_csv(outfile, sep="\t", index_col=[0, 1])
+
+        exp_out = pd.read_csv(metagenome_contrib_legacy, sep="\t",
+                              index_col=[0, 1])
 
         pd.testing.assert_frame_equal(obs_out, exp_out, check_like=True)
 
