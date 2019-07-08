@@ -5,7 +5,6 @@ __license__ = "GPL"
 __version__ = "2.1.4-b"
 
 import sys
-import biom
 import pandas as pd
 import numpy as np
 from os import path
@@ -337,13 +336,13 @@ def metagenome_contributions(func_abun, sample_abun, rare_seqs=[],
                                                            'taxon_function_abun',
                                                            'taxon_rel_function_abun']]
 
-        if s_i > 0:
+        if s_i == 0:
+            metagenome_contrib_out = func_abun_subset_melt.copy()
+            s_i += 1
+        else:
             metagenome_contrib_out = pd.concat([metagenome_contrib_out,
                                                 func_abun_subset_melt],
                                                 axis=0)
-        else:
-            metagenome_contrib_out = func_abun_subset_melt.copy()
-            s_i += 1
 
     return(metagenome_contrib_out)
 
@@ -363,4 +362,3 @@ def contrib_to_unstrat(contrib_table):
     contrib_table.columns.name = None
 
     return(contrib_table)
-

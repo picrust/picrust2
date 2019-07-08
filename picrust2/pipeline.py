@@ -97,7 +97,7 @@ def full_pipeline(study_fasta,
     funcs.append("marker")
     func_tables["marker"] = marker_gene_table
 
-    # Check that all input files exist. 
+    # Check that all input files exist.
     ref_msa, tree, hmm, model = identify_ref_files(ref_dir)
     files2check = [study_fasta, input_table, ref_msa, tree, hmm, model] + list(func_tables.values())
 

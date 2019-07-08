@@ -6,8 +6,6 @@ __version__ = "2.1.4-b"
 
 from os import path
 
-# Default support files packaged with PICRUSt2.
-    
 project_dir = path.dirname(path.abspath(__file__))
 
 default_ref_dir = path.join(project_dir, "default_files", "prokaryotic",
@@ -29,9 +27,8 @@ default_pathway_map = path.join(project_dir, "default_files",
                                 "pathway_mapfiles",
                                 "metacyc_path2rxn_struc_filt_pro.txt")
 
-fungi_pathway_map = path.join(project_dir, "default_files",
-                                           "pathway_mapfiles",
-                                           "metacyc_path2rxn_struc_filt_fungi.txt")
+fungi_pathway_map = path.join(project_dir, "default_files", "pathway_mapfiles",
+                              "metacyc_path2rxn_struc_filt_fungi.txt")
 
 # Inititalize default trait table files for hsp.py.
 prokaryotic_dir = path.join(project_dir, "default_files", "prokaryotic")
@@ -54,7 +51,8 @@ default_tables = {"16S": path.join(prokaryotic_dir, "16S.txt.gz"),
 # Initialize default mapfiles to be used with add_descriptions.py
 map_dir = path.join(project_dir, "default_files", "description_mapfiles")
 
-default_map =    {"METACYC": path.join(map_dir, "metacyc_pathways_info_prokaryotes.txt.gz"),
+default_map = {"METACYC": path.join(map_dir,
+                                "metacyc_pathways_info_prokaryotes.txt.gz"),
 
                   "COG": path.join(map_dir, "cog_info.tsv.gz"),
 
@@ -65,4 +63,3 @@ default_map =    {"METACYC": path.join(map_dir, "metacyc_pathways_info_prokaryot
                   "PFAM": path.join(map_dir, "pfam_info.tsv.gz"),
 
                   "TIGRFAM": path.join(map_dir, "tigrfam_info.tsv.gz")}
-

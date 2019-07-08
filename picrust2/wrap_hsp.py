@@ -10,6 +10,7 @@ from math import ceil
 from joblib import Parallel, delayed
 from picrust2.util import system_call_check, TemporaryDirectory
 
+
 def castor_hsp_workflow(tree_path,
                         trait_table_path,
                         hsp_method,
@@ -25,7 +26,7 @@ def castor_hsp_workflow(tree_path,
 
     # Read in trait table as pandas dataframe.
     trait_tab = pd.read_csv(trait_table_path, sep="\t", index_col="assembly",
-                              dtype={'assembly' : str})
+                            dtype={'assembly': str})
 
     # Calculate NSTI values if option set.
     if calc_nsti:
@@ -82,7 +83,7 @@ def castor_hsp_workflow(tree_path,
         ci_out_combined = pd.concat(ci_out_chunks, axis=1, sort=True)
 
     return(predict_out_combined, ci_out_combined)
-    
+
 
 def castor_hsp_wrapper(tree_path, trait_tab, hsp_method, calc_ci=False,
                        check_input=False, ran_seed=None):
@@ -173,4 +174,3 @@ def castor_nsti(tree_path,
         ValueError("Number of rows in returned NSTI table is incorrect.")
 
     return(nsti_out)
-
