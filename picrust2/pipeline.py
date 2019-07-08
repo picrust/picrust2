@@ -26,7 +26,6 @@ def full_pipeline(study_fasta,
                   no_pathways,
                   regroup_map,
                   no_regroup,
-                  metagenome_contrib,
                   stratified,
                   max_nsti,
                   min_reads,
@@ -37,6 +36,7 @@ def full_pipeline(study_fasta,
                   no_gap_fill,
                   coverage,
                   per_sequence_contrib,
+                  wide_table,
                   remove_intermediate,
                   verbose):
     '''Function that contains wrapper commands for full PICRUSt2 pipeline.
@@ -223,16 +223,21 @@ def full_pipeline(study_fasta,
         func_output[func][0] = path.join(func_output_dir,
                                          "pred_metagenome_unstrat.tsv.gz")
 
-        if metagenome_contrib:
-            metagenome_pipeline_cmd.append("--metagenome_contrib")
+        if wide_table:
+            metagenome_pipeline_cmd.append("--wide_table")
 
         if not skip_nsti:
             metagenome_pipeline_cmd += ["--max_nsti", str(max_nsti)]
 
         if stratified:
             metagenome_pipeline_cmd.append("--strat_out")
-            func_output[func][1] = path.join(func_output_dir,
-                                             "pred_metagenome_strat.tsv.gz")
+
+            if wide_table:
+                func_output[func][1] = path.join(func_output_dir,
+                                                 "pred_metagenome_strat.tsv.gz")
+            else:
+                func_output[func][1] = path.join(func_output_dir,
+                                                 "pred_metagenome_contrib.tsv.gz")
 
         # Note that STDERR is printed for this command since it outputs how
         # many ASVs were above the NSTI cut-off (if specified).
@@ -276,6 +281,9 @@ def full_pipeline(study_fasta,
         else:
             pathway_pipeline_cmd += ["--regroup_map", regroup_map]
 
+        if wide_table:
+            pathway_pipeline_cmd.append("--wide_table")
+
         if per_sequence_contrib:
             pathway_pipeline_cmd.append("--per_sequence_contrib")
 
@@ -306,14 +314,24 @@ def full_pipeline(study_fasta,
         pathway_outfiles["unstrat_cov"] = path.join(path_output_dir,
                                                     "path_cov_unstrat.tsv.gz")
 
-        if stratified:
-            pathway_outfiles["strat_abun"] = path.join(path_output_dir,
-                                                       "path_abun_strat.tsv.gz")
-            pathway_outfiles["strat_cov"] = path.join(path_output_dir,
-                                                      "path_cov_strat.tsv.gz")
-        else:
-            pathway_outfiles["strat_abun"] = None
-            pathway_outfiles["strat_cov"] = None
+        pathway_outfiles["strat_abun"] = None
+        pathway_outfiles["strat_cov"] = None
+
+        if stratified or per_sequence_contrib:
+            if wide_table:
+                pathway_outfiles["strat_abun"] = path.join(path_output_dir,
+                                                           "path_abun_strat.tsv.gz")
+
+                if per_sequence_contrib:
+                    pathway_outfiles["strat_cov"] = path.join(path_output_dir,
+                                                              "path_cov_strat.tsv.gz")
+
+            else:
+                pathway_outfiles["strat_abun"] = path.join(path_output_dir,
+                                                           "path_abun_contrib.tsv.gz")
+                if per_sequence_contrib:
+                    pathway_outfiles["strat_cov"] = path.join(path_output_dir,
+                                                              "path_cov_contrib.tsv.gz")
 
     return(func_output, pathway_outfiles)
 

@@ -19,8 +19,8 @@ def run_metagenome_pipeline(input_seqabun,
                             max_nsti,
                             min_reads=1,
                             min_samples=1,
-                            metagenome_contrib=False,
                             strat_out=False,
+                            wide_table=False,
                             out_dir='metagenome_out'):
     '''Main function to run full metagenome pipeline. Meant to run modular
     functions largely listed below. Will return predicted metagenomes
@@ -77,9 +77,9 @@ def run_metagenome_pipeline(input_seqabun,
                            nsti_input=nsti_val,
                            outfile=weighted_nsti_out)
 
-    # Determine which sequences should be in the "RARE" category if either
-    # the metagenome contributions table or stratified table is requested.
-    if metagenome_contrib or strat_out:
+    # Determine which sequences should be in the "RARE" category if stratified
+    # table is specified.
+    if strat_out:
         rare_seqs = []
 
         if min_reads != 1 or min_samples != 1:
@@ -87,29 +87,19 @@ def run_metagenome_pipeline(input_seqabun,
                                      min_reads=min_reads,
                                      min_samples=min_samples)
 
-    # Output metagenome contributions table if specified.
-    if metagenome_contrib:
-
-        metagenome_contib_output = metagenome_contributions(func_abun=pred_function,
-                                                            sample_abun=study_seq_counts,
-                                                            rare_seqs=rare_seqs)
-
-        metagenome_contib_outfile = path.join(out_dir,
-                                              "metagenome_contrib.tsv.gz")
-
-        metagenome_contib_output.to_csv(path_or_buf=metagenome_contib_outfile,
-                                        sep="\t", index=False,
-                                        compression="gzip")
-
-    # Generate tables of functions by sample and return (either stratified or
-    # not).
-    if strat_out:
-
-        return(strat_funcs_by_samples(pred_function, study_seq_counts,
-                                      rare_seqs))
-    else:
+    # Generate and return final tables.
+    if not strat_out:
         return(None, unstrat_funcs_only_by_samples(pred_function,
                                                    study_seq_counts))
+
+    elif strat_out and not wide_table:
+        return(metagenome_contributions(pred_function, study_seq_counts,
+                                        rare_seqs),
+               unstrat_funcs_only_by_samples(pred_function, study_seq_counts))
+
+    elif strat_out and wide_table:
+        return(strat_funcs_by_samples(pred_function, study_seq_counts,
+                                      rare_seqs))
 
 
 def strat_funcs_by_samples(func_abun, sample_abun, rare_seqs=[],
@@ -276,13 +266,15 @@ def id_rare_seqs(in_counts, min_reads, min_samples):
     return(list(low_freq_seq.union(few_samples_seq)))
 
 
-def metagenome_contributions(func_abun, sample_abun, rare_seqs=[]):
+def metagenome_contributions(func_abun, sample_abun, rare_seqs=[],
+                             skip_abun=False):
     '''Take in function table and study sequence abundance table. Returns
     long-form table of how each sequence contributes functions in each
     sample. Note that the old format of columns (such as calling the sequences
     "OTUs" is retained here for backwards compatability. A subset of input
     sequences will be collapsed to a single category called "RARE" if a
-    non-empty list is input for the rare_seqs option.'''
+    non-empty list is input for the rare_seqs option. The skip_abun option
+    can be set when the abundances columns are not needed.'''
 
     # Make copy of sample abundance that is in terms of relative abundances.
     sample_relabun = sample_abun.div(sample_abun.sum(axis=0), axis=1) * 100
@@ -302,39 +294,48 @@ def metagenome_contributions(func_abun, sample_abun, rare_seqs=[]):
         # Melt function table to be long format.
         func_abun_subset['taxon'] = func_abun_subset.index.to_list()
 
-        func_abun_subset_melt = pd.melt(func_abun_subset, id_vars='taxon',
-                                        value_name='genome_func_count',
-                                        var_name='func')
+        func_abun_subset_melt = pd.melt(func_abun_subset,
+                                        id_vars='taxon',
+                                        value_name='genome_function_count',
+                                        var_name='function')
 
         # Remove rows where gene count is 0.
-        func_abun_subset_melt = func_abun_subset_melt[func_abun_subset_melt.genome_func_count != 0]
+        func_abun_subset_melt = func_abun_subset_melt[func_abun_subset_melt['genome_function_count'] != 0]
 
-        func_abun_subset_melt['taxon_abun'] = single_abun.loc[func_abun_subset_melt['taxon'].to_list()].to_list()
+        if not skip_abun:
+            func_abun_subset_melt['taxon_abun'] = single_abun.loc[func_abun_subset_melt['taxon'].to_list()].to_list()
 
-        func_abun_subset_melt['taxon_rel_abun'] = single_relabun.loc[func_abun_subset_melt['taxon'].to_list()].to_list()
+            func_abun_subset_melt['taxon_rel_abun'] = single_relabun.loc[func_abun_subset_melt['taxon'].to_list()].to_list()
 
-        func_abun_subset_melt['taxon_func_abun'] = func_abun_subset_melt['genome_func_count'] * func_abun_subset_melt['taxon_abun']
+            func_abun_subset_melt['taxon_function_abun'] = func_abun_subset_melt['genome_function_count'] * func_abun_subset_melt['taxon_abun']
 
-        func_abun_subset_melt['taxon_rel_func_abun'] = func_abun_subset_melt['genome_func_count'] * func_abun_subset_melt['taxon_rel_abun']
+            func_abun_subset_melt['taxon_rel_function_abun'] = func_abun_subset_melt['genome_function_count'] * func_abun_subset_melt['taxon_rel_abun']
 
         # Collapse sequences identified as "rare" to the same category.
         rare_seqs = [r for r in rare_seqs if r in func_abun_subset_melt['taxon'].to_list()]
 
         if len(rare_seqs) > 0:
             func_abun_subset_melt.loc[func_abun_subset_melt['taxon'].isin(rare_seqs), 'taxon'] = 'RARE'
-            func_abun_subset_melt = func_abun_subset_melt.groupby(['func', 'taxon'], as_index=False).sum()
+            func_abun_subset_melt = func_abun_subset_melt.groupby(['function', 'taxon'],
+                                                                  as_index=False).sum()
 
         func_abun_subset_melt['sample'] = sample
 
         # Order column names.
-        func_abun_subset_melt = func_abun_subset_melt[['sample',
-                                                       'func',
-                                                       'taxon',
-                                                       'taxon_abun',
-                                                       'taxon_rel_abun',
-                                                       'genome_func_count',
-                                                       'taxon_func_abun',
-                                                       'taxon_rel_func_abun']]
+        if skip_abun:
+            func_abun_subset_melt = func_abun_subset_melt[['sample',
+                                                           'function',
+                                                           'taxon',
+                                                           'genome_function_count']]
+        else:
+            func_abun_subset_melt = func_abun_subset_melt[['sample',
+                                                           'function',
+                                                           'taxon',
+                                                           'taxon_abun',
+                                                           'taxon_rel_abun',
+                                                           'genome_function_count',
+                                                           'taxon_function_abun',
+                                                           'taxon_rel_function_abun']]
 
         if s_i > 0:
             metagenome_contrib_out = pd.concat([metagenome_contrib_out,
@@ -345,4 +346,21 @@ def metagenome_contributions(func_abun, sample_abun, rare_seqs=[]):
             s_i += 1
 
     return(metagenome_contrib_out)
+
+
+def contrib_to_unstrat(contrib_table):
+    '''Take in metagenome contribution table and return wide-format sample
+    (unstratified) metagenome table.'''
+
+    contrib_table = contrib_table[['sample', 'function', 'taxon_function_abun']]
+
+    contrib_table = pd.pivot_table(data=contrib_table, columns='sample',
+                                   index='function',
+                                   values='taxon_function_abun',
+                                   aggfunc=np.sum, fill_value=0)
+
+    contrib_table.index.name = None
+    contrib_table.columns.name = None
+
+    return(contrib_table)
 

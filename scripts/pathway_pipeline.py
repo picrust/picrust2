@@ -130,6 +130,14 @@ parser.add_argument('--per_sequence_function', metavar='PATH',
                          'for the metagenome pipeline step (default: '
                          '%(default)s).')
 
+parser.add_argument('--wide_table', default=False,
+                    action="store_true",
+                    help='Flag to specify that wide-format stratified table '
+                         'should be output rather than metagenome '
+                         'contribution table. This is the deprecated method '
+                         'of generating stratified tables since it is '
+                         'extremely memory intensive (default: %(default)s).')
+
 parser.add_argument('--print_cmds', default=False, action="store_true",
                     help='If specified, print out wrapped commands to screen')
 
@@ -153,59 +161,104 @@ def main():
 
         make_output_dir(args.intermediate)
 
-        unstrat_abun, unstrat_cov, strat_abun, strat_cov = pathway_pipeline(
-                                                      inputfile=args.input,
-                                                      mapfile=args.map,
-                                                      regroup_mapfile=args.regroup_map,
-                                                      proc=args.proc,
-                                                      out_dir=args.intermediate,
-                                                      run_minpath=run_minpath_opt,
-                                                      coverage=args.coverage,
-                                                      gap_fill_on=gap_fill_opt,
-                                                      no_regroup=args.no_regroup,
-                                                      per_sequence_contrib=args.per_sequence_contrib,
-                                                      per_sequence_abun=args.per_sequence_abun,
-                                                      per_sequence_function=args.per_sequence_function,
-                                                      print_cmds=args.print_cmds)
+        unstrat_abun, \
+        unstrat_cov, \
+        strat_abun, \
+        strat_cov, \
+        path_abun_by_seq, \
+        path_cov_by_seq = pathway_pipeline(inputfile=args.input,
+                                           mapfile=args.map,
+                                           regroup_mapfile=args.regroup_map,
+                                           proc=args.proc,
+                                           out_dir=args.intermediate,
+                                           run_minpath=run_minpath_opt,
+                                           coverage=args.coverage,
+                                           gap_fill_on=gap_fill_opt,
+                                           no_regroup=args.no_regroup,
+                                           per_sequence_contrib=args.per_sequence_contrib,
+                                           per_sequence_abun=args.per_sequence_abun,
+                                           per_sequence_function=args.per_sequence_function,
+                                           wide_table=args.wide_table,
+                                           print_cmds=args.print_cmds)
     else:
         with TemporaryDirectory() as temp_dir:
-            unstrat_abun, unstrat_cov, strat_abun, strat_cov = pathway_pipeline(
-                                                            inputfile=args.input,
-                                                            mapfile=args.map,
-                                                            regroup_mapfile=args.regroup_map,
-                                                            proc=args.proc,
-                                                            out_dir=temp_dir,
-                                                            run_minpath=run_minpath_opt,
-                                                            coverage=args.coverage,
-                                                            gap_fill_on=gap_fill_opt,
-                                                            no_regroup=args.no_regroup,
-                                                            per_sequence_contrib=args.per_sequence_contrib,
-                                                            per_sequence_abun=args.per_sequence_abun,
-                                                            per_sequence_function=args.per_sequence_function,
-                                                            print_cmds=args.print_cmds)
+            unstrat_abun, \
+            unstrat_cov, \
+            strat_abun, \
+            strat_cov, \
+            path_abun_by_seq, \
+            path_cov_by_seq, \
+            unstrat_abun_per_seq = pathway_pipeline(inputfile=args.input,
+                                                    mapfile=args.map,
+                                                    regroup_mapfile=args.regroup_map,
+                                                    proc=args.proc,
+                                                    out_dir=temp_dir,
+                                                    run_minpath=run_minpath_opt,
+                                                    coverage=args.coverage,
+                                                    gap_fill_on=gap_fill_opt,
+                                                    no_regroup=args.no_regroup,
+                                                    per_sequence_contrib=args.per_sequence_contrib,
+                                                    per_sequence_abun=args.per_sequence_abun,
+                                                    per_sequence_function=args.per_sequence_function,
+                                                    wide_table=args.wide_table,
+                                                    print_cmds=args.print_cmds)
 
     make_output_dir(args.out_dir)
 
-    # Write output files.
+    # Write output files. The unstratified abundance table will always be
+    # written, but the other files will only be written if applicable.
     unstrat_abun_outfile = path.join(args.out_dir, "path_abun_unstrat.tsv.gz")
-    unstrat_abun.to_csv(path_or_buf=unstrat_abun_outfile,  sep="\t",
-                       index_label="pathway", compression="gzip")
+    unstrat_abun.to_csv(path_or_buf=unstrat_abun_outfile, sep="\t",
+                        index_label="pathway", compression="gzip")
 
     if args.coverage:
         unstrat_cov_outfile = path.join(args.out_dir, "path_cov_unstrat.tsv.gz")
-        unstrat_cov.to_csv(path_or_buf=unstrat_cov_outfile,  sep="\t",
+        unstrat_cov.to_csv(path_or_buf=unstrat_cov_outfile, sep="\t",
                            index_label="pathway", compression="gzip")
 
-    # Write stratified output only if something besides None was returned.
     if strat_abun is not None:
-        strat_abun_outfile = path.join(args.out_dir, "path_abun_strat.tsv.gz")
-        strat_abun.to_csv(path_or_buf=strat_abun_outfile,  sep="\t",
+
+        if args.wide_table:
+            strat_abun_outfile = path.join(args.out_dir,
+                                           "path_abun_strat.tsv.gz")
+        else:
+            strat_abun_outfile = path.join(args.out_dir,
+                                           "path_abun_contrib.tsv.gz")
+
+        strat_abun.to_csv(path_or_buf=strat_abun_outfile, sep="\t",
                           index=False, compression="gzip")
 
     if args.coverage and strat_cov is not None:
-        strat_cov_outfile = path.join(args.out_dir, "path_cov_strat.tsv.gz")
-        strat_cov.to_csv(path_or_buf=strat_cov_outfile,  sep="\t",
+        if args.wide_table:
+            strat_cov_outfile = path.join(args.out_dir,
+                                          "path_cov_strat.tsv.gz")
+        else:
+            strat_cov_outfile = path.join(args.out_dir,
+                                          "path_cov_contrib.tsv.gz")
+
+        strat_cov.to_csv(path_or_buf=strat_cov_outfile, sep="\t",
                          index=False, compression="gzip")
+
+    if path_abun_by_seq is not None:
+        genome_path_abun_outfile = path.join(args.out_dir,
+                                             "path_abun_predictions.tsv.gz")
+        path_abun_by_seq.to_csv(path_or_buf=genome_path_abun_outfile, sep="\t",
+                                index=True, compression="gzip",
+                                index_label="sequence")
+
+    if args.coverage and path_cov_by_seq is not None:
+        genome_path_cov_outfile = path.join(args.out_dir,
+                                            "path_cov_predictions.tsv.gz")
+        path_cov_by_seq.to_csv(path_or_buf=genome_path_cov_outfile, sep="\t",
+                               index=True, compression="gzip",
+                               index_label="sequence")
+
+    if unstrat_abun_per_seq is not None:
+        unstrat_abun_per_seq_outfile = path.join(args.out_dir,
+                                                 "path_abun_unstrat_per_seq.tsv.gz")
+        unstrat_abun_per_seq.to_csv(path_or_buf=unstrat_abun_per_seq_outfile,
+                                    sep="\t", index_label="pathway",
+                                    compression="gzip")
 
 if __name__ == "__main__":
     main()

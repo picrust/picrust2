@@ -20,8 +20,7 @@ parser = argparse.ArgumentParser(
                 "will be generated: one stratified and one non-stratified " +
                 "by contributing taxa",
 
-    epilog='''
-Usage example:
+    epilog='''Usage example:
 metagenome_pipeline.py -i seqabun.biom -f predicted_EC.tsv.gz -m predicted_16S.tsv.gz --max_nsti 2.0 -o metagenome_out
 ''',
     formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -57,15 +56,21 @@ parser.add_argument('--min_samples', metavar='INT', type=int, default=1,
                          'counted as part of the \"RARE\" category in the ' +
                          'stratified output (default: %(default)d).')
 
-parser.add_argument('--metagenome_contrib', default=False, action='store_true',
-                    help='Output long-form gzipped table called '
-                         '\"metagenome_contrib.tsv.gz\" that breaks down how '
-                         'each input ASV is contributing to each predicted '
-                         'gene family. Note that the column names of this '
-                         'file refers to OTUs for backwards compatability.')
-
 parser.add_argument('--strat_out', default=False, action='store_true',
-                    help='Output table stratified by sequences as well.')
+                    help='Output table stratified by sequences as well. By '
+                         'default this will be in \"contributional\" format '
+                         '(i.e. long-format) unless the \"--wide_table\" '
+                         'option is set. The startified outfile is named '
+                         '\"metagenome_contrib.tsv.gz\" when in long-format.')
+
+parser.add_argument('--wide_table', default=False, action='store_true',
+                    help='Output wide-format stratified table of metagenome '
+                         'predictions when \"--strat_out\" is set. This is '
+                         'the deprecated method of generating stratified '
+                         'tables since it is extremely memory intensive. The '
+                         'startified outfile is named '
+                         '\"pred_metagenome_strat.tsv.gz\" when this option '
+                         'is set.')
 
 parser.add_argument('-o', '--out_dir', metavar='PATH', type=str,
                     default='metagenome_out',
@@ -80,28 +85,29 @@ def main():
 
     args = parser.parse_args()
 
-    # Check that input files exist.
     check_files_exist([args.input, args.function, args.marker])
 
-    # Pass arguments to key function and get predicted functions
-    # stratified and unstratified by genomes.
-    strat_pred, unstrat_pred = run_metagenome_pipeline(input_seqabun=args.input,
-                                                       function=args.function,
-                                                       marker=args.marker,
-                                                       out_dir=args.out_dir,
-                                                       max_nsti=args.max_nsti,
-                                                       min_reads=args.min_reads,
-                                                       min_samples=args.min_samples,
-                                                       metagenome_contrib=args.metagenome_contrib,
-                                                       strat_out=args.strat_out)
+    strat_pred, unstrat_pred = run_metagenome_pipeline(
+                                            input_seqabun=args.input,
+                                            function=args.function,
+                                            marker=args.marker,
+                                            out_dir=args.out_dir,
+                                            max_nsti=args.max_nsti,
+                                            min_reads=args.min_reads,
+                                            min_samples=args.min_samples,
+                                            strat_out=args.strat_out,
+                                            wide_table=args.wide_table)
 
-    # Generate output table filepaths and write out pandas dataframe.
     unstrat_outfile = path.join(args.out_dir, "pred_metagenome_unstrat.tsv.gz")
     unstrat_pred.to_csv(path_or_buf=unstrat_outfile, sep="\t", index=True,
                         index_label="function", compression="gzip")
 
-    # Write out stratified table only if that option was specified.
-    if args.strat_out:
+    if args.strat_out and not args.wide_table:
+        strat_outfile = path.join(args.out_dir, "metagenome_contrib.tsv.gz")
+        strat_pred.to_csv(path_or_buf=strat_outfile, sep="\t", index=False,
+                          compression="gzip")
+
+    elif args.strat_out and args.wide_table:
         strat_outfile = path.join(args.out_dir, "pred_metagenome_strat.tsv.gz")
         strat_pred.to_csv(path_or_buf=strat_outfile, sep="\t", index=True,
                           compression="gzip")

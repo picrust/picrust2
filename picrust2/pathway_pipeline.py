@@ -14,7 +14,9 @@ import numpy as np
 import copy
 from picrust2.util import (system_call_check, check_files_exist,
                            make_output_dir)
-from picrust2.metagenome_pipeline import strat_funcs_by_samples
+from picrust2.metagenome_pipeline import (strat_funcs_by_samples,
+                                          metagenome_contributions,
+                                          contrib_to_unstrat)
 
 
 class PathwaysDatabase:
@@ -280,20 +282,24 @@ def pathway_pipeline(inputfile,
                      per_sequence_contrib=False,
                      per_sequence_abun=None,
                      per_sequence_function=None,
+                     wide_table=False,
                      print_cmds=False):
     '''Pipeline containing full pipeline for reading input files, making
     calls to functions to run MinPath and calculate pathway abundances and
-    coverages. Will return 3 output Pandas dataframes: (1) unstratified pathway
-    abundances, (2) unstratified pathway coverages, and (3) stratified pathway
-    abundances.'''
+    coverages. Will return: (1) unstratified pathway abundances, (2)
+    unstratified pathway coverages, (3) stratified pathway abundances, (4)
+    stratified pathway coverages, (5) pathway abundance predictions per
+    sequence, (6) pathway coverage predictions per sequence, (7) unstratified
+    pathway abundances based on per-sequence predictions. An object of class
+    None will be returned for any non-applicable value.'''
 
     # If no regrouping flag set then set input regrouping mapfile to be None.
     if no_regroup:
         regroup_mapfile = None
 
-    # Read in table of gene family abundances and determine if in stratified
-    # format or not.
-    in_metagenome, strat_format = read_metagenome_input(inputfile)
+    # Read in table of gene family abundances and determine if in unstratified,
+    # stratified, or contribution format.
+    in_metagenome, in_format = read_metagenome_input(inputfile)
 
     # Basic checks if --per_sequence_contrib set.
     if per_sequence_contrib:
@@ -301,22 +307,38 @@ def pathway_pipeline(inputfile,
         # Throw error if --per_sequence_contrib set, but --per_sequence_abun
         # and/or --per_sequence_function not set.
         if not per_sequence_abun or not per_sequence_function:
-            sys.exit("Error: \"per_sequence_contrib\" option set, but at "
+            sys.exit("Error: \"--per_sequence_contrib\" option set, but at "
                      "least one of \"per_sequence_abun\" or "
-                     "\"per_sequence_function\" were not set. These input "
+                     "\"--per_sequence_function\" were not set. These input "
                      "arguments need to be specified when "
-                     "\"per_sequence_contrib\" is used")
+                     "\"--per_sequence_contrib\" is used.")
 
-        # Make sure that the input files for --per_sequence_contrib exist.
         check_files_exist([per_sequence_abun, per_sequence_function])
+
+    # Throw error file-format and wide table setting not compatible.
+    if in_format == "strat" and not wide_table:
+        sys.exit("Error: stratified table input (deprecated format), but "
+                 "\"--wide_table\" option not set. You should input either an "
+                 "unstratified or contributional table if you do not require "
+                 "a wide-format table.")
+
+    if in_format == "contrib" and wide_table and not per_sequence_contrib:
+        sys.exit("Error: contributional table input, but \"--wide_table\" "
+                 "option set. This option specifies that deprecated "
+                 "wide-format stratified tables should be output, which "
+                 "is only allowed when a wide-format stratified table is "
+                 "input or the --per_sequence_contrib option is set.")
 
     # Remove 'description' column if it exists.
     if "description" in in_metagenome.columns:
         in_metagenome.drop("description", axis=1, inplace=True)
 
     # Get list of sample ids.
-    samples = [col for col in in_metagenome.columns
-               if col not in ["function", "sequence"]]
+    if in_format == "contrib":
+        samples = in_metagenome['sample'].unique()
+    else:
+        samples = [col for col in in_metagenome.columns
+                   if col not in ["function", "sequence"]]
 
     # Initialize reactions to be empty unless regroup mapfile given.
     reactions = []
@@ -326,10 +348,10 @@ def pathway_pipeline(inputfile,
     if regroup_mapfile:
         reactions = read_reaction_names(regroup_mapfile)
 
-        in_metagenome = regroup_func_ids(in_metagenome, strat_format,
+        in_metagenome = regroup_func_ids(in_metagenome, in_format,
                                          regroup_mapfile, proc)
         regrouped_outfile = path.join(out_dir, "regrouped_infile.tsv")
-        in_metagenome.to_csv(path_or_buf=regrouped_outfile,  sep="\t",
+        in_metagenome.to_csv(path_or_buf=regrouped_outfile, sep="\t",
                              index=False)
 
     # Read in pathway structures.
@@ -350,70 +372,50 @@ def pathway_pipeline(inputfile,
     path_cov_unstrat = None
     path_cov_strat = None
     path_abun_strat = None
+    path_cov_by_seq = None
+    path_abun_by_seq = None
+    path_abun_unstrat_by_seq = None
 
     minpath_out_dir = path.join(out_dir, "minpath_running")
     make_output_dir(minpath_out_dir)
 
-    # Run minpath wrapper on all samples if table is stratified. Note that
-    # input stratified table is subsetted to required columns only.
-    if strat_format:
-
+    if in_format == "contrib":
         # Get unstratified and stratified pathway levels.
-        # Note that stratified tables will only be returned by this step if
-        # per_sequence_contrib=False (extra step required below).
+        # Note that stratified tables will only be returned by this step (and
+        # the "strat" option below) if per_sequence_contrib=False (extra step
+        # required below).
+        path_out_raw = Parallel(n_jobs=proc)(delayed(contrib_format_pathway_levels)(
+                                                     sample_id,
+                                                     in_metagenome.loc[in_metagenome['sample'] == sample_id],
+                                                     minpath_mapfile,
+                                                     minpath_out_dir,
+                                                     pathways_in,
+                                                     run_minpath,
+                                                     coverage,
+                                                     gap_fill_on,
+                                                     per_sequence_contrib,
+                                                     print_cmds)
+                                                     for sample_id in samples)
+
+    elif in_format == "strat":
+
         path_out_raw = Parallel(n_jobs=proc)(delayed(basic_strat_pathway_levels)(
-                                                      sample_id,
-                                                      in_metagenome[["function", "sequence", sample_id]],
-                                                      minpath_mapfile,
-                                                      minpath_out_dir,
-                                                      pathways_in,
-                                                      run_minpath,
-                                                      coverage,
-                                                      gap_fill_on,
-                                                      per_sequence_contrib,
-                                                      print_cmds)
-                                                      for sample_id in samples)
-
-        # Split the output into unstratified and stratified.
-        path_raw_abun_unstrat = []
-        path_raw_cov_unstrat = []
-
-        if not per_sequence_contrib:
-            path_raw_abun_strat = []
-
-            for sample_output in path_out_raw:
-                path_raw_abun_unstrat += [sample_output[0]]
-                path_raw_cov_unstrat += [sample_output[1]]
-                path_raw_abun_strat += [sample_output[2]]
-
-            # If --per_sequence_contrib not sent then prep output stratified
-            # table the same as the unstratified table(s) below.
-            path_abun_strat = prep_pathway_df_out(path_raw_abun_strat,
-                                                  strat_index=True)
-
-            path_abun_strat.columns = ["pathway", "sequence"] + samples
-
-            path_abun_strat.sort_values(['pathway', 'sequence'], inplace=True)
-
-        else:
-
-            for sample_output in path_out_raw:
-                path_raw_abun_unstrat += [sample_output[0]]
-                path_raw_cov_unstrat += [sample_output[1]]
-
-        # Prep unstratified output tables.
-        path_abun_unstrat = prep_pathway_df_out(path_raw_abun_unstrat)
-        path_abun_unstrat.columns = samples
-
-        if coverage:
-            path_cov_unstrat = prep_pathway_df_out(path_raw_cov_unstrat,
-                                                   num_digits=10)
-            path_cov_unstrat.columns = samples
+                                                     sample_id,
+                                                     in_metagenome[["function", "sequence", sample_id]],
+                                                     minpath_mapfile,
+                                                     minpath_out_dir,
+                                                     pathways_in,
+                                                     run_minpath,
+                                                     coverage,
+                                                     gap_fill_on,
+                                                     per_sequence_contrib,
+                                                     print_cmds)
+                                                     for sample_id in samples)
 
     # Otherwise the data is in unstratified format, which is more straight-
     # forward to process.
     else:
-        path_raw_unstrat = Parallel(n_jobs=proc)(delayed(
+        path_out_raw = Parallel(n_jobs=proc)(delayed(
                                                unstrat_pathway_levels)(
                                                    sample_id,
                                                    in_metagenome[["function", sample_id]],
@@ -426,31 +428,44 @@ def pathway_pipeline(inputfile,
                                                    print_cmds)
                                                for sample_id in samples)
 
-        # Prep output df.
-        path_raw_abun_unstrat = []
-        path_raw_cov_unstrat = []
+    # Prep output unstratified DataFrames.
+    path_raw_abun_unstrat = []
+    path_raw_cov_unstrat = []
 
-        for sample_output in path_raw_unstrat:
-            path_raw_abun_unstrat += [sample_output[0]]
-            path_raw_cov_unstrat += [sample_output[1]]
+    for sample_output in path_out_raw:
+        path_raw_abun_unstrat += [sample_output[0]]
+        path_raw_cov_unstrat += [sample_output[1]]
 
-        path_abun_unstrat = prep_pathway_df_out(path_raw_abun_unstrat)
-
-        if coverage:
-            path_cov_unstrat = prep_pathway_df_out(path_raw_cov_unstrat,
-                                                   num_digits=10)
-            path_cov_unstrat.columns = samples
-        else:
-            path_cov_unstrat = None
-
-        # Set column labels of unstratified dataframe to be sample names.
-        path_abun_unstrat.columns = samples
-
-    # Sort unstratified output tables by index name.
+    path_abun_unstrat = prep_pathway_df_out(path_raw_abun_unstrat)
+    path_abun_unstrat.columns = samples
     path_abun_unstrat.sort_index(axis=0, inplace=True)
 
     if coverage:
+        path_cov_unstrat = prep_pathway_df_out(path_raw_cov_unstrat,
+                                               num_digits=10)
+        path_cov_unstrat.columns = samples
         path_cov_unstrat.sort_index(axis=0, inplace=True)
+    else:
+        path_cov_unstrat = None
+
+    # If --per_sequence_contrib not set then prep output stratified
+    # table the same as the unstratified tables.
+    if not per_sequence_contrib and in_format != "unstrat":
+        path_raw_abun_strat = []
+
+        for sample_output in path_out_raw:
+            path_raw_abun_strat += [sample_output[2]]
+
+        if in_format == "strat":
+            path_abun_strat = prep_pathway_df_out(path_raw_abun_strat,
+                                                  strat_index=True)
+            path_abun_strat.columns = ["pathway", "sequence"] + samples
+            path_abun_strat.sort_values(['pathway', 'sequence'], inplace=True)
+
+        elif in_format == "contrib":
+            path_abun_strat = pd.concat(path_raw_abun_strat)
+            path_abun_strat.sort_values(['sample', 'function', 'taxon'],
+                                        inplace=True)
 
     # Calculate pathway levels for each individual sequence (in parallel)
     # and then multiply this table by the abundance of each sequence
@@ -460,20 +475,31 @@ def pathway_pipeline(inputfile,
         per_seq_out_dir = path.join(out_dir, "minpath_running_per_seq")
         make_output_dir(per_seq_out_dir)
 
-        path_abun_strat, path_cov_strat = per_sequence_contrib_levels(sequence_abun=per_sequence_abun,
-                                                                      sequence_func=per_sequence_function,
-                                                                      minpath_map=minpath_mapfile,
-                                                                      per_seq_out_dir=per_seq_out_dir,
-                                                                      pathway_db=pathways_in,
-                                                                      run_minpath=run_minpath,
-                                                                      calc_coverage=coverage,
-                                                                      gap_fill_on=gap_fill_on,
-                                                                      nproc=proc,
-                                                                      regroup_map=regroup_mapfile,
-                                                                      print_opt=print_cmds)
+        path_abun_strat, \
+        path_cov_strat, \
+        path_abun_by_seq, \
+        path_cov_by_seq = per_sequence_contrib_levels(sequence_abun=per_sequence_abun,
+                                                      sequence_func=per_sequence_function,
+                                                      minpath_map=minpath_mapfile,
+                                                      per_seq_out_dir=per_seq_out_dir,
+                                                      pathway_db=pathways_in,
+                                                      run_minpath=run_minpath,
+                                                      calc_coverage=coverage,
+                                                      gap_fill_on=gap_fill_on,
+                                                      nproc=proc,
+                                                      regroup_map=regroup_mapfile,
+                                                      wide_table=wide_table,
+                                                      print_opt=print_cmds)
+
+        if wide_table:
+            path_abun_unstrat_by_seq = strat_to_unstrat_counts(strat_df=path_abun_strat,
+                                                               func_col="pathway")
+        else:
+            path_abun_unstrat_by_seq = contrib_to_unstrat(contrib_table=path_abun_strat)
 
     return(path_abun_unstrat, path_cov_unstrat, path_abun_strat,
-           path_cov_strat)
+           path_cov_strat, path_abun_by_seq, path_cov_by_seq,
+           path_abun_unstrat_by_seq)
 
 
 def prep_pathway_df_out(in_tab, strat_index=False, num_digits=4):
@@ -508,26 +534,32 @@ def prep_pathway_df_out(in_tab, strat_index=False, num_digits=4):
 
 
 def read_metagenome_input(filename):
-    '''Reads in gene abundance table which can be either unstratified or
-    stratified by contributing sequences (output of metagenome_pipeline.py).
-    Will return the pandas dataframe of this table and a boolean
-    value for whether the table is in stratified format.'''
+    '''Reads in gene abundance table which can be either unstratified,
+    stratified, or contributional format (outputs of metagenome_pipeline.py).
+    Will return the Pandas dataframe of this table and one of "unstrat",
+    "strat" or "contrib" to indicate the format.'''
 
     # Read in input file as pandas dataframe.
     input_df = pd.read_csv(filename, sep="\t")
 
-    # Check that required column is present:
-    if "function" not in input_df.columns:
+    # Check that 'function' column is present, which is in all three input
+    # formats.
+    if 'function' not in input_df.columns:
         sys.exit("Error: required column \"function\" not found in input " +
                  "metagenome table")
 
-    strat_tab = False
-    # Check whether table is stratified based on presence of "sequence" column.
-    if "sequence" in input_df.columns:
-        strat_tab = True
-        input_df.sequence = input_df.sequence.astype('str')
+    # Determine format based on presence of specific columns.
+    if 'genome_function_count' in input_df.columns:
+        table_type = "contrib"
+        input_df['sample'] = input_df['sample'].astype('str')
+        input_df['taxon'] = input_df['taxon'].astype('str')
+    elif 'sequence' in input_df.columns:
+        table_type = "strat"
+        input_df['sequence'] = input_df['sequence'].astype('str')
+    else:
+        table_type = "unstrat"
 
-    return(input_df, strat_tab)
+    return(input_df, table_type)
 
 
 def identify_minpath_present(report_file):
@@ -565,7 +597,8 @@ def path_abun_weighted_by_seq(reaction_abun, func_ids, total_sum, path_abun,
                                    aggfunc=np.sum)
 
     # Get weighted pathway abundance (rounded).
-    strat_path_abun = np.around((seq_path_abun/total_sum)*path_abun, decimals=4)
+    strat_path_abun = np.around((seq_path_abun / total_sum) * path_abun,
+                                decimals=4)
 
     # Remove rows that are all 0.
     strat_path_abun = strat_path_abun.loc[strat_path_abun[strat_path_abun.columns[0]] > 0, :]
@@ -575,6 +608,47 @@ def path_abun_weighted_by_seq(reaction_abun, func_ids, total_sum, path_abun,
 
     # Return as series.
     return(strat_path_abun.iloc[:, 0])
+
+
+def contributional_path_abun(reaction_abun, func_ids, total_sum, path_abun,
+                             pathway):
+    '''Takes in a contributional table and subsets functions involved in
+    pathway of interest. Then pivot by taxon and taxon abundance columns. Also
+    takes in total sum of gene families that went into calculating pathway
+    abundance and the calculated pathway abundance. Will return the weighted
+    pathway abundance contributed by each sequence as a Pandas Series.'''
+
+    # Subset to genes in pathway.
+    reaction_abun = reaction_abun.loc[reaction_abun['function'].isin(func_ids)]
+
+    # Drop function column.
+    reaction_abun = reaction_abun.drop(["function"], axis=1)
+
+    # Get dataframe with sum of all genes per sequence.
+    contrib_path = pd.pivot_table(data=reaction_abun,
+                                  index=["taxon", "taxon_abun",
+                                          "taxon_rel_abun"],
+                                  aggfunc=np.sum)
+
+    contrib_path.reset_index(inplace=True)
+
+    contrib_path.columns.name = None
+
+    # Get weighted pathway abundance (rounded).
+    contrib_path['taxon_function_abun'] = np.around((contrib_path['taxon_function_abun'] / total_sum) * path_abun,
+                                                    decimals=4)
+
+    contrib_path['taxon_rel_function_abun'] = np.around((contrib_path['taxon_rel_function_abun'] / total_sum) * path_abun,
+                                                        decimals=4)
+
+    # Remove rows that are all 0.
+    contrib_path = contrib_path.loc[contrib_path['taxon_function_abun'] > 0, :]
+
+    contrib_path["genome_function_count"] = contrib_path['taxon_function_abun'] / contrib_path["taxon_abun"]
+
+    contrib_path["function"] = pathway
+
+    return(contrib_path)
 
 
 def minpath_wrapper(sample_id, unstrat_input, minpath_map, minpath_outdir,
@@ -633,9 +707,15 @@ def minpath_wrapper(sample_id, unstrat_input, minpath_map, minpath_outdir,
 def per_sequence_contrib_levels(sequence_abun, sequence_func,
                                 minpath_map, per_seq_out_dir, pathway_db,
                                 run_minpath, calc_coverage, gap_fill_on, nproc,
-                                regroup_map, print_opt=False):
+                                regroup_map, wide_table, print_opt=False):
+    '''Reads in sequence abundance table (e.g. BIOM), predicted genomes per
+    sequence, and mappings for linking functions to pathway abundances. Will
+    first infer the pathway abundances for each predicted genome. Will then
+    generate stratified output (either contribution format, i.e. long, or wide
+    format). Will also output coverage tables if option specified. Returns
+    the predicted pathways per genome and the stratified output.'''
 
-    # Read in function and sequence abundance tables.
+    # Read sequence abundance table.
     study_seq_counts = pd.read_csv(sequence_abun, sep="\t", index_col=0)
 
     # Index name should be "normalized" or throw error.
@@ -649,8 +729,7 @@ def per_sequence_contrib_levels(sequence_abun, sequence_func,
     study_seq_counts.index.name = "sequence"
 
     # Read in predicted function abundances by sequence.
-    pred_function = pd.read_csv(sequence_func, sep="\t",
-                                  index_col="sequence")
+    pred_function = pd.read_csv(sequence_func, sep="\t", index_col="sequence")
 
     # Drop metadata_NSTI column if it in this table.
     if "metadata_NSTI" in pred_function.columns:
@@ -671,7 +750,7 @@ def per_sequence_contrib_levels(sequence_abun, sequence_func,
 
     # Regroup function table to be reactions if specified.
     if regroup_map:
-        pred_function = regroup_func_ids(pred_function, False, regroup_map,
+        pred_function = regroup_func_ids(pred_function, "unstrat", regroup_map,
                                          nproc)
 
     # Get pathway levels for each sequence (note that sample info is not used
@@ -701,38 +780,158 @@ def per_sequence_contrib_levels(sequence_abun, sequence_func,
     path_abun_by_seq = prep_pathway_df_out(raw_abun)
     path_abun_by_seq.columns = overlapping_sequence_ids
 
+    path_abun_by_seq = path_abun_by_seq.transpose()
+
     # Subset and order study sequence table to be same as in stratified table.
     study_seq_counts = study_seq_counts.loc[overlapping_sequence_ids]
 
-    strat_abun = strat_funcs_by_samples(func_abun=path_abun_by_seq.transpose(),
-                                        sample_abun=study_seq_counts,
-                                        rare_seqs=[],
-                                        return_unstrat=False)
+    if wide_table:
+        strat_abun = strat_funcs_by_samples(func_abun=path_abun_by_seq,
+                                            sample_abun=study_seq_counts,
+                                            rare_seqs=[],
+                                            return_unstrat=False)
 
-    strat_abun.index.set_names("pathway", level=0, inplace=True)
-    strat_abun.reset_index(drop=False, inplace=True)
-    strat_abun.sort_values(['pathway', 'sequence'], inplace=True)
+        strat_abun.index.set_names("pathway", level=0, inplace=True)
+        strat_abun.reset_index(drop=False, inplace=True)
+        strat_abun.sort_values(['pathway', 'sequence'], inplace=True)
+    else:
+        strat_abun = metagenome_contributions(func_abun=path_abun_by_seq,
+                                              sample_abun=study_seq_counts,
+                                              rare_seqs=[])
 
     if calc_coverage:
+
         path_cov_by_seq = prep_pathway_df_out(raw_cov,
-                                              num_digits=10)
+                                                  num_digits=10)
         path_cov_by_seq.columns = overlapping_sequence_ids
 
         # Convert study sequence abundances to be binary 1 and 0 for present
         # and absent rather than multiplying the coverages by abundances.
         study_seq_counts[study_seq_counts != 0] = 1
 
-        strat_cov = strat_funcs_by_samples(func_abun=path_cov_by_seq.transpose(),
-                                            sample_abun=study_seq_counts,
-                                            rare_seqs=[],
-                                            return_unstrat=False)
-        strat_cov.index.set_names("pathway", level=0, inplace=True)
-        strat_cov.reset_index(drop=False, inplace=True)
-        strat_cov.sort_values(['pathway', 'sequence'], inplace=True)
+        path_cov_by_seq = path_cov_by_seq.transpose()
+
+        if wide_table:
+
+            strat_cov = strat_funcs_by_samples(func_abun=path_cov_by_seq,
+                                               sample_abun=study_seq_counts,
+                                               rare_seqs=[],
+                                               return_unstrat=False)
+            strat_cov.index.set_names("pathway", level=0, inplace=True)
+            strat_cov.reset_index(drop=False, inplace=True)
+            strat_cov.sort_values(['pathway', 'sequence'], inplace=True)
+        else:
+            strat_cov = metagenome_contributions(func_abun=path_cov_by_seq,
+                                                 sample_abun=study_seq_counts,
+                                                 rare_seqs=[],
+                                                 skip_abun=True)
     else:
+        path_cov_by_seq = None
         strat_cov = None
 
-    return(strat_abun, strat_cov)
+    return(strat_abun, strat_cov, path_abun_by_seq, path_cov_by_seq)
+
+
+def contrib_format_pathway_levels(sample_id, contrib_input, minpath_map, out_dir,
+                                  pathway_db, run_minpath, calc_coverage,
+                                  gap_fill_on, per_sequence_contrib,
+                                  print_opt=False):
+    '''Read in sample_id, gene family abundance table, and out_dir, and run
+    MinPath based on the gene family abundances. Returns both unstratified and
+    contributional pathway abundances as dictionaries in a list when
+    per_sequence_contrib=False. In this case will compute the simplistic
+    "community-wide contributions" for contributional output. When
+    per_sequence_contrib=True only the contributional values returned will be
+    None (the stratified output will be calculated by a different step).
+    Pathway coverages will also be returned when calc_coverage=True
+    (unstratified only).'''
+
+    unstrat_input = contrib_to_unstrat(contrib_input)
+
+    # Define dictionary for keeping track of reaction abundances.
+    reaction_abun = unstrat_input[sample_id].to_dict(defaultdict(int))
+
+    if run_minpath:
+        pathways_present = minpath_wrapper(sample_id, unstrat_input,
+                                           minpath_map, out_dir,
+                                           print_opt)
+    else:
+        pathways_present = set(pathway_db.pathway_list())
+
+    # Initialize series and dataframe that will contain pathway abundances and
+    # coverage scores.
+    unstrat_abun = pd.Series()
+    unstrat_cov = pd.Series()
+    strat_abun = pd.DataFrame()
+
+    # Return empty series if no pathways are present.
+    if len(pathways_present) == 0:
+        return([unstrat_abun, unstrat_cov, pd.Series(), pd.Series()])
+
+    # Get median reaction/gene family abundance for sample, which is used for
+    # calculating coverage.
+    if calc_coverage:
+        median_abun = calc_median_reaction_abun(reaction_abun,
+                                                pathways_present, pathway_db)
+    else:
+        median_abun = None
+
+    # Loop through all pathways present and get abundance and coverage.
+    pathway_i = 0
+    for pathway in pathways_present:
+
+        # Get ALL reactions in pathway (which could include optional ones).
+        reactions = pathway_db.find_reactions(pathway)
+
+        # Get abundances of all of these reactions.
+        path_reaction_abun = {reaction_id: reaction_abun[reaction_id] \
+                              for reaction_id in reactions}
+
+        # Get pathway abundance and coverage
+        pathway_abun, pathway_cov = pathway_abun_and_coverage(pathway,
+                                                              pathway_db,
+                                                              path_reaction_abun,
+                                                              median_abun,
+                                                              calc_coverage,
+                                                              gap_fill_on)
+
+        if pathway_abun == 0:
+            continue
+
+        # Add these values to each respective pandas Series.
+        unstrat_abun[pathway] = pathway_abun
+        unstrat_cov[pathway] = pathway_cov
+
+        if not per_sequence_contrib:
+            # If --per_sequence_contrib not set then get stratified pathway
+            # abundances simply by weighting community-wide pathway abundances
+            # by the abundances of all the predicted abundances of reactions in
+            # these pathways contributed by each sequence (i.e. predicted
+            # genome).
+
+            strat_path_abun = contributional_path_abun(contrib_input,
+                                                       reactions,
+                                                       sum(list(path_reaction_abun.values())),
+                                                       unstrat_abun[pathway],
+                                                       pathway)
+
+            if pathway_i == 0:
+                strat_abun = strat_path_abun
+                pathway_i += 1
+            else:
+                strat_abun = pd.concat([strat_abun, strat_path_abun],
+                                       sort=False)
+
+            strat_abun["sample"] = sample_id
+
+            strat_abun = strat_abun[['sample', 'function', 'taxon',
+                                     'taxon_abun', 'taxon_rel_abun',
+                                     'genome_function_count',
+                                     'taxon_function_abun',
+                                     'taxon_rel_function_abun']]
+
+    # Return unstratified and stratified abundances and coverage scores.
+    return([unstrat_abun, unstrat_cov, strat_abun])
 
 
 def basic_strat_pathway_levels(sample_id, strat_input, minpath_map, out_dir,
@@ -746,7 +945,7 @@ def basic_strat_pathway_levels(sample_id, strat_input, minpath_map, out_dir,
     "community-wide contributions" for stratified output. When
     per_sequence_contrib=True only the stratified values returned will be None
     (the stratified output will be calculated by a different step). Pathway
-    coverages will also be returned when calc_coerage=True (unstratified
+    coverages will also be returned when calc_coverage=True (unstratified
     only).'''
 
     # Get gene family abundances summed over all sequences for this sample.
@@ -949,7 +1148,7 @@ def pathway_abun_and_coverage(pathway, pathway_db, reaction_abun, median_value,
     return(pathway_abun, pathway_cov)
 
 
-def regroup_func_ids(in_df, is_strat, mapfile, proc):
+def regroup_func_ids(in_df, in_format, mapfile, proc):
     '''Reads in df and mapfile of function ids to new ids. Will
     return df with new functions ids under column "function".'''
 
@@ -968,7 +1167,7 @@ def regroup_func_ids(in_df, is_strat, mapfile, proc):
     chunk_size = int(len(functions) / proc) + 1
 
     function_chunks = [functions[i:i + chunk_size]
-                      for i in range(0, len(functions), chunk_size)]
+                       for i in range(0, len(functions), chunk_size)]
 
     # Loop over all functions in parallel and return pandas dataframe for each
     # function with regrouped ids (which will are combined together afterwards).
@@ -979,17 +1178,26 @@ def regroup_func_ids(in_df, is_strat, mapfile, proc):
                                     for func_subset in function_chunks)
 
     # Combine all returned DFs into a single DF.
-    raw_new_ids_combined = pd.concat(raw_new_ids_dfs, sort=True)
+    raw_new_ids_combined = pd.concat(raw_new_ids_dfs, sort=False)
 
-    if is_strat:
+    if in_format == "contrib":
+        regrouped_table = pd.pivot_table(raw_new_ids_combined,
+                                         index=['sample', 'function', 'taxon',
+                                                'taxon_abun',
+                                                'taxon_rel_abun'],
+                                         aggfunc=np.sum)
+
+    elif in_format == "strat":
         regrouped_table = pd.pivot_table(raw_new_ids_combined,
                                          index=["function", "sequence"],
                                          aggfunc=np.sum)
-    else:
-        regrouped_table = pd.pivot_table(raw_new_ids_combined, index="function",
+    elif in_format == "unstrat":
+        regrouped_table = pd.pivot_table(raw_new_ids_combined,
+                                         index="function",
                                          aggfunc=np.sum)
 
     regrouped_table.reset_index(inplace=True)
+    regrouped_table.columns.name = None
 
     # If no rows remain then throw error.
     if regrouped_table.shape[0] == 0:
@@ -1005,7 +1213,7 @@ def regroup_func_ids(in_df, is_strat, mapfile, proc):
     return(regrouped_table)
 
 
-def convert_func_ids(functions, strat_df, func_map):
+def convert_func_ids(functions, in_df, func_map):
     '''Will return dataframe with all new ids replacing the value in
     "function" column for each input function.'''
 
@@ -1015,23 +1223,23 @@ def convert_func_ids(functions, strat_df, func_map):
     for func in functions:
 
         # Get subset of dataframe for this function and ids to regroup by.
-        strat_df_subset = strat_df.loc[strat_df['function'] == func]
+        in_df_subset = in_df.loc[in_df['function'] == func]
         new_ids = func_map[func]
 
         # Inititalize empty dataframe to add new rows.
-        new_df = pd.DataFrame(columns=strat_df_subset.columns.values)
+        new_df = pd.DataFrame(columns=in_df_subset.columns.values)
 
         # For each new id to regroup by replace all original function ids with
         # this new id and add to new df.
         for new_id in new_ids:
-            new_subset = strat_df_subset.copy()
+            new_subset = in_df_subset.copy()
             new_subset['function'] = new_id
             new_df = new_df.append(new_subset)
 
         new_dfs += [new_df]
 
     # Concatenate these new dfs together for all input functions.
-    combined_new_df = pd.concat(new_dfs, sort=True)
+    combined_new_df = pd.concat(new_dfs, sort=False)
 
     return(combined_new_df)
 
