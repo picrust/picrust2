@@ -464,9 +464,6 @@ def pathway_pipeline(inputfile,
 
         elif in_format == "contrib":
             path_abun_strat = pd.concat(path_raw_abun_strat)
-
-            print(path_raw_abun_strat)
-
             path_abun_strat.sort_values(['sample', 'function', 'taxon'],
                                         inplace=True)
 
