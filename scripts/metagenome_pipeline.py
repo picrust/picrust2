@@ -103,7 +103,7 @@ def main():
                         index_label="function", compression="gzip")
 
     if args.strat_out and not args.wide_table:
-        strat_outfile = path.join(args.out_dir, "metagenome_contrib.tsv.gz")
+        strat_outfile = path.join(args.out_dir, "pred_metagenome_contrib.tsv.gz")
         strat_pred.to_csv(path_or_buf=strat_outfile, sep="\t", index=False,
                           compression="gzip")
 

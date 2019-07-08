@@ -167,7 +167,7 @@ def main():
             strat_abun, \
             strat_cov, \
             path_abun_by_seq, \
-            path_cov_by_seq \
+            path_cov_by_seq, \
             unstrat_abun_per_seq = pathway_pipeline(
                             inputfile=args.input,
                             mapfile=args.map,

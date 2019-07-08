@@ -64,7 +64,7 @@ class workflow_test(unittest.TestCase):
                               marker_predict + " -o " + metagenome_out)
 
             metagenome_outfile = path.join(metagenome_out,
-                                           "pred_metagenome_strat.tsv.gz")
+                                           "pred_metagenome_unstrat.tsv.gz")
 
             system_call_check("pathway_pipeline.py -i " + metagenome_outfile +
                               " -o " + temp_dir)
