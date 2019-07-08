@@ -8,13 +8,12 @@ import unittest
 from os import path
 import pandas as pd
 import biom
-from picrust2.util import TemporaryDirectory, read_seqabun
+from picrust2.util import TemporaryDirectory
 from picrust2.metagenome_pipeline import (run_metagenome_pipeline,
                                           norm_by_marker_copies,
                                           calc_weighted_nsti,
                                           id_rare_seqs,
-                                          drop_tips_by_nsti,
-                                          metagenome_contributions)
+                                          drop_tips_by_nsti)
 
 # Set paths to test files.
 test_dir_path = path.join(path.dirname(path.abspath(__file__)), "test_data",
@@ -146,7 +145,6 @@ class metagenome_pipeline_test(unittest.TestCase):
         pd.testing.assert_frame_equal(unstrat_out, exp_unstrat_in,
                                       check_like=True)
 
-
     def test_full_pipeline_strat_wide_biom(self):
         '''Test that run_metagenome_pipeline creates correct stratified output
         on biom input seqtab. Compare with wide-format table in this case.'''
@@ -214,10 +212,9 @@ class metagenome_pipeline_test(unittest.TestCase):
         weighted_nsti_out = calc_weighted_nsti(exp_norm_in, nsti_in,
                                                return_df=True)
 
-        expected_weighted_nsti = { "samples": ["sample1", "sample2",
-                                                "sample3"],
-                                   "weighted_NSTI": [0.292857143, 0.348275862, 
-                                                      0.436111111] }
+        expected_weighted_nsti = {"samples": ["sample1", "sample2", "sample3"],
+                                  "weighted_NSTI": [0.292857143, 0.348275862,
+                                                    0.436111111]}
 
         expected_weighted_nsti_df = pd.DataFrame.from_dict(expected_weighted_nsti)
 
@@ -265,6 +262,7 @@ class metagenome_pipeline_test(unittest.TestCase):
                                                       nsti_col="metadata_NSTI",
                                                             max_nsti=0.000001)
 
+
 class rare_seqs_test(unittest.TestCase):
     '''Checks that \"RARE\" category is being collapsed to correctly.'''
 
@@ -285,7 +283,7 @@ class rare_seqs_test(unittest.TestCase):
         seqtab_in = biom.load_table(seqtab_biom).to_dataframe(dense=True)
 
         rare_seqs = id_rare_seqs(seqtab_in, 1, 2)
-        
+
         self.assertSetEqual(set(rare_seqs), set(["2558860574", "2571042244"]))
 
     def test_full_pipeline_strat_rare_category_tsv(self):
