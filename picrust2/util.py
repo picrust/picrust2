@@ -650,6 +650,68 @@ def convert_picrust2_to_humann2_merged(infiles, outfile):
     new_tab.to_csv(path_or_buf=outfile,  sep="\t", index_label=first_col)
 
 
+def contrib_to_legacy(infiles, outfile, use_rel_abun=True):
+    '''Certain tools require the contributional file columns to match those
+    output by PICRUSt1. This function will convert a dataframe to have these
+    column names (and remove unused columns). Importantly, the relative
+    abundance (% per sample) of each sequence will be used for the abundance
+    column when use_rel_abun=True, which is the default.'''
+
+    if len(infiles) > 1:
+        sys.exit('Stopping - only expected one input file when converting '
+                 'contributional file to legacy format.')
+
+    contrib_df = pd.read_csv(infiles[0], sep="\t")
+    contrib_df['sample'] = contrib_df['sample'].astype('str')
+    contrib_df['taxon'] = contrib_df['taxon'].astype('str')
+
+    contrib_df.rename(columns={'sample' : 'Sample',
+                               'function' : 'Gene',
+                               'taxon' : 'OTU',
+                               'genome_function_count' : 'GeneCountPerGenome'},
+                      inplace=True)
+
+    abun_col_counter = 0
+
+    abun_columns = ['taxon_abun', 'taxon_rel_abun', 'taxon_function_abun',
+                    'taxon_rel_function_abun']
+
+    for abun_col in abun_columns:
+        if abun_col in contrib_df.columns:
+            abun_col_counter += 1
+
+    if abun_col_counter == 0:
+        contrib_df = contrib_df[['Gene', 'Sample', 'OTU',
+                                 'GeneCountPerGenome']]
+    elif abun_col_counter < 4:
+        sys.exit('Error: certain abundance columns found in contribution '
+                 'table, but not all four of \'taxon_abun\', '
+                 '\'taxon_rel_abun\', \'taxon_function_abun\', and '
+                 '\'taxon_rel_function_abun\'.')
+    else:
+        if use_rel_abun:
+            contrib_df.rename(columns={'taxon_rel_abun' : \
+                                       'OTUAbundanceInSample',
+                                       'taxon_rel_function_abun' : \
+                                       'CountContributedByOTU'}, inplace=True)
+            contrib_df.drop(labels=['taxon_abun', 'taxon_function_abun'],
+                            axis=1, inplace=True)
+        else:
+            contrib_df.rename(columns={'taxon_abun' : 'OTUAbundanceInSample',
+                                       'taxon_function_abun' : \
+                                       'CountContributedByOTU'}, inplace=True)
+            contrib_df.drop(labels=['taxon_rel_abun',
+                                    'taxon_rel_function_abun'],
+                            axis=1, inplace=True)
+
+        contrib_df = contrib_df[['Gene', 'Sample', 'OTU',
+                                 'OTUAbundanceInSample', 'GeneCountPerGenome',
+                                 'CountContributedByOTU']]
+
+    contrib_df.to_csv(path_or_buf=outfile, sep="\t", index=False,
+                              compression="gzip")
+
+
 class TemporaryDirectory(object):
     '''Create and return a temporary directory.  This has the same
     behavior as mkdtemp but can be used as a context manager.  For
