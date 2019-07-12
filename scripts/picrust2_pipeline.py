@@ -30,10 +30,10 @@ parser = argparse.ArgumentParser(
                 "use custom reference and trait tables to customize analyses.",
 epilog='''
 Run full default pipeline with 10 cores (only unstratified output):
-picrust2_pipeline.py -s study_seqs.fna -i seqabun.biom -o picrust2_out --threads 10
+picrust2_pipeline.py -s study_seqs.fna -i seqabun.biom -o picrust2_out --processes 10
 
 Run full default pipeline with 10 cores with stratified output (including pathway stratified output based on per-sequence contributions):
-picrust2_pipeline.py -s study_seqs.fna -i seqabun.biom -o picrust2_out --threads 10 --stratified --per_sequence_contrib
+picrust2_pipeline.py -s study_seqs.fna -i seqabun.biom -o picrust2_out --processes 10 --stratified --per_sequence_contrib
 
 Run full pipeline to generate EC number predictions for custom fungi ITS database:
 picrust2_pipeline.py -s study_seqs_ITS.fna -i seqabun_ITS.biom -o picrust2_out_ITS --ref_dir picrust2/picrust2/default_files/fungi/fungi_ref_ITS --custom_trait_tables picrust2/picrust2/default_files/fungi/ec_ITS_counts.txt.gz --marker_gene_table picrust2/picrust2/default_files/fungi/ITS_counts.txt.gz --pathway_map picrust2/picrust2/default_files/pathway_mapfiles/metacyc_path2rxn_struc_filt_fungi.txt

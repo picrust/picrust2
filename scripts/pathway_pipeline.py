@@ -38,7 +38,7 @@ parser = argparse.ArgumentParser(
     Usage examples:
 
     Default mapping of predicted EC number abundances to MetaCyc pathways:
-    pathway_pipeline.py -i EC_metagenome_out/pred_metagenome_unstrat.tsv.gz -o pathways_out
+    pathway_pipeline.py -i EC_metagenome_out/pred_metagenome_unstrat.tsv.gz -o pathways_out --processes 1
 
     Mapping predicted KO abundances to legacy KEGG pathways (with stratified output that represents contributions to community-wide abundances):
     pathway_pipeline.py -i KO_metagenome_out/pred_metagenome_strat.tsv.gz -o KEGG_pathways_out --no_regroup --map picrust2/picrust2/default_files/pathway_mapfiles/KEGG_pathways_to_KO.tsv
@@ -76,7 +76,7 @@ parser.add_argument('--intermediate', metavar='DIR', type=str, default=None,
                     help='Output folder for intermediate files (will be '
                          'deleted otherwise).')
 
-parser.add_argument('-p', '--proc', default=1, type=int,
+parser.add_argument('-p', '--processes', default=1, type=int,
                     help='Number of processes to run in parallel '
                          '(default: %(default)d).')
 
