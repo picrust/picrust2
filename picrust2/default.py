@@ -52,7 +52,7 @@ default_tables = {"16S": path.join(prokaryotic_dir, "16S.txt.gz"),
 map_dir = path.join(project_dir, "default_files", "description_mapfiles")
 
 default_map = {"METACYC": path.join(map_dir,
-                                "metacyc_pathways_info_prokaryotes.txt.gz"),
+                                "metacyc_pathways_info.txt.gz"),
 
                   "COG": path.join(map_dir, "cog_info.tsv.gz"),
 

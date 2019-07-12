@@ -54,13 +54,17 @@ def main():
 
     # Determine which mapping type was specified. If neither a default
     # or custom mapping was specified then throw an error.
-    if args.map_type:
+    if args.map_type and args.custom_map_table:
+        sys.exit("Only one of \"--map_type\" or \"--custom_map_table\" can be "
+                 "set. Please re-run the command with only one of these "
+                 "options.")
+    elif args.map_type:
         mapfile = default_map[args.map_type]
     elif args.custom_map_table:
         mapfile = args.custom_map_table
     else:
-        sys.exit("A default mapping table needs to be specified with the " +
-                 "--map_type option, or alternatively a custom mapfile can " +
+        sys.exit("A default mapping table needs to be specified with the "
+                 "--map_type option, or alternatively a custom mapfile can "
                  "be specified with the --custom_map_table option")
 
     tab_w_descrip = add_descrip_col(inputfile=args.input, mapfile=mapfile)
