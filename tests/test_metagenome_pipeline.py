@@ -232,7 +232,7 @@ class metagenome_pipeline_test(unittest.TestCase):
 
         test_file = path.join(path.dirname(path.abspath(__file__)),
                               "test_data", "hsp", "hsp_output",
-                              "mp_pred_out_nsti.tsv")
+                              "mp_pred_out_nsti.tsv.gz")
 
         pred_test_in = pd.read_csv(test_file, sep="\t", index_col="sequence")
 
@@ -253,7 +253,7 @@ class metagenome_pipeline_test(unittest.TestCase):
 
         test_file = path.join(path.dirname(path.abspath(__file__)),
                               "test_data", "hsp", "hsp_output",
-                              "mp_pred_out_nsti.tsv")
+                              "mp_pred_out_nsti.tsv.gz")
 
         pred_test_in = pd.read_csv(test_file, sep="\t", index_col="sequence")
 

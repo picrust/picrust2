@@ -195,7 +195,7 @@ def main():
                             inputfile=args.input,
                             mapfile=args.map,
                             regroup_mapfile=args.regroup_map,
-                            proc=args.proc,
+                            proc=args.processes,
                             out_dir=temp_dir,
                             run_minpath=run_minpath_opt,
                             coverage=args.coverage,
