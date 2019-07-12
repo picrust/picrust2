@@ -2,7 +2,7 @@
 
 __copyright__ = "Copyright 2018-2019, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.2.0-b"
+__version__ = "2.1.4-b"
 
 import unittest
 from os import path
@@ -18,13 +18,13 @@ test_ref_dir = path.join(test_dir_path, "test_data", "place_seqs",
                          "img_centroid_16S_aligned_head30")
 
 test_known_marker = path.join(test_dir_path, "test_data", "workflow",
-                              "workflow_known_marker.tsv")
+                              "workflow_known_marker.tsv.gz")
 
 test_known_traits = path.join(test_dir_path, "test_data", "workflow",
-                              "workflow_known_traits.tsv")
+                              "workflow_known_traits.tsv.gz")
 
 test_seq_abun_tsv = path.join(test_dir_path, "test_data", "workflow",
-                             "workflow_seq_abun.tsv")
+                             "workflow_seq_abun.tsv.gz")
 
 test_seq_abun_biom = path.join(test_dir_path, "test_data", "workflow",
                                "workflow_seq_abun.biom")

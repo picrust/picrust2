@@ -20,17 +20,17 @@ test_dir_path = path.join(path.dirname(path.abspath(__file__)), "test_data",
 in_traits1 = path.join(test_dir_path, "known_traits.tsv.gz")
 in_tree1 = path.join(test_dir_path, "tree.tre")
 
-hsp_mp_pred = path.join(test_dir_path, "hsp_output", "mp_pred_out.tsv")
+hsp_mp_pred = path.join(test_dir_path, "hsp_output", "mp_pred_out.tsv.gz")
 hsp_mp_pred_nsti = path.join(test_dir_path, "hsp_output",
-                             "mp_pred_out_nsti.tsv")
-hsp_emp_prob_pred_ci = path.join(test_dir_path, "hsp_output", "emp_prob_pred_out_ci.tsv")
+                             "mp_pred_out_nsti.tsv.gz")
+hsp_emp_prob_pred_ci = path.join(test_dir_path, "hsp_output", "emp_prob_pred_out_ci.tsv.gz")
 
 hsp_emp_prob_pred = path.join(test_dir_path, "hsp_output",
-                              "emp_prob_pred_out.tsv")
-hsp_pic_pred = path.join(test_dir_path, "hsp_output", "pic_pred_out.tsv")
-hsp_scp_pred = path.join(test_dir_path, "hsp_output", "scp_pred_out.tsv")
+                              "emp_prob_pred_out.tsv.gz")
+hsp_pic_pred = path.join(test_dir_path, "hsp_output", "pic_pred_out.tsv.gz")
+hsp_scp_pred = path.join(test_dir_path, "hsp_output", "scp_pred_out.tsv.gz")
 hsp_subtree_average_pred = path.join(test_dir_path, "hsp_output",
-                                     "subtree_average_pred_out.tsv")
+                                     "subtree_average_pred_out.tsv.gz")
 
 hsp_mp_pred_in = pd.read_csv(hsp_mp_pred, sep="\t", index_col="sequence")
 
