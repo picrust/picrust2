@@ -19,7 +19,7 @@ parser = argparse.ArgumentParser(
                 "and treefile if needed.",
 epilog='''
 Usage example:
-place_seqs.py -s study_seqs.fna -o placed_seqs.tre --threads 1 --intermediate placement_working
+place_seqs.py -s study_seqs.fna -o placed_seqs.tre --processes 1 --intermediate placement_working
 
 ''', formatter_class=argparse.RawDescriptionHelpFormatter)
 
