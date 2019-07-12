@@ -313,7 +313,7 @@ class add_description_tests(unittest.TestCase):
                     "6012eaf8b2f9e336a725cd97af8cf05d",
                     "b24d1f3cae10efd452b964a8589963e1",
                     "8115f710df156c46908d112bd80def4a",
-                    "d441bce3c19effa1e474711f6c6cdbeb"]
+                    "240640c5e2be10855337197c5536009a"]
 
         # Check that md5sum values match expected values.
         self.assertEqual(obs_hash, exp_hash)

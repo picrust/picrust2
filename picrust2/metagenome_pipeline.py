@@ -351,6 +351,10 @@ def contrib_to_unstrat(contrib_table):
     '''Take in metagenome contribution table and return wide-format sample
     (unstratified) metagenome table.'''
 
+    # Return empty datafame.
+    if contrib_table.shape[0] == 0:
+        return(pd.DataFrame())
+
     contrib_table = contrib_table[['sample', 'function', 'taxon_function_abun']]
 
     contrib_table = pd.pivot_table(data=contrib_table, columns='sample',
