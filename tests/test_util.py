@@ -39,28 +39,28 @@ descrip_test_dir_path = path.join(path.dirname(path.abspath(__file__)),
 descrip_test_dir_out_path = path.join(descrip_test_dir_path, "output")
 
 # Set paths to test input and output files for add_descriptions.py tests.
-ec_unstrat_in = path.join(descrip_test_dir_path, "ec_unstrat_test.txt")
-ec_unstrat_exp = path.join(descrip_test_dir_out_path, "ec_unstrat_exp.txt")
+ec_unstrat_in = path.join(descrip_test_dir_path, "ec_unstrat_test.txt.gz")
+ec_unstrat_exp = path.join(descrip_test_dir_out_path, "ec_unstrat_exp.txt.gz")
 
-ec_strat_in = path.join(descrip_test_dir_path, "ec_strat_test.txt")
-ec_strat_exp = path.join(descrip_test_dir_out_path, "ec_strat_exp.txt")
+ec_strat_in = path.join(descrip_test_dir_path, "ec_strat_test.txt.gz")
+ec_strat_exp = path.join(descrip_test_dir_out_path, "ec_strat_exp.txt.gz")
 
-ec_nomatch_in = path.join(descrip_test_dir_path, "ec_nomatch_test.txt")
+ec_nomatch_in = path.join(descrip_test_dir_path, "ec_nomatch_test.txt.gz")
 
-metacyc_unstrat_in = path.join(descrip_test_dir_path, "metacyc_unstrat_test.txt")
-metacyc_unstrat_exp = path.join(descrip_test_dir_out_path, "metacyc_unstrat_exp.txt")
+metacyc_unstrat_in = path.join(descrip_test_dir_path, "metacyc_unstrat_test.txt.gz")
+metacyc_unstrat_exp = path.join(descrip_test_dir_out_path, "metacyc_unstrat_exp.txt.gz")
 
-cog_unstrat_in = path.join(descrip_test_dir_path, "cog_unstrat_test.txt")
-cog_unstrat_exp = path.join(descrip_test_dir_out_path, "cog_unstrat_exp.txt")
+cog_unstrat_in = path.join(descrip_test_dir_path, "cog_unstrat_test.txt.gz")
+cog_unstrat_exp = path.join(descrip_test_dir_out_path, "cog_unstrat_exp.txt.gz")
 
-ko_unstrat_in = path.join(descrip_test_dir_path, "ko_unstrat_test.txt")
-ko_unstrat_exp = path.join(descrip_test_dir_out_path, "ko_unstrat_exp.txt")
+ko_unstrat_in = path.join(descrip_test_dir_path, "ko_unstrat_test.txt.gz")
+ko_unstrat_exp = path.join(descrip_test_dir_out_path, "ko_unstrat_exp.txt.gz")
 
-pfam_unstrat_in = path.join(descrip_test_dir_path, "pfam_unstrat_test.txt")
-pfam_unstrat_exp = path.join(descrip_test_dir_out_path, "pfam_unstrat_exp.txt")
+pfam_unstrat_in = path.join(descrip_test_dir_path, "pfam_unstrat_test.txt.gz")
+pfam_unstrat_exp = path.join(descrip_test_dir_out_path, "pfam_unstrat_exp.txt.gz")
 
-tigrfam_unstrat_in = path.join(descrip_test_dir_path, "tigrfam_unstrat_test.txt")
-tigrfam_unstrat_exp = path.join(descrip_test_dir_out_path, "tigrfam_unstrat_exp.txt")
+tigrfam_unstrat_in = path.join(descrip_test_dir_path, "tigrfam_unstrat_test.txt.gz")
+tigrfam_unstrat_exp = path.join(descrip_test_dir_out_path, "tigrfam_unstrat_exp.txt.gz")
 
 # Set paths to input and output files for convert_table.py tests.
 convert_test_dir_path = path.join(path.dirname(path.abspath(__file__)), "test_data",
@@ -68,27 +68,27 @@ convert_test_dir_path = path.join(path.dirname(path.abspath(__file__)), "test_da
 
 convert_test_dir_out_path = path.join(convert_test_dir_path, "expected_out")
 
-humann2_strat_in = path.join(convert_test_dir_path, "humann2_strat_example.tsv")
-humann2_strat_exp = path.join(convert_test_dir_out_path, "humann2_strat_example_picrust2.tsv")
+humann2_strat_in = path.join(convert_test_dir_path, "humann2_strat_example.tsv.gz")
+humann2_strat_exp = path.join(convert_test_dir_out_path, "humann2_strat_example_picrust2.tsv.gz")
 
-humann2_unstrat_in = path.join(convert_test_dir_path, "humann2_unstrat_example.tsv")
-humann2_unstrat_exp = path.join(convert_test_dir_out_path, "humann2_unstrat_example_picrust2.tsv")
+humann2_unstrat_in = path.join(convert_test_dir_path, "humann2_unstrat_example.tsv.gz")
+humann2_unstrat_exp = path.join(convert_test_dir_out_path, "humann2_unstrat_example_picrust2.tsv.gz")
 
-humann2_strat_in_split1 = path.join(convert_test_dir_path, "humann2_path_test_A1.tsv")
-humann2_strat_in_split2 = path.join(convert_test_dir_path, "humann2_path_test_D2.tsv")
-humann2_strat_in_split3 = path.join(convert_test_dir_path, "humann2_path_test_PD3.tsv")
-humann2_strat_split_exp = path.join(convert_test_dir_out_path, "humann2_path_test_picrust2.tsv")
+humann2_strat_in_split1 = path.join(convert_test_dir_path, "humann2_path_test_A1.tsv.gz")
+humann2_strat_in_split2 = path.join(convert_test_dir_path, "humann2_path_test_D2.tsv.gz")
+humann2_strat_in_split3 = path.join(convert_test_dir_path, "humann2_path_test_PD3.tsv.gz")
+humann2_strat_split_exp = path.join(convert_test_dir_out_path, "humann2_path_test_picrust2.tsv.gz")
 
-picrust2_strat_in = path.join(convert_test_dir_path, "picrust2_strat_tmp.tsv")
+picrust2_strat_in = path.join(convert_test_dir_path, "picrust2_strat_tmp.tsv.gz")
 
-picrust2_strat_exp1 = path.join(convert_test_dir_out_path, "picrust2_strat_to_humann2_split", "s1_split.tsv")
-picrust2_strat_exp2 = path.join(convert_test_dir_out_path, "picrust2_strat_to_humann2_split", "s2_split.tsv")
-picrust2_strat_exp3 = path.join(convert_test_dir_out_path, "picrust2_strat_to_humann2_split", "s3_split.tsv")
+picrust2_strat_exp1 = path.join(convert_test_dir_out_path, "picrust2_strat_to_humann2_split", "s1_split.tsv.gz")
+picrust2_strat_exp2 = path.join(convert_test_dir_out_path, "picrust2_strat_to_humann2_split", "s2_split.tsv.gz")
+picrust2_strat_exp3 = path.join(convert_test_dir_out_path, "picrust2_strat_to_humann2_split", "s3_split.tsv.gz")
 
-picrust2_unstrat_in1 = path.join(convert_test_dir_path, "picrust2_unstrat_tmp1.tsv")
-picrust2_unstrat_in2 = path.join(convert_test_dir_path, "picrust2_unstrat_tmp2.tsv")
+picrust2_unstrat_in1 = path.join(convert_test_dir_path, "picrust2_unstrat_tmp1.tsv.gz")
+picrust2_unstrat_in2 = path.join(convert_test_dir_path, "picrust2_unstrat_tmp2.tsv.gz")
 picrust2_unstrat_exp = path.join(convert_test_dir_out_path,
-                                 "picrust2_unstrat_tmp1_tmp2_humann2-format.tsv")
+                                 "picrust2_unstrat_tmp1_tmp2_humann2-format.tsv.gz")
 
 metagenome_contrib_in = path.join(convert_test_dir_path,
                                   "metagenome_contrib_test.tsv.gz")
