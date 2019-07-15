@@ -37,6 +37,7 @@ def full_pipeline(study_fasta,
                   coverage,
                   per_sequence_contrib,
                   wide_table,
+                  skip_norm,
                   remove_intermediate,
                   verbose):
     '''Function that contains wrapper commands for full PICRUSt2 pipeline.
@@ -93,9 +94,10 @@ def full_pipeline(study_fasta,
         if rxn_func not in func_tables:
             func_tables[rxn_func] = orig_rxn_func
 
-    # Append marker as well, since this also needs to be run.
-    funcs.append("marker")
-    func_tables["marker"] = marker_gene_table
+    if not skip_norm:
+        # Append marker as well, since this also needs to be run.
+        funcs.append("marker")
+        func_tables["marker"] = marker_gene_table
 
     # Check that all input files exist.
     ref_msa, tree, hmm, model = identify_ref_files(ref_dir)
@@ -155,16 +157,17 @@ def full_pipeline(study_fasta,
     # Get predictions for all specified functions and keep track of outfiles.
     predicted_funcs = {}
 
-    # Make sure marker database is first in the list. This is because this will
-    # be run on a single core and so will be easier to identify any errors
-    # if the program exits when working on this function type.
-    funcs.insert(0, funcs.pop(funcs.index("marker")))
+    if not skip_norm:
+        # Make sure marker database is first in the list. This is because this will
+        # be run on a single core and so will be easier to identify any errors
+        # if the program exits when working on this function type.
+        funcs.insert(0, funcs.pop(funcs.index("marker")))
 
     for func in funcs:
         # Change output filename for NSTI and non-NSTI containing files.
         hsp_outfile = path.join(output_folder, func + "_predicted")
 
-        if func == "marker" and not skip_nsti:
+        if (func == "marker" and not skip_nsti) or (skip_norm and not skip_nsti):
             hsp_outfile = hsp_outfile + "_and_nsti.tsv.gz"
         else:
             hsp_outfile = hsp_outfile + ".tsv.gz"
@@ -181,7 +184,7 @@ def full_pipeline(study_fasta,
                    "--seed", "100"]
 
         # Add flags to command if specified.
-        if func == "marker" and not skip_nsti:
+        if (func == "marker" and not skip_nsti) or (skip_norm and not skip_nsti):
             hsp_cmd.append("--calculate_NSTI")
 
         # Run marker on only 1 processor.
@@ -210,7 +213,6 @@ def full_pipeline(study_fasta,
         metagenome_pipeline_cmd = ["metagenome_pipeline.py",
                                    "--input", input_table,
                                    "--function", predicted_funcs[func],
-                                   "--marker", predicted_funcs["marker"],
                                    "--min_reads", str(min_reads),
                                    "--min_samples", str(min_samples),
                                    "--out_dir", func_output_dir]
@@ -228,6 +230,11 @@ def full_pipeline(study_fasta,
 
         if not skip_nsti:
             metagenome_pipeline_cmd += ["--max_nsti", str(max_nsti)]
+
+        if skip_norm:
+            metagenome_pipeline_cmd.append("--skip_norm")
+        else:
+            metagenome_pipeline_cmd += ["--marker", predicted_funcs["marker"]]
 
         if stratified:
             metagenome_pipeline_cmd.append("--strat_out")
@@ -287,9 +294,12 @@ def full_pipeline(study_fasta,
         if per_sequence_contrib:
             pathway_pipeline_cmd.append("--per_sequence_contrib")
 
-            norm_sequence_abun = path.join(output_folder,
-                                           rxn_func + "_metagenome_out",
-                                           "seqtab_norm.tsv.gz")
+            if skip_norm:
+                norm_sequence_abun = input_table
+            else:
+                norm_sequence_abun = path.join(output_folder,
+                                               rxn_func + "_metagenome_out",
+                                               "seqtab_norm.tsv.gz")
 
             pathway_pipeline_cmd += ["--per_sequence_abun", norm_sequence_abun]
 

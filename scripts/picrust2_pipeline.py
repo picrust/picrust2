@@ -195,6 +195,12 @@ parser.add_argument('--wide_table', default=False, action='store_true',
                          '\"strat\" rather than \"contrib\" when this option '
                          'is used.')
 
+parser.add_argument('--skip_norm', default=False, action='store_true',
+                    help='Skip normalizing sequence abundances by predicted '
+                         'marker gene copy numbers (typically 16S rRNA '
+                         'genes). This step will be performed automatically '
+                         'unless this option is specified.')
+
 parser.add_argument('--remove_intermediate', default=False,
                     action='store_true',
                     help='Remove the intermediate outfiles of the sequence '
@@ -237,6 +243,7 @@ def main():
                                                     no_gap_fill=args.no_gap_fill,
                                                     per_sequence_contrib=args.per_sequence_contrib,
                                                     wide_table=args.wide_table,
+                                                    skip_norm=args.skip_norm,
                                                     remove_intermediate=args.remove_intermediate,
                                                     verbose=args.verbose)
 

@@ -122,5 +122,34 @@ class workflow_test(unittest.TestCase):
                               " --per_sequence_contrib"
                               " --verbose")
 
+    def test_picrust2_pipeline_script_per_seq_contrib_strat_skip_norm(self):
+        '''Test that full pipeline can be run successfully with
+        picrust2_pipeline.py with the --per_sequence_contrib and --stratified
+        options as well as --skip_norm.'''
+
+        with TemporaryDirectory() as temp_dir:
+
+            out_dir = path.join(temp_dir, "pipeline_out")
+
+            system_call_check("picrust2_pipeline.py -s " + test_study_seqs +
+                              " -i " + test_seq_abun_tsv +
+                              " -o " + out_dir +
+                              " -r " + test_ref_dir +
+                              " -p 1" +
+                              " --custom_trait_tables " + test_known_traits +
+                              " --marker_gene_table " + test_known_marker +
+                              " --reaction_func " + test_known_traits +
+                              " --max_nsti 1.9" +
+                              " --min_reads 2" +
+                              " --min_samples 2" +
+                              " --skip_minpath" +
+                              " --no_gap_fill" +
+                              " --coverage" +
+                              " --remove_intermediate" +
+                              " --stratified" +
+                              " --per_sequence_contrib" +
+                              " --skip_norm" +
+                              " --verbose")
+
 if __name__ == '__main__':
     unittest.main()

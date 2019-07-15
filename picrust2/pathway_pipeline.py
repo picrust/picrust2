@@ -13,7 +13,7 @@ import pandas as pd
 import numpy as np
 import copy
 from picrust2.util import (system_call_check, check_files_exist,
-                           make_output_dir)
+                           make_output_dir, read_seqabun)
 from picrust2.metagenome_pipeline import (strat_funcs_by_samples,
                                           metagenome_contributions,
                                           contrib_to_unstrat)
@@ -716,14 +716,12 @@ def per_sequence_contrib_levels(sequence_abun, sequence_func,
     the predicted pathways per genome and the stratified output.'''
 
     # Read sequence abundance table.
-    study_seq_counts = pd.read_csv(sequence_abun, sep="\t", index_col=0)
+    study_seq_counts = read_seqabun(sequence_abun)
 
-    # Index name should be "normalized" or throw error.
     if study_seq_counts.index.name != "normalized":
-        sys.exit("Error - expected first column of input sequence abundance "
-                 "table to be \"normalized\". Is this the raw table instead "
-                 "of the required table normalized by predicted marker "
-                 "abudances?")
+        print("Input abundance table is not normalized by marker gene copy "
+              "number. Be sure to point to the normalized table instead if "
+              "this was not intentional.")
 
     # Set index name to be sequence for rest of pipeline.
     study_seq_counts.index.name = "sequence"

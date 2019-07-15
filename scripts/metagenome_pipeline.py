@@ -25,18 +25,16 @@ metagenome_pipeline.py -i seqabun.biom -f predicted_EC.tsv.gz -m predicted_16S.t
 ''',
     formatter_class=argparse.RawDescriptionHelpFormatter)
 
-parser.add_argument('-i', '--input', metavar='PATH',
-                    required=True, type=str,
+parser.add_argument('-i', '--input', metavar='PATH', required=True, type=str,
                     help='Input table of sequence abundances (BIOM, TSV, or ' +
                          'mothur shared file format).')
 
-parser.add_argument('-f', '--function', metavar='PATH',
-                    required=True, type=str,
+parser.add_argument('-f', '--function', metavar='PATH', required=True,
+                    type=str,
                     help='Table of predicted gene family copy numbers ' +
                          '(output of hsp.py).')
 
-parser.add_argument('-m', '--marker', metavar='PATH',
-                    required=True, type=str,
+parser.add_argument('-m', '--marker', metavar='PATH', type=str,
                     help='Table of predicted marker gene copy numbers ' +
                          '(output of hsp.py, typically for 16S).')
 
@@ -72,6 +70,12 @@ parser.add_argument('--wide_table', default=False, action='store_true',
                          '\"pred_metagenome_strat.tsv.gz\" when this option '
                          'is set.')
 
+parser.add_argument('--skip_norm', default=False, action='store_true',
+                    help='Skip normalizing sequence abundances by predicted '
+                         'marker gene copy numbers (typically 16S rRNA '
+                         'genes). This step will be performed automatically '
+                         'unless this option is specified.')
+
 parser.add_argument('-o', '--out_dir', metavar='PATH', type=str,
                     default='metagenome_out',
                     help='Output directory for metagenome predictions. ' +
@@ -85,18 +89,19 @@ def main():
 
     args = parser.parse_args()
 
-    check_files_exist([args.input, args.function, args.marker])
+    check_files_exist([args.input, args.function])
 
     strat_pred, unstrat_pred = run_metagenome_pipeline(
                                             input_seqabun=args.input,
                                             function=args.function,
+                                            max_nsti=args.max_nsti,
                                             marker=args.marker,
                                             out_dir=args.out_dir,
-                                            max_nsti=args.max_nsti,
                                             min_reads=args.min_reads,
                                             min_samples=args.min_samples,
                                             strat_out=args.strat_out,
-                                            wide_table=args.wide_table)
+                                            wide_table=args.wide_table,
+                                            skip_norm=args.skip_norm)
 
     unstrat_outfile = path.join(args.out_dir, "pred_metagenome_unstrat.tsv.gz")
     unstrat_pred.to_csv(path_or_buf=unstrat_outfile, sep="\t", index=True,

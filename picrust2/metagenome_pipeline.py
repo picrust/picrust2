@@ -8,36 +8,40 @@ import sys
 import pandas as pd
 import numpy as np
 from os import path
-from picrust2.util import (read_seqabun, make_output_dir,
+from picrust2.util import (read_seqabun, make_output_dir, check_files_exist,
                            three_df_index_overlap_sort)
 
 
 def run_metagenome_pipeline(input_seqabun,
                             function,
-                            marker,
                             max_nsti,
+                            marker=None,
                             min_reads=1,
                             min_samples=1,
                             strat_out=False,
                             wide_table=False,
+                            skip_norm=False,
                             out_dir='metagenome_out'):
     '''Main function to run full metagenome pipeline. Meant to run modular
     functions largely listed below. Will return predicted metagenomes
     straitifed and unstratified by contributing genomes (i.e. taxa).'''
 
-    # Read in input table of sequence abundances.
+    if not marker and not skip_norm:
+        sys.exit("Table of predicted marker gene copy numbers is required "
+                 "unless --skip_norm is specified.")
+    elif marker and skip_norm:
+        sys.exit("Table of predicted marker gene copy numbers should not be "
+                 "specified when --skip_norm option is set.")
 
-    study_seq_counts = read_seqabun(input_seqabun)
-
-    # Read in predicted function and marker gene abundances.
-    pred_function = pd.read_csv(function, sep="\t", index_col="sequence")
-    pred_marker = pd.read_csv(marker, sep="\t", index_col="sequence")
-
-    pred_function.index = pred_function.index.astype(str)
-    pred_marker.index = pred_marker.index.astype(str)
+    make_output_dir(out_dir)
 
     # Initialize empty pandas dataframe to contain NSTI values.
     nsti_val = pd.DataFrame()
+
+    study_seq_counts = read_seqabun(input_seqabun)
+
+    pred_function = pd.read_csv(function, sep="\t", index_col="sequence")
+    pred_function.index = pred_function.index.astype(str)
 
     # If NSTI column present then remove all rows with value above specified
     # max value. Also, remove NSTI column (in both dataframes).
@@ -45,29 +49,37 @@ def run_metagenome_pipeline(input_seqabun,
         pred_function, nsti_val = drop_tips_by_nsti(tab=pred_function,
                                                     nsti_col='metadata_NSTI',
                                                     max_nsti=max_nsti)
+    if not skip_norm:
+        check_files_exist([marker])
+        pred_marker = pd.read_csv(marker, sep="\t", index_col="sequence")
+        pred_marker.index = pred_marker.index.astype(str)
 
-    if 'metadata_NSTI' in pred_marker.columns:
-        pred_marker, nsti_val = drop_tips_by_nsti(tab=pred_marker,
-                                                  nsti_col='metadata_NSTI',
-                                                  max_nsti=max_nsti)
+        if 'metadata_NSTI' in pred_marker.columns:
+            pred_marker, nsti_val = drop_tips_by_nsti(tab=pred_marker,
+                                                      nsti_col='metadata_NSTI',
+                                                      max_nsti=max_nsti)
 
-    # Re-order predicted abundance tables to be in same order as study seqs.
-    # Also, drop any sequence ids that don't overlap across all dataframes.
-    study_seq_counts, pred_function, pred_marker = three_df_index_overlap_sort(study_seq_counts,
-                                                                               pred_function,
-                                                                               pred_marker)
+        # Re-order predicted abundance tables to be in same order as study seqs.
+        # Also, drop any sequence ids that don't overlap across all dataframes.
+        study_seq_counts, pred_function, pred_marker = three_df_index_overlap_sort(study_seq_counts,
+                                                                                   pred_function,
+                                                                                   pred_marker)
+        norm_output = path.join(out_dir, "seqtab_norm.tsv.gz")
 
-    # Create output directory if it does not already exist.
-    make_output_dir(out_dir)
+        # Normalize input study sequence abundances by predicted abundance of
+        # marker genes and output normalized table if specified.
+        study_seq_counts = norm_by_marker_copies(input_seq_counts=study_seq_counts,
+                                                 input_marker_num=pred_marker,
+                                                 norm_filename=norm_output)
+    else:
+        # Get intersecting rows between input files and sort.
+        label_overlap = pred_function.index.intersection(study_seq_counts.index).sort_values()
 
-    # Create normalized sequence abundance filename.
-    norm_output = path.join(out_dir, "seqtab_norm.tsv.gz")
+        if len(label_overlap) == 0:
+            sys.exit("No sequence ids overlap between both input files.")
 
-    # Normalize input study sequence abundances by predicted abundance of
-    # marker genes and output normalized table if specified.
-    study_seq_counts = norm_by_marker_copies(input_seq_counts=study_seq_counts,
-                                             input_marker_num=pred_marker,
-                                             norm_filename=norm_output)
+        pred_function = pred_function.reindex(label_overlap)
+        study_seq_counts = study_seq_counts.reindex(label_overlap)
 
     # If NSTI column input then output weighted NSTI values.
     if not nsti_val.empty:

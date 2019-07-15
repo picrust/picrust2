@@ -96,6 +96,25 @@ class metagenome_pipeline_test(unittest.TestCase):
         pd.testing.assert_frame_equal(unstrat_out, exp_unstrat_simple_in,
                                       check_like=True)
 
+    def test_full_pipeline_strat_tsv_skip_norm(self):
+        '''Test that run_metagenome_pipeline works on tsv input seqtab and skip
+        normalization.'''
+
+        with TemporaryDirectory() as temp_dir:
+            strat_out, unstrat_out = run_metagenome_pipeline(input_seqabun=seqtab_tsv_simple,
+                                                             function=func_simple_in,
+                                                             max_nsti=1.9,
+                                                             out_dir=temp_dir,
+                                                             strat_out=True,
+                                                             wide_table=False,
+                                                             skip_norm=True)
+
+        pd.testing.assert_frame_equal(strat_out.reset_index(drop=True),
+                                      exp_strat_simple_in.reset_index(drop=True),
+                                      check_like=True)
+        pd.testing.assert_frame_equal(unstrat_out, exp_unstrat_simple_in,
+                                      check_like=True)
+
     def test_full_pipeline_strat_wide_tsv(self):
         '''Test that run_metagenome_pipeline works on tsv input seqtab. Compare
         with wide-format table in this case.'''
