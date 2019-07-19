@@ -540,7 +540,7 @@ def read_metagenome_input(filename):
     "strat" or "contrib" to indicate the format.'''
 
     # Read in input file as pandas dataframe.
-    input_df = pd.read_csv(filename, sep="\t")
+    input_df = pd.read_csv(filename, sep="\t", dtype={'function': str})
 
     # Check that 'function' column is present, which is in all three input
     # formats.
@@ -727,7 +727,8 @@ def per_sequence_contrib_levels(sequence_abun, sequence_func,
     study_seq_counts.index.name = "sequence"
 
     # Read in predicted function abundances by sequence.
-    pred_function = pd.read_csv(sequence_func, sep="\t", index_col="sequence")
+    pred_function = pd.read_csv(sequence_func, sep="\t", index_col="sequence",
+                                dtype={'sequence': str})
 
     # Drop metadata_NSTI column if it in this table.
     if "metadata_NSTI" in pred_function.columns:
