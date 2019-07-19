@@ -40,7 +40,8 @@ def run_metagenome_pipeline(input_seqabun,
 
     study_seq_counts = read_seqabun(input_seqabun)
 
-    pred_function = pd.read_csv(function, sep="\t", index_col="sequence")
+    pred_function = pd.read_csv(function, sep="\t", index_col="sequence",
+                                dtype={'sequence': str})
     pred_function.index = pred_function.index.astype(str)
 
     # If NSTI column present then remove all rows with value above specified
@@ -51,7 +52,8 @@ def run_metagenome_pipeline(input_seqabun,
                                                     max_nsti=max_nsti)
     if not skip_norm:
         check_files_exist([marker])
-        pred_marker = pd.read_csv(marker, sep="\t", index_col="sequence")
+        pred_marker = pd.read_csv(marker, sep="\t", index_col="sequence",
+                                  dtype={'sequence': str})
         pred_marker.index = pred_marker.index.astype(str)
 
         if 'metadata_NSTI' in pred_marker.columns:
@@ -149,8 +151,10 @@ def strat_funcs_by_samples(func_abun, sample_abun, rare_seqs=[],
         # Concat the RARE seqs to the full df.
         strat_func = pd.concat([strat_func, raw_seqs_slice], axis=0, sort=True)
 
-    # Remove rows that are all 0.
+    # Remove rows that are all 0 and keep sample ids in same order.
     strat_func = strat_func.loc[~(strat_func == 0).all(axis=1)]
+
+    strat_func = strat_func[list(sample_abun.columns)]
 
     # Return dataframe and also unstratified dataframe if specified.
     if return_unstrat:

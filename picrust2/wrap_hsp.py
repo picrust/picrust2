@@ -126,14 +126,16 @@ def castor_hsp_wrapper(tree_path, trait_tab, hsp_method, calc_ci=False,
         # Load the output into Table objects
         try:
             asr_table = pd.read_csv(filepath_or_buffer=output_count_path,
-                                  sep="\t", index_col="sequence")
+                                    sep="\t", index_col="sequence",
+                                    dtype={'sequence': str})
         except IOError:
             raise ValueError("Cannot read in expected output file" +
                             output_ci_path)
 
         if calc_ci:
             asr_ci_table = pd.read_csv(filepath_or_buffer=output_ci_path,
-                                  sep="\t", index_col="sequence")
+                                       sep="\t", index_col="sequence",
+                                       dtype={'sequence': str})
         else:
             asr_ci_table = None
 
@@ -167,7 +169,8 @@ def castor_nsti(tree_path,
                                     nsti_tmp_out]))
 
         # Read in calculated NSTI values.
-        nsti_out = pd.read_csv(nsti_tmp_out, sep="\t", index_col="sequence")
+        nsti_out = pd.read_csv(nsti_tmp_out, sep="\t", index_col="sequence",
+                               dtype={'sequence': str})
 
     # Make sure that the table has the correct number of rows.
     if len(known_tips) != nsti_out.shape[0]:

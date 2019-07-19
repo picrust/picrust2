@@ -310,14 +310,16 @@ def read_seqabun(infile):
     # as BIOM table and return. This is expected to be the most common input.
     in_name, in_ext = splitext(infile)
     if in_ext == "biom":
-        return(biom.load_table(infile).to_dataframe(dense=True))
+        input_seqabun = biom.load_table(infile).to_dataframe(dense=True)
+        input_seqabun.index.astype('str', copy=False)
+        return(input_seqabun)
 
     # Next check if input file is a mothur shared file or not by read in first
     # row only.
     mothur_format = False
     try:
         in_test = pd.read_csv(filepath_or_buffer=infile, sep="\t", nrows=1)
-        in_test_col = list(in_test.columns.values) 
+        in_test_col = list(in_test.columns.values)
         if len(in_test_col) >= 4 and (in_test_col[0] == "label" and \
                                       in_test_col[1] == "Group" and \
                                       in_test_col[2] == "numOtus"):
@@ -328,7 +330,8 @@ def read_seqabun(infile):
     # If identified to be mothur format then remove extra columns, set "Group"
     # to be index (i.e. row) names and then transpose.
     if mothur_format:
-        input_seqabun = pd.read_csv(filepath_or_buffer=infile, sep="\t")
+        input_seqabun = pd.read_csv(filepath_or_buffer=infile, sep="\t",
+                                    dtype={'Group': str}, low_memory=False)
         input_seqabun.drop(labels=["label", "numOtus"], axis=1, inplace=True)
         input_seqabun.set_index(keys="Group", drop=True, inplace=True,
                                 verify_integrity=True)
@@ -337,8 +340,9 @@ def read_seqabun(infile):
         input_seqabun.index.astype('str', copy=False)
         return(input_seqabun)
     else:
-        return(biom.load_table(infile).to_dataframe(dense=True))
-
+        input_seqabun = biom.load_table(infile).to_dataframe(dense=True)
+        input_seqabun.index.astype('str', copy=False)
+        return(input_seqabun)
 
 def three_df_index_overlap_sort(df1, df2, df3):
     '''Given 3 pandas dataframes, will first determine which index labels
@@ -395,10 +399,11 @@ def add_descrip_col(inputfile, mapfile, in_df=False):
     if in_df:
         function_tab = inputfile
     else:
-        function_tab = pd.read_csv(inputfile, sep="\t")
+        function_tab = pd.read_csv(inputfile, sep="\t", low_memory=False)
     
     map_tab = pd.read_csv(mapfile, sep="\t", index_col=0, header=None,
-                            names=["function", "description"])
+                          names=["function", "description"],
+                          low_memory=False)
 
     # Check to see if any of the mapfile row indices are in the function table
     # id column and throw an error if not.
@@ -424,7 +429,8 @@ def convert_humann2_to_picrust2(infiles, outfile, stratified):
 
     # Loop over all sample infiles and add their data to this list.
     for infile in infiles:
-        humann2_samples.append(pd.read_csv(infile, sep="\t", index_col=0))
+        humann2_samples.append(pd.read_csv(infile, sep="\t", index_col=0,
+                                           low_memory=False))
 
     # Get the index name for each table and make sure they are identical.
     infile_index_names = []
@@ -488,7 +494,8 @@ def convert_picrust2_to_humann2(infiles, outfolder, stratified):
             sys.exit('Stopping - only expected one input file when converting '
                      'from PICRUSt2 unstratified table to HUMAnN2 format')
 
-        in_tab = pd.read_csv(infiles[0], sep="\t", index_col=0)
+        in_tab = pd.read_csv(infiles[0], sep="\t", index_col=0,
+                             low_memory=False)
 
         # Double-check that this table isn't stratified.
         if 'sequence' in in_tab.columns:
@@ -507,8 +514,8 @@ def convert_picrust2_to_humann2(infiles, outfolder, stratified):
                      'HUMAnN2 stratified format')
 
         # Read in both input tables.
-        in_tab1 = pd.read_csv(infiles[0], sep="\t")
-        in_tab2 = pd.read_csv(infiles[1], sep="\t")
+        in_tab1 = pd.read_csv(infiles[0], sep="\t", low_memory=False)
+        in_tab2 = pd.read_csv(infiles[1], sep="\t", low_memory=False)
 
         # Make sure that only 1 input table is stratified.
         strat_table_count = 0
@@ -599,7 +606,7 @@ def convert_picrust2_to_humann2_merged(infiles, outfile):
         
     for infile in infiles:
 
-        in_table = pd.read_csv(infile, sep="\t")
+        in_table = pd.read_csv(infile, sep="\t", low_memory=False)
 
         infile_index_names.append(in_table.columns[0])
 
@@ -661,7 +668,7 @@ def contrib_to_legacy(infiles, outfile, use_rel_abun=True):
         sys.exit('Stopping - only expected one input file when converting '
                  'contributional file to legacy format.')
 
-    contrib_df = pd.read_csv(infiles[0], sep="\t")
+    contrib_df = pd.read_csv(infiles[0], sep="\t", low_memory=False)
     contrib_df['sample'] = contrib_df['sample'].astype('str')
     contrib_df['taxon'] = contrib_df['taxon'].astype('str')
 
