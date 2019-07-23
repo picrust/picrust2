@@ -309,7 +309,7 @@ def read_seqabun(infile):
     # First check extension of input file. If extension is "biom" then read in
     # as BIOM table and return. This is expected to be the most common input.
     in_name, in_ext = splitext(infile)
-    if in_ext == "biom":
+    if in_ext == ".biom":
         input_seqabun = biom.load_table(infile).to_dataframe(dense=True)
         input_seqabun.index.astype('str', copy=False)
         return(input_seqabun)
@@ -340,7 +340,8 @@ def read_seqabun(infile):
         input_seqabun.index.astype('str', copy=False)
         return(input_seqabun)
     else:
-        input_seqabun = biom.load_table(infile).to_dataframe(dense=True)
+        input_seqabun = pd.read_csv(filepath_or_buffer=infile, sep="\t",
+                                    index_col=0, low_memory=False)
         input_seqabun.index.astype('str', copy=False)
         return(input_seqabun)
 
