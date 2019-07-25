@@ -368,7 +368,7 @@ def pathway_pipeline(inputfile,
     # Subset input table of reactions to only those found in pathway database.
     in_metagenome = in_metagenome[in_metagenome.function.isin(pathways_in.reaction_list())]
 
-    # Initialize output objects to be None (expect for usntratified abundance).
+    # Initialize output objects to be None (expect for unstratified abundance).
     path_cov_unstrat = None
     path_cov_strat = None
     path_abun_strat = None
@@ -495,7 +495,8 @@ def pathway_pipeline(inputfile,
             path_abun_unstrat_by_seq = strat_to_unstrat_counts(strat_df=path_abun_strat,
                                                                func_col="pathway")
         else:
-            path_abun_unstrat_by_seq = contrib_to_unstrat(contrib_table=path_abun_strat)
+            path_abun_unstrat_by_seq = contrib_to_unstrat(contrib_table=path_abun_strat,
+                                                          sample_order=list(path_abun_unstrat.columns.values))
 
     return(path_abun_unstrat, path_cov_unstrat, path_abun_strat,
            path_cov_strat, path_abun_by_seq, path_cov_by_seq,

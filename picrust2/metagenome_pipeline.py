@@ -363,7 +363,7 @@ def metagenome_contributions(func_abun, sample_abun, rare_seqs=[],
     return(metagenome_contrib_out)
 
 
-def contrib_to_unstrat(contrib_table):
+def contrib_to_unstrat(contrib_table, sample_order=None):
     '''Take in metagenome contribution table and return wide-format sample
     (unstratified) metagenome table.'''
 
@@ -380,5 +380,8 @@ def contrib_to_unstrat(contrib_table):
 
     contrib_table.index.name = None
     contrib_table.columns.name = None
+
+    if sample_order:
+        contrib_table <- contrib_table.reindex(columns=sample_order)
 
     return(contrib_table)
