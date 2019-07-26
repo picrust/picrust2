@@ -186,7 +186,6 @@ def unstrat_funcs_only_by_samples(func_abun, sample_abun):
 
     unstrat_func.index.name = 'function'
 
-    # Remove rows that are all 0s and return.
     return(unstrat_func)
 
 
@@ -231,6 +230,8 @@ def calc_weighted_nsti(seq_counts, nsti_input, outfile=None, return_df=False):
     weighted_nsti = pd.DataFrame(nsti_mult.sum(axis=0)/seq_counts.sum(axis=0))
 
     weighted_nsti.columns = ["weighted_NSTI"]
+
+    weighted_nsti.fillna(0, inplace=True)
 
     # Write to outfile if specified.
     if outfile:
@@ -382,6 +383,7 @@ def contrib_to_unstrat(contrib_table, sample_order=None):
     contrib_table.columns.name = None
 
     if sample_order:
-        contrib_table <- contrib_table.reindex(columns=sample_order)
+        contrib_table = contrib_table.reindex(columns=sample_order,
+                                              fill_value=0)
 
     return(contrib_table)
