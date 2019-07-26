@@ -18,7 +18,7 @@ parser = argparse.ArgumentParser(
                 "to specify the input file and what type of functions are " +
                 "in the input table. Will throw an error if no ids overlap " +
                 "and otherwise will fill in \"not_found\" for the " +
-                "description of ids in the function table and not in the " +
+                "description of ids in the function table not in the " +
                 "mapfile.",
     epilog='''
 

@@ -25,7 +25,8 @@ parser = argparse.ArgumentParser(
                 "which can be optionally stratified by the contributing "
                 "sequence. Finally, pathway abundances are predicted based on "
                 "metagenome profiles. By default, output files include "
-                "predictions for EC numbers, KEGG orthologs, and MetaCyc "
+                "predictions for Enzyme classification (EC) numbers, "
+                "KEGG orthologs (KOs), and MetaCyc "
                 "pathway abundances. However, this script enables users to "
                 "use custom reference and trait tables to customize analyses.",
 epilog='''
@@ -65,7 +66,7 @@ parser.add_argument('-r', '--ref_dir', metavar='PATH', type=str,
 parser.add_argument('--in_traits', type=str.upper, default='EC,KO',
                     help='Comma-delimited list (with no spaces) of which gene '
                          'families to predict from this set: COG, EC, KO, '
-                         'PFAM, TIGRFAM. Note that E.C. numbers will always '
+                         'PFAM, TIGRFAM. Note that EC numbers will always '
                          'be predicted unless --no_pathways is set '
                          '(default: %(default)s).')
 
@@ -105,15 +106,15 @@ parser.add_argument('--reaction_func', metavar='MAP', type=str, default="EC",
 parser.add_argument('--no_pathways', default=False, action='store_true',
                     help='Flag to indicate that pathways should NOT be '
                          'inferred (otherwise they will be inferred by '
-                         'default). Predicted E.C. number abundances are used '
-                         'to infer pathways when default reference files are '
+                         'default). Predicted EC number abundances are used '
+                         'to infer pathways when the default reference files are '
                          'used.')
 
 parser.add_argument('--regroup_map', metavar='ID_MAP',
                     default=default_regroup_map, type=str,
                     help='Mapfile of ids to regroup gene families to before '
                          'running MinPath. The default mapfile is for '
-                         'regrouping E. C. numbers to MetaCyc reactions '
+                         'regrouping EC numbers to MetaCyc reactions '
                          '(default: %(default)s).')
 
 parser.add_argument('--no_regroup', default=False, action="store_true",

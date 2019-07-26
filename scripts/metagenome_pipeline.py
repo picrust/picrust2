@@ -16,9 +16,9 @@ parser = argparse.ArgumentParser(
                 "Note that typically these sequences correspond to OTUs or " +
                 "ASVs. The specified sequence abundance table will be " +
                 "normalized by the predicted number of marker gene copies " +
-                "before outputting the final files. Two main output files " +
-                "will be generated: one stratified and one non-stratified " +
-                "by contributing taxa",
+                "before outputting the final files by default. The sample " +
+                "metagenome table stratified by contributing ASVs can " +
+                "optionally also be output.",
 
     epilog='''Usage example:
 metagenome_pipeline.py -i seqabun.biom -f predicted_EC.tsv.gz -m predicted_16S.tsv.gz --max_nsti 2.0 -o metagenome_out
@@ -36,7 +36,7 @@ parser.add_argument('-f', '--function', metavar='PATH', required=True,
 
 parser.add_argument('-m', '--marker', metavar='PATH', type=str,
                     help='Table of predicted marker gene copy numbers ' +
-                         '(output of hsp.py, typically for 16S).')
+                         '(output of hsp.py - typically for 16S).')
 
 parser.add_argument('--max_nsti', metavar='FLOAT', type=float, default=2.0,
                     help='Sequences with NSTI values above this value will ' +

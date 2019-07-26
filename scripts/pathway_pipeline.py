@@ -22,7 +22,8 @@ parser = argparse.ArgumentParser(
     "database.\n\n\n"
 
     "Stratified output will only be output if a stratified metagenome is "
-    "input. Please note that by default, stratified abundances are based on "
+    "input (or if --per_sequence_contrib is set). "
+    "Please note that by default stratified abundances are based on "
     "how much predicted genomes (e.g. sequences) contribute to the "
     "community-wide abundance, not the abundance of the pathway based on the "
     "predicted genes in that genome alone. In other words, a predicted genome "
@@ -31,7 +32,7 @@ parser = argparse.ArgumentParser(
     "abundance in that genome even though no other required genes for that "
     "pathway are present. In contrast, the --per_sequence_contrib option "
     "should be used to get the predicted abundance and coverage of each "
-    "pathway based on the predicted gene families WITHIN each genome. Note "
+    "pathway based on the predicted gene families within each genome. Note "
     "that using the --per_sequence_contrib option can greatly increase "
     "runtime.",
     epilog='''
@@ -52,10 +53,10 @@ parser.add_argument('-i', '--input', metavar='IN_TABLE', required=True,
                     type=str,
                     help='Input TSV table of gene family abundances (either '
                          'the unstratified or stratified output of '
-                         'metagenome_pipeline.py')
+                         'metagenome_pipeline.py).')
 
 parser.add_argument('-o', '--out_dir', metavar='DIRECTORY', required=True,
-                    type=str, help='Output folder for pathway abundance output')
+                    type=str, help='Output folder for pathway abundance output.')
 
 parser.add_argument('-m', '--map', metavar='MAP', type=str,
                     default=default_pathway_map,
@@ -93,7 +94,7 @@ parser.add_argument('-r', '--regroup_map', metavar='ID_MAP',
                     default=default_regroup_map, type=str,
                     help='Mapfile of ids to regroup gene families to before '
                          'running MinPath. The default mapfile is for '
-                         'regrouping E.C. numbers to MetaCyc reactions '
+                         'regrouping EC numbers to MetaCyc reactions '
                          '(default: %(default)s).')
 
 parser.add_argument('--per_sequence_contrib', default=False,
@@ -105,7 +106,7 @@ parser.add_argument('--per_sequence_contrib', default=False,
                     'abundance contributed by each individual sequence. This '
                     'is in contrast to the default stratified output, which '
                     'is the contribution to the community-wide pathway '
-                    'abundances. Pathway coverage stratified by contributing '
+                    'abundances. Experimental pathway coverage stratified by contributing '
                     'sequence will also be output when --coverage is set. '
                     'Options --per_sequence_contrib and '
                     '--per_sequence_function need to be set when this option '
@@ -114,8 +115,8 @@ parser.add_argument('--per_sequence_contrib', default=False,
 parser.add_argument('--per_sequence_abun', metavar='PATH',
                     default=None, type=str,
                     help='Path to table of sequence abundances across samples '
-                         'normalized by marker copy number (i.e. normalized '
-                         'sequence abundance table outputted by metagenome '
+                         'normalized by marker copy number (typically the normalized '
+                         'sequence abundance table output at the metagenome '
                          'pipeline step). This input is required when the '
                          '--per_sequence_contrib option is set. (default: '
                          '%(default)s).')

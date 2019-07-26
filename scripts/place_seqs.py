@@ -24,17 +24,17 @@ place_seqs.py -s study_seqs.fna -o placed_seqs.tre --processes 1 --intermediate 
 ''', formatter_class=argparse.RawDescriptionHelpFormatter)
 
 parser.add_argument('-s', '--study_fasta', metavar='PATH', required=True,
-                    type=str, help='FASTA of unaligned study sequences')
+                    type=str, help='FASTA of unaligned study sequences.')
 
 parser.add_argument('-r', '--ref_dir', metavar='PATH', type=str,
                     default=default_ref_dir,
                     help='Directory containing reference sequence files '
                          '(default: %(default)s). Please see the online '
                          'documentation for how to name the files in this '
-                         'directory.')
+                         'directory in order to use custom reference files.')
 
 parser.add_argument('-o', '--out_tree', metavar='PATH', required=True,
-                    type=str, help='Name of final output tree')
+                    type=str, help='Name of final output tree.')
 
 parser.add_argument('-p', '--processes', type=int, default=1,
                     help='Number of processes to run in parallel (default: '
@@ -47,11 +47,11 @@ parser.add_argument('--intermediate', metavar='PATH', type=str, default=None,
                          'deleted otherwise).')
 
 parser.add_argument('--chunk_size', type=int, default=5000,
-                    help='Number of query seqs to read in at once for EPA-ng ' +
+                    help='Number of query seqs to read in at once for EPA-NG ' +
                          '(default: %(default)d).')
 
 parser.add_argument('--print_cmds', default=False, action='store_true',
-                    help='If specified, print out wrapped commands to screen')
+                    help='If specified, print out wrapped commands to screen.')
 
 parser.add_argument('-v', '--version', default=False, action='version',
                     version="%(prog)s " + __version__)

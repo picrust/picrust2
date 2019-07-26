@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-__copyright__ = 'Copyright 2018, The PICRUSt Project'
-__license__ = 'GPL'
-__version__ = '2.0.0-b.6'
+__copyright__ = "Copyright 2018-2019, The PICRUSt Project"
+__license__ = "GPL"
+__version__ = "2.2.0-b"
 
 import argparse
 from picrust2.util import (check_files_exist, contrib_to_legacy,

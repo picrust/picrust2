@@ -17,10 +17,10 @@ parser = argparse.ArgumentParser(
 
     description="This script performs hidden state prediction on tips in " +
                 "the input tree with unknown trait values. Typically this " +
-                "script is used to predict the abundance of gene families " +
-                "present in each taxon, given a tree and a set of known " +
-                "trait values. This script outputs a table of trait " +
-                "predictions.",
+                "script is used to predict the copy number of gene families " +
+                "present in the predicted genome for each amplicon sequence " +
+                "variant, given a tree and a set of known trait values. " +
+                "This script outputs a table of trait predictions.",
     epilog='''
 Usage example:
 hsp.py -n -t out.tre -i 16S -o 16S_predicted_and_nsti.tsv.gz --processes 1
@@ -28,8 +28,9 @@ hsp.py -n -t out.tre -i 16S -o 16S_predicted_and_nsti.tsv.gz --processes 1
 ''', formatter_class=argparse.RawDescriptionHelpFormatter)
 
 parser.add_argument('-t', '--tree', metavar='PATH', required=True, type=str,
-                    help='The full reference tree with placed study sequence '
-                         '(i.e. ASVs or OTUs), in newick format.')
+                    help='The full reference tree in newick format containing '
+                         'both study sequences (i.e. ASVs or OTUs) and '
+                         'reference sequences.')
 
 parser.add_argument('-o', '--output', metavar='PATH', type=str, required=True,
                     help='Output table with predicted abundances per study '
@@ -70,10 +71,10 @@ parser.add_argument('-m', '--hsp_method', default='mp',
 
 parser.add_argument('-n', '--calculate_NSTI', default=False,
                     action='store_true',
-                    help='Calculate NSTI and add to output file')
+                    help='Calculate NSTI and add to output file.')
 
 parser.add_argument('--check', default=False, action='store_true',
-                    help='Check input trait table before HSP')
+                    help='Check input trait table before HSP.')
 
 parser.add_argument('-p', '--processes', default=1, type=int,
                     help='Number of processes to run in parallel (default: '
