@@ -1,9 +1,0 @@
-function	description	samp1	samp2
-EC:1.1.1.1	Alcohol dehydrogenase	1	0
-EC:1.1.1.10	L-xylulose reductase	9	4
-EC:1.1.1.100	3-oxoacyl-[acyl-carrier-protein] reductase	10	7
-EC:1.1.1.101	Acylglycerone-phosphate reductase	0	0
-EC:1.1.1.102	3-dehydrosphinganine reductase	1	4
-EC:1.1.1.103	L-threonine 3-dehydrogenase	3	1
-EC:1.1.1.105	All-trans-retinol dehydrogenase (NAD(+))	3	1
-other	not_found	2	1

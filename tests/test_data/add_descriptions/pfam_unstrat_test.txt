@@ -1,6 +1,0 @@
-function	samp1	samp2
-PF03752	0	0
-PF14228	1	4
-PF12242	3	1
-PF09660	3	1
-other	2	1

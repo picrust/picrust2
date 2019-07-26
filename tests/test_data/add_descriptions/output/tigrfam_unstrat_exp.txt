@@ -1,6 +1,0 @@
-function	description	samp1	samp2
-TIGR00545	lipoyltransferase and lipoate-protein ligase	0	0
-TIGR02263	benzoyl-CoA reductase, subunit C	1	4
-TIGR00872	6-phosphogluconate dehydrogenase (decarboxylating)	3	1
-TIGR01400	flagellar biosynthetic protein FliR	3	1
-other	not_found	2	1

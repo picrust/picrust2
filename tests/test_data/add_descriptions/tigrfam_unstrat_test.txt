@@ -1,6 +1,0 @@
-function	samp1	samp2
-TIGR00545	0	0
-TIGR02263	1	4
-TIGR00872	3	1
-TIGR01400	3	1
-other	2	1

@@ -1,6 +1,0 @@
-function	description	samp1	samp2
-K18614	K18614; 2-(acetamidomethylene)succinate hydrolase [EC:3.5.1.29]	0	0
-K06392	spoIIIAC; stage III sporulation protein AC	1	4
-K06676	BRRN1, BRN1, CAPH; condensin complex subunit 2	3	1
-K07251	thiK; thiamine kinase [EC:2.7.1.89]	3	1
-other	not_found	2	1

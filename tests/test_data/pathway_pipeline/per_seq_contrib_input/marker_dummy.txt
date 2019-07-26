@@ -1,3 +1,0 @@
-sequence	16S_rRNA_count
-seq1	1
-seq2	1

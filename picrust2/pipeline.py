@@ -2,7 +2,7 @@
 
 __copyright__ = "Copyright 2018-2019, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.1.4-b"
+__version__ = "2.2.0-b"
 
 from os import path
 import sys
@@ -26,7 +26,6 @@ def full_pipeline(study_fasta,
                   no_pathways,
                   regroup_map,
                   no_regroup,
-                  metagenome_contrib,
                   stratified,
                   max_nsti,
                   min_reads,
@@ -37,6 +36,8 @@ def full_pipeline(study_fasta,
                   no_gap_fill,
                   coverage,
                   per_sequence_contrib,
+                  wide_table,
+                  skip_norm,
                   remove_intermediate,
                   verbose):
     '''Function that contains wrapper commands for full PICRUSt2 pipeline.
@@ -93,11 +94,12 @@ def full_pipeline(study_fasta,
         if rxn_func not in func_tables:
             func_tables[rxn_func] = orig_rxn_func
 
-    # Append marker as well, since this also needs to be run.
-    funcs.append("marker")
-    func_tables["marker"] = marker_gene_table
+    if not skip_norm:
+        # Append marker as well, since this also needs to be run.
+        funcs.append("marker")
+        func_tables["marker"] = marker_gene_table
 
-    # Check that all input files exist. 
+    # Check that all input files exist.
     ref_msa, tree, hmm, model = identify_ref_files(ref_dir)
     files2check = [study_fasta, input_table, ref_msa, tree, hmm, model] + list(func_tables.values())
 
@@ -155,16 +157,17 @@ def full_pipeline(study_fasta,
     # Get predictions for all specified functions and keep track of outfiles.
     predicted_funcs = {}
 
-    # Make sure marker database is first in the list. This is because this will
-    # be run on a single core and so will be easier to identify any errors
-    # if the program exits when working on this function type.
-    funcs.insert(0, funcs.pop(funcs.index("marker")))
+    if not skip_norm:
+        # Make sure marker database is first in the list. This is because this will
+        # be run on a single core and so will be easier to identify any errors
+        # if the program exits when working on this function type.
+        funcs.insert(0, funcs.pop(funcs.index("marker")))
 
     for func in funcs:
         # Change output filename for NSTI and non-NSTI containing files.
         hsp_outfile = path.join(output_folder, func + "_predicted")
 
-        if func == "marker" and not skip_nsti:
+        if (func == "marker" and not skip_nsti) or (skip_norm and not skip_nsti):
             hsp_outfile = hsp_outfile + "_and_nsti.tsv.gz"
         else:
             hsp_outfile = hsp_outfile + ".tsv.gz"
@@ -181,7 +184,7 @@ def full_pipeline(study_fasta,
                    "--seed", "100"]
 
         # Add flags to command if specified.
-        if func == "marker" and not skip_nsti:
+        if (func == "marker" and not skip_nsti) or (skip_norm and not skip_nsti):
             hsp_cmd.append("--calculate_NSTI")
 
         # Run marker on only 1 processor.
@@ -210,7 +213,6 @@ def full_pipeline(study_fasta,
         metagenome_pipeline_cmd = ["metagenome_pipeline.py",
                                    "--input", input_table,
                                    "--function", predicted_funcs[func],
-                                   "--marker", predicted_funcs["marker"],
                                    "--min_reads", str(min_reads),
                                    "--min_samples", str(min_samples),
                                    "--out_dir", func_output_dir]
@@ -223,16 +225,26 @@ def full_pipeline(study_fasta,
         func_output[func][0] = path.join(func_output_dir,
                                          "pred_metagenome_unstrat.tsv.gz")
 
-        if metagenome_contrib:
-            metagenome_pipeline_cmd.append("--metagenome_contrib")
+        if wide_table:
+            metagenome_pipeline_cmd.append("--wide_table")
 
         if not skip_nsti:
             metagenome_pipeline_cmd += ["--max_nsti", str(max_nsti)]
 
+        if skip_norm:
+            metagenome_pipeline_cmd.append("--skip_norm")
+        else:
+            metagenome_pipeline_cmd += ["--marker", predicted_funcs["marker"]]
+
         if stratified:
             metagenome_pipeline_cmd.append("--strat_out")
-            func_output[func][1] = path.join(func_output_dir,
-                                             "pred_metagenome_strat.tsv.gz")
+
+            if wide_table:
+                func_output[func][1] = path.join(func_output_dir,
+                                                 "pred_metagenome_strat.tsv.gz")
+            else:
+                func_output[func][1] = path.join(func_output_dir,
+                                                 "pred_metagenome_contrib.tsv.gz")
 
         # Note that STDERR is printed for this command since it outputs how
         # many ASVs were above the NSTI cut-off (if specified).
@@ -276,12 +288,18 @@ def full_pipeline(study_fasta,
         else:
             pathway_pipeline_cmd += ["--regroup_map", regroup_map]
 
+        if wide_table:
+            pathway_pipeline_cmd.append("--wide_table")
+
         if per_sequence_contrib:
             pathway_pipeline_cmd.append("--per_sequence_contrib")
 
-            norm_sequence_abun = path.join(output_folder,
-                                           rxn_func + "_metagenome_out",
-                                           "seqtab_norm.tsv.gz")
+            if skip_norm:
+                norm_sequence_abun = input_table
+            else:
+                norm_sequence_abun = path.join(output_folder,
+                                               rxn_func + "_metagenome_out",
+                                               "seqtab_norm.tsv.gz")
 
             pathway_pipeline_cmd += ["--per_sequence_abun", norm_sequence_abun]
 
@@ -306,14 +324,24 @@ def full_pipeline(study_fasta,
         pathway_outfiles["unstrat_cov"] = path.join(path_output_dir,
                                                     "path_cov_unstrat.tsv.gz")
 
-        if stratified:
-            pathway_outfiles["strat_abun"] = path.join(path_output_dir,
-                                                       "path_abun_strat.tsv.gz")
-            pathway_outfiles["strat_cov"] = path.join(path_output_dir,
-                                                      "path_cov_strat.tsv.gz")
-        else:
-            pathway_outfiles["strat_abun"] = None
-            pathway_outfiles["strat_cov"] = None
+        pathway_outfiles["strat_abun"] = None
+        pathway_outfiles["strat_cov"] = None
+
+        if stratified or per_sequence_contrib:
+            if wide_table:
+                pathway_outfiles["strat_abun"] = path.join(path_output_dir,
+                                                           "path_abun_strat.tsv.gz")
+
+                if per_sequence_contrib:
+                    pathway_outfiles["strat_cov"] = path.join(path_output_dir,
+                                                              "path_cov_strat.tsv.gz")
+
+            else:
+                pathway_outfiles["strat_abun"] = path.join(path_output_dir,
+                                                           "path_abun_contrib.tsv.gz")
+                if per_sequence_contrib:
+                    pathway_outfiles["strat_cov"] = path.join(path_output_dir,
+                                                              "path_cov_contrib.tsv.gz")
 
     return(func_output, pathway_outfiles)
 

@@ -2,7 +2,7 @@
 
 __copyright__ = "Copyright 2018-2019, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.1.4-b"
+__version__ = "2.2.0-b"
 
 import unittest
 from os import path
@@ -18,13 +18,13 @@ test_ref_dir = path.join(test_dir_path, "test_data", "place_seqs",
                          "img_centroid_16S_aligned_head30")
 
 test_known_marker = path.join(test_dir_path, "test_data", "workflow",
-                              "workflow_known_marker.tsv")
+                              "workflow_known_marker.tsv.gz")
 
 test_known_traits = path.join(test_dir_path, "test_data", "workflow",
-                              "workflow_known_traits.tsv")
+                              "workflow_known_traits.tsv.gz")
 
 test_seq_abun_tsv = path.join(test_dir_path, "test_data", "workflow",
-                             "workflow_seq_abun.tsv")
+                             "workflow_seq_abun.tsv.gz")
 
 test_seq_abun_biom = path.join(test_dir_path, "test_data", "workflow",
                                "workflow_seq_abun.biom")
@@ -64,7 +64,7 @@ class workflow_test(unittest.TestCase):
                               marker_predict + " -o " + metagenome_out)
 
             metagenome_outfile = path.join(metagenome_out,
-                                           "pred_metagenome_strat.tsv.gz")
+                                           "pred_metagenome_unstrat.tsv.gz")
 
             system_call_check("pathway_pipeline.py -i " + metagenome_outfile +
                               " -o " + temp_dir)
@@ -90,8 +90,65 @@ class workflow_test(unittest.TestCase):
                               " --min_samples 2" +
                               " --skip_minpath" +
                               " --no_gap_fill" +
-                              " --coverage " +
-                              " --remove_intermediate " +
+                              " --coverage" +
+                              " --remove_intermediate" +
+                              " --verbose")
+
+    def test_picrust2_pipeline_script_per_seq_contrib_strat(self):
+        '''Test that full pipeline can be run successfully with
+        picrust2_pipeline.py with the --per_sequence_contrib and --stratified
+        options.'''
+
+        with TemporaryDirectory() as temp_dir:
+
+            out_dir = path.join(temp_dir, "pipeline_out")
+
+            system_call_check("picrust2_pipeline.py -s " + test_study_seqs +
+                              " -i " + test_seq_abun_tsv +
+                              " -o " + out_dir +
+                              " -r " + test_ref_dir +
+                              " -p 1" +
+                              " --custom_trait_tables " + test_known_traits +
+                              " --marker_gene_table " + test_known_marker +
+                              " --reaction_func " + test_known_traits +
+                              " --max_nsti 1.9" +
+                              " --min_reads 2" +
+                              " --min_samples 2" +
+                              " --skip_minpath" +
+                              " --no_gap_fill" +
+                              " --coverage" +
+                              " --remove_intermediate" +
+                              " --stratified" +
+                              " --per_sequence_contrib"
+                              " --verbose")
+
+    def test_picrust2_pipeline_script_per_seq_contrib_strat_skip_norm(self):
+        '''Test that full pipeline can be run successfully with
+        picrust2_pipeline.py with the --per_sequence_contrib and --stratified
+        options as well as --skip_norm.'''
+
+        with TemporaryDirectory() as temp_dir:
+
+            out_dir = path.join(temp_dir, "pipeline_out")
+
+            system_call_check("picrust2_pipeline.py -s " + test_study_seqs +
+                              " -i " + test_seq_abun_tsv +
+                              " -o " + out_dir +
+                              " -r " + test_ref_dir +
+                              " -p 1" +
+                              " --custom_trait_tables " + test_known_traits +
+                              " --marker_gene_table " + test_known_marker +
+                              " --reaction_func " + test_known_traits +
+                              " --max_nsti 1.9" +
+                              " --min_reads 2" +
+                              " --min_samples 2" +
+                              " --skip_minpath" +
+                              " --no_gap_fill" +
+                              " --coverage" +
+                              " --remove_intermediate" +
+                              " --stratified" +
+                              " --per_sequence_contrib" +
+                              " --skip_norm" +
                               " --verbose")
 
 if __name__ == '__main__':
