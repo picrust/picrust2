@@ -357,9 +357,9 @@ def three_df_index_overlap_sort(df1, df2, df3):
         raise ValueError("No sequence ids overlap between all three of the " +
                          "input files.")
 
-    df1 = df1.reindex(label_overlap)
-    df2 = df2.reindex(label_overlap)
-    df3 = df3.reindex(label_overlap)
+    df1 = df1.reindex(index=label_overlap)
+    df2 = df2.reindex(index=label_overlap)
+    df3 = df3.reindex(index=label_overlap)
 
     return(df1, df2, df3)
 
