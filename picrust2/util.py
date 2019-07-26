@@ -356,6 +356,9 @@ def three_df_index_overlap_sort(df1, df2, df3):
     if len(label_overlap) == 0:
         raise ValueError("No sequence ids overlap between all three of the " +
                          "input files.")
+    elif len(label_overlap) < len(df1.index) * 0.5:
+        print("Warning: fewer than half of the sequence ids overlap between "
+              "the input files.", file=sys.stderr)
 
     df1 = df1.reindex(index=label_overlap)
     df2 = df2.reindex(index=label_overlap)
