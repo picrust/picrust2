@@ -9,7 +9,7 @@ channels:
 dependencies:
 - biom-format >=2.1.7
 - epa-ng=0.3.5
-- gappa=0.4.0
+- gappa=0.5.1
 - glpk=4.65
 - h5py >=2.9.0
 - hmmer >=3.1b2,<=3.2.1
