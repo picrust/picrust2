@@ -146,7 +146,7 @@ def gappa_jplace_to_newick(jplace_file: str, outfile: str, print_cmds=False):
     gappa_out_dir = path.dirname(jplace_file)
 
     # Run gappa to convert jplace to newick.
-    system_call_check("gappa analyze graft --jplace-path " + jplace_file +
+    system_call_check("gappa examine graft --jplace-path " + jplace_file +
                       " --fully-resolve --out-dir " + gappa_out_dir,
                       print_out=print_cmds)
 
