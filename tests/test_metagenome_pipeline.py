@@ -55,28 +55,37 @@ exp_strat_simple_rare = path.join(test_dir_path, "metagenome_out",
 exp_norm = path.join(test_dir_path, "metagenome_out", "seqtab_norm.tsv.gz")
 
 # Read in test inputs and expected files.
-func_predict_in = pd.read_csv(func_predict, sep="\t", index_col="sequence",
-                              dtype={'sequence': str})
-marker_predict_in = pd.read_csv(marker_predict, sep="\t",
-                                  index_col="sequence", dtype={'sequence': str})
+func_predict_in = pd.read_csv(func_predict, sep="\t", dtype={'sequence': str})
+func_predict_in.set_index('sequence', drop=True, inplace=True)
 
-exp_strat_simple_in = pd.read_csv(exp_strat_simple, sep="\t", dtype={'sequence': str, 'function': str })
+marker_predict_in = pd.read_csv(marker_predict, sep="\t",
+                                dtype={'sequence': str})
+marker_predict_in.set_index('sequence', drop=True, inplace=True)
+
+exp_strat_simple_in = pd.read_csv(exp_strat_simple, sep="\t",
+                                       dtype={'sequence': str, 'taxon': str,
+                                              'function': str, 'sample': str})
 
 exp_strat_simple_rare_in = pd.read_csv(exp_strat_simple_rare, sep="\t",
-                                       dtype={'sequence': str, 'function': str })
+                                       dtype={'sequence': str, 'taxon': str,
+                                              'function': str, 'sample': str})
 
 exp_strat_wide_in = pd.read_csv(exp_strat_wide, sep="\t",
                                 dtype={'sequence': str, 'function': str})
 exp_strat_wide_in = exp_strat_wide_in.set_index(["function", "sequence"])
 
-exp_unstrat_in = pd.read_csv(exp_unstrat, sep="\t", index_col="function", dtype={'function': str})
+exp_unstrat_in = pd.read_csv(exp_unstrat, sep="\t", dtype={'function': str})
+exp_unstrat_in.set_index('function', drop=True, inplace=True)
 
 exp_unstrat_simple_in = pd.read_csv(exp_unstrat_simple, sep="\t",
-                                    index_col="function", dtype={'function': str})
+                                    dtype={'function': str})
+exp_unstrat_simple_in.set_index('function', drop=True, inplace=True)
 
-exp_norm_in = pd.read_csv(exp_norm, sep="\t", index_col="normalized", dtype={'normalized': str})
+exp_norm_in = pd.read_csv(exp_norm, sep="\t", dtype={'normalized': str})
+exp_norm_in.set_index('normalized', drop=True, inplace=True)
 
-nsti_in = pd.read_csv(nsti_in_path, sep="\t", index_col="sequence", dtype={'sequence': str})
+nsti_in = pd.read_csv(nsti_in_path, sep="\t", dtype={'sequence': str})
+nsti_in.set_index('sequence', drop=True, inplace=True)
 
 
 class metagenome_pipeline_test(unittest.TestCase):
@@ -111,9 +120,6 @@ class metagenome_pipeline_test(unittest.TestCase):
                                                              strat_out=True,
                                                              wide_table=False,
                                                              skip_norm=True)
-
-        print(strat_out['taxon_function_abun'])
-        print(exp_strat_simple_in['taxon_function_abun'])
 
         pd.testing.assert_frame_equal(strat_out.reset_index(drop=True),
                                       exp_strat_simple_in.reset_index(drop=True),
