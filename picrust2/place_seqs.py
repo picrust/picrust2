@@ -23,6 +23,10 @@ def place_seqs_pipeline(study_fasta,
                         verbose):
     '''Full pipeline for running sequence placement.'''
 
+    # Throw error if there is a space in the study FASTA filepath.
+    if " " in study_fasta:
+        sys.exit("Stopping - remove the space from the input FASTA filepath.")
+
     # Identify reference files to use.
     ref_msa, tree, hmm, model = identify_ref_files(ref_dir)
 
