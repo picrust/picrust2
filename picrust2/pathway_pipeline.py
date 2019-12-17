@@ -728,8 +728,10 @@ def per_sequence_contrib_levels(sequence_abun, sequence_func,
     study_seq_counts.index.name = "sequence"
 
     # Read in predicted function abundances by sequence.
-    pred_function = pd.read_csv(sequence_func, sep="\t", index_col="sequence",
+    pred_function = pd.read_csv(sequence_func, sep="\t",
                                 dtype={'sequence': str})
+    pred_function.set_index('sequence', drop=True, inplace=True,
+                            verify_integrity=True)
 
     # Drop metadata_NSTI column if it in this table.
     if "metadata_NSTI" in pred_function.columns:
@@ -1031,7 +1033,8 @@ def unstrat_pathway_levels(sample_id, unstrat_input, minpath_map, out_dir,
     each unstratified pathway as the a different dictionary in a list (if
     calc_coverage=True)'''
 
-    unstrat_input.set_index("function", inplace=True)
+    unstrat_input.set_index("function", drop=True, inplace=True,
+                            verify_integrity=True)
 
     # Define dictionary for keeping track of reaction abundances.
     reaction_abun = unstrat_input[sample_id].to_dict(defaultdict(int))

@@ -25,8 +25,9 @@ def castor_hsp_workflow(tree_path,
     a single table of predictions and also a table of CIs (if specified).'''
 
     # Read in trait table as pandas dataframe.
-    trait_tab = pd.read_csv(trait_table_path, sep="\t", index_col="assembly",
-                            dtype={'assembly': str})
+    trait_tab = pd.read_csv(trait_table_path, sep="\t", dtype={'assembly': str})
+    trait_tab.set_index('assembly', drop=True, inplace=True,
+                        verify_integrity=True)
 
     # Calculate NSTI values if option set.
     if calc_nsti:
@@ -126,16 +127,18 @@ def castor_hsp_wrapper(tree_path, trait_tab, hsp_method, calc_ci=False,
         # Load the output into Table objects
         try:
             asr_table = pd.read_csv(filepath_or_buffer=output_count_path,
-                                    sep="\t", index_col="sequence",
-                                    dtype={'sequence': str})
+                                    sep="\t", dtype={'sequence': str})
+            asr_table.set_index('sequence', drop=True, inplace=True,
+                                verify_integrity=True)
         except IOError:
             raise ValueError("Cannot read in expected output file" +
                             output_ci_path)
 
         if calc_ci:
             asr_ci_table = pd.read_csv(filepath_or_buffer=output_ci_path,
-                                       sep="\t", index_col="sequence",
-                                       dtype={'sequence': str})
+                                       sep="\t", dtype={'sequence': str})
+            asr_ci_table.set_index('sequence', drop=True, inplace=True,
+                                   verify_integrity=True)
         else:
             asr_ci_table = None
 
@@ -169,8 +172,9 @@ def castor_nsti(tree_path,
                                     nsti_tmp_out]))
 
         # Read in calculated NSTI values.
-        nsti_out = pd.read_csv(nsti_tmp_out, sep="\t", index_col="sequence",
-                               dtype={'sequence': str})
+        nsti_out = pd.read_csv(nsti_tmp_out, sep="\t", dtype={'sequence': str})
+        nsti_out.set_index('sequence', drop=True, inplace=True,
+                           verify_integrity=True)
 
     # Make sure that the table has the correct number of rows.
     if len(known_tips) != nsti_out.shape[0]:
