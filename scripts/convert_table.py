@@ -2,7 +2,7 @@
 
 __copyright__ = "Copyright 2018-2020, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.2.1-b"
+__version__ = "2.3.0-b"
 
 import argparse
 from picrust2.util import (check_files_exist, contrib_to_legacy,
