@@ -749,10 +749,10 @@ def restricted_float(in_arg):
         in_arg = float(in_arg)
     except ValueError:
         raise argparse.ArgumentTypeError(in_arg + " is not a floating-point "
-                                         "literal")
+                                         "literal (i.e. not a proportion)")
 
     if in_arg < 0.0 or in_arg > 1.0:
-        raise argparse.ArgumentTypeError(in_arg + "is not in range [0.0, 1.0]")
+        raise argparse.ArgumentTypeError(in_arg + "is not in range 0.0 - 1.0")
     return in_arg
 
 
