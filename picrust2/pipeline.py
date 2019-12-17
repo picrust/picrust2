@@ -196,6 +196,9 @@ def full_pipeline(study_fasta,
         else:
             hsp_cmd += ["--processes", str(processes)]
 
+        if verbose:
+            hsp_cmd.append("--verbose")
+
         system_call_check(hsp_cmd, print_command=verbose,
                           print_stdout=verbose, print_stderr=True)
 
@@ -309,7 +312,7 @@ def full_pipeline(study_fasta,
                                       predicted_funcs[rxn_func]]
 
         if verbose:
-            pathway_pipeline_cmd.append("--print_cmds")
+            pathway_pipeline_cmd.append("--verbose")
 
         system_call_check(pathway_pipeline_cmd, print_command=verbose,
                           print_stdout=verbose, print_stderr=True)

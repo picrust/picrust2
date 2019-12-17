@@ -131,7 +131,8 @@ class castor_hsp_workflow_tests(unittest.TestCase):
                                     dtype={'assembly' : str})
 
         nsti_out = castor_nsti(tree_path=in_tree1,
-                               known_tips=in_traits1_df.index.values)
+                               known_tips=in_traits1_df.index.values,
+                               verbose=True)
 
        # Only compare NSTI column.
         hsp_mp_pred_in_nsti_subset = hsp_mp_pred_in_nsti.loc[:, ["metadata_NSTI"]]
