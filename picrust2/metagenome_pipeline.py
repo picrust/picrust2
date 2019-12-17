@@ -41,8 +41,7 @@ def run_metagenome_pipeline(input_seqabun,
     study_seq_counts = read_seqabun(input_seqabun)
 
     pred_function = pd.read_csv(function, sep="\t", dtype={'sequence': str})
-    pred_function.set_index('sequence', drop=True, inplace=True,
-                            verify_integrity=True)
+    pred_function.set_index('sequence', drop=True, inplace=True)
 
     # If NSTI column present then remove all rows with value above specified
     # max value. Also, remove NSTI column (in both dataframes).
@@ -53,8 +52,7 @@ def run_metagenome_pipeline(input_seqabun,
     if not skip_norm:
         check_files_exist([marker])
         pred_marker = pd.read_csv(marker, sep="\t", dtype={'sequence': str})
-        pred_marker.set_index('sequence', drop=True, inplace=True,
-                              verify_integrity=True)
+        pred_marker.set_index('sequence', drop=True, inplace=True)
 
         if 'metadata_NSTI' in pred_marker.columns:
             pred_marker, nsti_val = drop_tips_by_nsti(tab=pred_marker,
@@ -147,7 +145,7 @@ def strat_funcs_by_samples(func_abun, sample_abun, rare_seqs=[],
         raw_seqs_slice = raw_seqs_slice.sum(level=['function'])
         raw_seqs_slice['sequence'] = 'RARE'
         raw_seqs_slice.set_index('sequence', append=True, drop=True,
-                                 inplace=True, verify_integrity=True)
+                                 inplace=True)
 
         # Concat the RARE seqs to the full df.
         strat_func = pd.concat([strat_func, raw_seqs_slice], axis=0, sort=True)

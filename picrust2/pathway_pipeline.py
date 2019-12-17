@@ -283,7 +283,7 @@ def pathway_pipeline(inputfile,
                      per_sequence_abun=None,
                      per_sequence_function=None,
                      wide_table=False,
-                     print_cmds=False):
+                     verbose=False):
     '''Pipeline containing full pipeline for reading input files, making
     calls to functions to run MinPath and calculate pathway abundances and
     coverages. Will return: (1) unstratified pathway abundances, (2)
@@ -394,7 +394,7 @@ def pathway_pipeline(inputfile,
                                                      coverage,
                                                      gap_fill_on,
                                                      per_sequence_contrib,
-                                                     print_cmds)
+                                                     verbose)
                                                      for sample_id in samples)
 
     elif in_format == "strat":
@@ -409,7 +409,7 @@ def pathway_pipeline(inputfile,
                                                      coverage,
                                                      gap_fill_on,
                                                      per_sequence_contrib,
-                                                     print_cmds)
+                                                     verbose)
                                                      for sample_id in samples)
 
     # Otherwise the data is in unstratified format, which is more straight-
@@ -425,7 +425,7 @@ def pathway_pipeline(inputfile,
                                                    run_minpath,
                                                    coverage,
                                                    gap_fill_on,
-                                                   print_cmds)
+                                                   verbose)
                                                for sample_id in samples)
 
     # Prep output unstratified DataFrames.
@@ -489,7 +489,7 @@ def pathway_pipeline(inputfile,
                                                       nproc=proc,
                                                       regroup_map=regroup_mapfile,
                                                       wide_table=wide_table,
-                                                      print_opt=print_cmds)
+                                                      print_opt=verbose)
 
         if wide_table:
             path_abun_unstrat_by_seq = strat_to_unstrat_counts(strat_df=path_abun_strat,
@@ -695,7 +695,8 @@ def minpath_wrapper(sample_id, unstrat_input, minpath_map, minpath_outdir,
                   minpath_map + " -report " + minpath_report +\
                   " -details " + minpath_details + " -mps " + minpath_mps
 
-    system_call_check(minpath_cmd, print_out=print_opt)
+    system_call_check(minpath_cmd, print_command=print_opt,
+                      print_stdout=print_opt, print_stderr=print_opt)
 
     # Read through MinPath report and keep track of pathways identified
     # to be present.
@@ -730,8 +731,7 @@ def per_sequence_contrib_levels(sequence_abun, sequence_func,
     # Read in predicted function abundances by sequence.
     pred_function = pd.read_csv(sequence_func, sep="\t",
                                 dtype={'sequence': str})
-    pred_function.set_index('sequence', drop=True, inplace=True,
-                            verify_integrity=True)
+    pred_function.set_index('sequence', drop=True, inplace=True)
 
     # Drop metadata_NSTI column if it in this table.
     if "metadata_NSTI" in pred_function.columns:
@@ -1033,8 +1033,7 @@ def unstrat_pathway_levels(sample_id, unstrat_input, minpath_map, out_dir,
     each unstratified pathway as the a different dictionary in a list (if
     calc_coverage=True)'''
 
-    unstrat_input.set_index("function", drop=True, inplace=True,
-                            verify_integrity=True)
+    unstrat_input.set_index("function", drop=True, inplace=True)
 
     # Define dictionary for keeping track of reaction abundances.
     reaction_abun = unstrat_input[sample_id].to_dict(defaultdict(int))

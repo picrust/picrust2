@@ -18,8 +18,9 @@ def place_seqs_pipeline(study_fasta,
                         out_tree,
                         threads,
                         out_dir,
+                        min_align,
                         chunk_size,
-                        print_cmds):
+                        verbose):
     '''Full pipeline for running sequence placement.'''
 
     # Identify reference files to use.
@@ -28,9 +29,11 @@ def place_seqs_pipeline(study_fasta,
     # Run hmmalign to place study sequences into reference MSA.
     out_stockholm = path.join(out_dir, "query_align.stockholm")
 
-    system_call_check("hmmalign  --trim --dna --mapali " + ref_msa + " --informat FASTA -o " +
+    system_call_check("hmmalign --trim --dna --mapali " +
+                      ref_msa + " --informat FASTA -o " +
                       out_stockholm + " " + hmm + " " + study_fasta,
-                      print_out=print_cmds)
+                      print_command=verbose, print_stdout=verbose,
+                      print_stderr=verbose)
 
     hmmalign_out = read_stockholm(out_stockholm, clean_char=True)
 
@@ -39,27 +42,86 @@ def place_seqs_pipeline(study_fasta,
     ref_msa_fastafile = path.join(out_dir, "ref_seqs_hmmalign.fasta")
 
     ref_seqnames = set(list(read_fasta(ref_msa).keys()))
-
-    study_seqnames = set(read_fasta(study_fasta).keys())
+    study_seqs = read_fasta(study_fasta)
+    study_seqnames = set(study_seqs.keys())
 
     ref_hmmalign_subset = {seq: hmmalign_out[seq] for seq in ref_seqnames}
-    study_hmmalign_subset = {seq: hmmalign_out[seq] for seq in study_seqnames}
+
+    # Check that all study sequences are at least a high % of their original
+    # length in alignment. If not then remove sequences below this cut-off and
+    # throw detailed warning. Throw critical error if all sequences are below
+    # cut-off. This cut-off is specified by --min_align option. Also keep
+    # track of input sequence lengths and report range of lengths (only if 
+    # verbose set).
+    study_hmmalign_subset = {}
+    poorly_aligned = []
+
+    min_study_seq_length = None
+    max_study_seq_length = None
+
+    for seq_id in study_seqnames:
+        orig_seq = study_seqs[seq_id]
+        aligned_seq = hmmalign_out[seq_id]
+
+        orig_seq = orig_seq.replace("-", "")
+        orig_seq = orig_seq.replace(".", "")
+
+        aligned_seq = aligned_seq.replace("-", "")
+        aligned_seq = aligned_seq.replace(".", "")
+
+        orig_seq_length = len(orig_seq)
+
+        if len(aligned_seq) < orig_seq_length * min_align:
+            poorly_aligned.append(seq_id)
+        else:
+            study_hmmalign_subset[seq_id] = hmmalign_out[seq_id]
+
+        if verbose:
+            if not min_study_seq_length or orig_seq_length < min_study_seq_length:
+                min_study_seq_length = orig_seq_length
+
+            if not max_study_seq_length or orig_seq_length > max_study_seq_length:
+                max_study_seq_length = orig_seq_length
+
+    if len(poorly_aligned) == len(study_seqnames):
+        sys.exit("Stopping - all " + str(len(study_seqnames)) + " input "
+                 "sequences aligned poorly to reference sequences (--min_align "
+                 "option specified a minimum proportion of " + str(min_align) +
+                 " aligning to reference sequences).")
+
+    elif len(poorly_aligned) > 0:
+        print("Warning - " + str(len(poorly_aligned)) + " input sequences "
+              "aligned poorly to reference sequences (--min_align option "
+              "specified a minimum proportion of " + str(min_align) +
+              " aligning to reference sequences). These input sequences will "
+              "not be placed and will be excluded from downstream steps.\n\n"
+              "This is the set of poorly aligned input sequences to be "
+              "excluded: " + ", ".join(poorly_aligned) + "\n", file=sys.stderr)
+
+    if verbose:
+        if min_study_seq_length == max_study_seq_length:
+            print("All raw input sequences were the same length (" +
+                  str(min_study_seq_length) + ")\n", file=sys.stderr)
+        else:
+            print("Raw input sequences ranged in length from " +
+                  str(min_study_seq_length) + " to " +
+                  str(max_study_seq_length) + "\n", file=sys.stderr)
 
     write_fasta(ref_hmmalign_subset, ref_msa_fastafile)
     write_fasta(study_hmmalign_subset, study_msa_fastafile)
 
-    # Run EPA-NG to output .jplace file.
+    # Run EPA-ng to place input sequences and output JPLACE file.
     epa_out_dir = path.join(out_dir, "epa_out")
 
     run_epa_ng(tree=tree, ref_msa_fastafile=ref_msa_fastafile,
                study_msa_fastafile=study_msa_fastafile, model=model,
                chunk_size=chunk_size, threads=threads, out_dir=epa_out_dir,
-               print_cmds=print_cmds)
+               print_cmds=verbose)
 
     jplace_outfile = path.join(epa_out_dir, "epa_result_parsed.jplace")
 
     gappa_jplace_to_newick(jplace_file=jplace_outfile, outfile=out_tree,
-                           print_cmds=print_cmds)
+                           print_cmds=verbose)
 
 
 def run_papara(tree: str, ref_msa: dict, study_fasta: str, out_dir: str,
@@ -86,7 +148,8 @@ def run_papara(tree: str, ref_msa: dict, study_fasta: str, out_dir: str,
     # Make call to papara to place sequences (outputs phylip format).
     system_call_check("papara -t " + tree + " -s ref_seqs.phylip " +
                       "-q " + study_fasta + " -j " + str(threads) +
-                      " -n out", print_out=print_cmds)
+                      " -n out", print_command=print_cmds,
+                      print_stdout=print_cmds, print_stderr=print_cmds)
 
     # Change back to original working directory.
     chdir(orig_wd)
@@ -117,7 +180,7 @@ def split_ref_study_papara(papara_out: dict, ref_seqnames: set, ref_fasta: str,
 def run_epa_ng(tree: str, ref_msa_fastafile: str, study_msa_fastafile: str,
                model: str, out_dir: str, chunk_size=5000,
                threads=1, print_cmds=False):
-    '''Run EPA-NG on specified tree, reference MSA, and study sequence MSA.
+    '''Run EPA-ng on specified tree, reference MSA, and study sequence MSA.
     Will output a .jplace file in out_dir.'''
 
     make_output_dir(out_dir)
@@ -132,7 +195,8 @@ def run_epa_ng(tree: str, ref_msa_fastafile: str, study_msa_fastafile: str,
                       "--filter-acc-lwr", "0.99",
                       "--filter-max", "100"]
 
-    system_call_check(epa_ng_command, print_out=print_cmds)
+    system_call_check(epa_ng_command, print_command=print_cmds,
+                      print_stdout=print_cmds, print_stderr=print_cmds)
 
     # Parse jplace file so that output is reprodicible.
     jplace_orig = path.join(out_dir, "epa_result.jplace")
@@ -148,14 +212,15 @@ def gappa_jplace_to_newick(jplace_file: str, outfile: str, print_cmds=False):
     # Run gappa to convert jplace to newick.
     system_call_check("gappa examine graft --jplace-path " + jplace_file +
                       " --fully-resolve --out-dir " + gappa_out_dir,
-                      print_out=print_cmds)
+                      print_command=print_cmds, print_stdout=print_cmds,
+                      print_stderr=print_cmds)
 
     # Expected name of output newick file.
     newick_file = jplace_file.replace(".jplace", ".newick")
 
     # Rename newick file to be specified outfile.
     system_call_check("mv " + newick_file + " " + outfile,
-                      print_out=print_cmds)
+                      print_command=print_cmds)
 
 def identify_ref_files(in_dir):
     '''Given a directory will check whether the four required reference files

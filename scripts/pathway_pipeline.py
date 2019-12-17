@@ -139,8 +139,9 @@ parser.add_argument('--wide_table', default=False,
                          'of generating stratified tables since it is '
                          'extremely memory intensive (default: %(default)s).')
 
-parser.add_argument('--print_cmds', default=False, action="store_true",
-                    help='If specified, print out wrapped commands to screen')
+parser.add_argument('--verbose', default=False, action='store_true',
+                    help='If specified, print out wrapped commands and other '
+                         'details to screen.')
 
 parser.add_argument('-v', '--version', default=False, action='version',
                     version="%(prog)s " + __version__)
@@ -183,7 +184,7 @@ def main():
                             per_sequence_abun=args.per_sequence_abun,
                             per_sequence_function=args.per_sequence_function,
                             wide_table=args.wide_table,
-                            print_cmds=args.print_cmds)
+                            verbose=args.verbose)
     else:
         with TemporaryDirectory() as temp_dir:
             unstrat_abun, \
@@ -206,7 +207,7 @@ def main():
                             per_sequence_abun=args.per_sequence_abun,
                             per_sequence_function=args.per_sequence_function,
                             wide_table=args.wide_table,
-                            print_cmds=args.print_cmds)
+                            verbose=args.verbose)
 
     make_output_dir(args.out_dir)
 

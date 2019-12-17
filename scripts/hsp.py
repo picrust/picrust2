@@ -85,6 +85,10 @@ parser.add_argument('--seed', default=100, type=int,
                          'necessary for the emp_prob method '
                          '(default: %(default)d).')
 
+parser.add_argument('--verbose', default=False, action='store_true',
+                    help='If specified, print out wrapped commands and other '
+                         'details to screen.')
+
 parser.add_argument('-v', '--version', default=False, action='version',
                     version="%(prog)s " + __version__)
 
@@ -119,7 +123,8 @@ def main():
                                               calc_ci=ci_setting,
                                               check_input=args.check,
                                               num_proc=args.processes,
-                                              ran_seed=args.seed)
+                                              ran_seed=args.seed,
+                                              verbose=args.verbose)
 
     # Output the table to file.
     make_output_dir_for_file(args.output)

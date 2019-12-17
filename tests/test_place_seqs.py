@@ -150,6 +150,7 @@ class place_seqs_tests(unittest.TestCase):
                                 out_tree=tmp_tree,
                                 threads=1,
                                 out_dir=temp_dir,
+                                min_align=0.8,
                                 chunk_size=5000,
                                 print_cmds=False)
 

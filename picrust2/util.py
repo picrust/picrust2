@@ -205,7 +205,8 @@ def read_stockholm(filename, clean_char=True):
     return seq
 
 
-def system_call_check(cmd, print_out=False, print_stderr=False):
+def system_call_check(cmd, print_command=False, print_stdout=False,
+                      print_stderr=False):
     '''Run system command and throw and error if return is not 0. Input command
     can be a list containing the command or a string.'''
 
@@ -214,8 +215,11 @@ def system_call_check(cmd, print_out=False, print_stderr=False):
         cmd = cmd.split()
 
     # Print command out if option set.
-    if print_out:
+    if print_command:
         print(" ".join(cmd), file=sys.stderr)
+
+    stdout_log = ""
+    stderr_log = ""
 
     # Write stdout and stderr of command to temporary files.
     # Only output the content of these files if the job fails.
@@ -230,26 +234,34 @@ def system_call_check(cmd, print_out=False, print_stderr=False):
             return_value = call(cmd, stdout=stdout_fh,
                                 stderr=stderr_fh)
 
+        # Capture stdout and stderr.
+        with open(stdout_file, 'r') as stdout_fh:
+            stdout_log = stdout_fh.read()
+
+        with open(stderr_file, 'r') as stderr_fh:
+            stderr_log = stderr_fh.read()
+
         # Exit with error if command did not finish successfully.
         if return_value != 0:
             print("\nError running this command:\n" + " ".join(cmd),
                   file=sys.stderr)
 
-            # Print out stdout and stderr.
-            with open(stdout_file, 'r') as f:
-                print("\nStandard output of failed command:", file=sys.stderr)
-                print("\"" + f.read() + "\"", file=sys.stderr)
+            if stdout_log:
+                print("\nStandard output of the above failed command:\n" +
+                      stdout_log, file=sys.stderr)
 
-            with open(stderr_file, 'r') as f:
-                print("\nStandard error of failed command:", file=sys.stderr)
-                print("\"" + f.read() + "\"", file=sys.stderr)
+            if stderr_log:
+                print("\nStandard error of the above failed command:\n" +
+                      stderr_log, file=sys.stderr)
 
             sys.exit(1)
 
-        # Print log info to stderr is helpful for certain subprocesses.
-        elif print_stderr:
-            with open(stderr_file, 'r') as f:
-                print(f.read(), file=sys.stderr)
+        # Print stdout and stderr if specified.
+        if print_stdout:
+            print(stdout_log)
+
+        if print_stderr:
+            print(stderr_log, file=sys.stderr)
 
     return(return_value)
 
@@ -333,8 +345,7 @@ def read_seqabun(infile):
         input_seqabun = pd.read_csv(filepath_or_buffer=infile, sep="\t",
                                     dtype={'Group': str}, low_memory=False)
         input_seqabun.drop(labels=["label", "numOtus"], axis=1, inplace=True)
-        input_seqabun.set_index(keys="Group", drop=True, inplace=True,
-                                verify_integrity=True)
+        input_seqabun.set_index(keys="Group", drop=True, inplace=True)
         input_seqabun.index.name = None
         input_seqabun = input_seqabun.transpose()
         input_seqabun.index.astype('str', copy=False)
@@ -343,8 +354,7 @@ def read_seqabun(infile):
         first_col = str(pd.read_csv(infile, sep="\t", nrows=0).columns[0])
         input_seqabun = pd.read_csv(filepath_or_buffer=infile, sep="\t",
                                     dtype={first_col: str}, low_memory=False)
-        input_seqabun.set_index(first_col, drop=True, inplace=True,
-                                verify_integrity=True)
+        input_seqabun.set_index(first_col, drop=True, inplace=True)
         return(input_seqabun)
 
 
@@ -440,8 +450,7 @@ def convert_humann2_to_picrust2(infiles, outfile, stratified):
         first_col = str(pd.read_csv(infile, sep="\t", nrows=0).columns[0])
         humann2_single = pd.read_csv(infile, sep="\t", low_memory=False,
                                      dtype={first_col: str})
-        humann2_single.set_index(first_col, drop=True, inplace=True,
-                                 verify_integrity=True)
+        humann2_single.set_index(first_col, drop=True, inplace=True)
         humann2_samples.append(humann2_single)
 
     # Get the index name for each table and make sure they are identical.
@@ -732,6 +741,18 @@ def contrib_to_legacy(infiles, outfile, use_rel_abun=True):
 
     contrib_df.to_csv(path_or_buf=outfile, sep="\t", index=False,
                               compression="gzip")
+
+def restricted_float(in_arg):
+    '''Custom argparse type to force an input float to be between 0 and 1.'''
+    try:
+        in_arg = float(in_arg)
+    except ValueError:
+        raise argparse.ArgumentTypeError(in_arg + " is not a floating-point "
+                                         "literal")
+
+    if in_arg < 0.0 or in_arg > 1.0:
+        raise argparse.ArgumentTypeError(in_arg + "is not in range [0.0, 1.0]")
+    return in_arg
 
 
 class TemporaryDirectory(object):
