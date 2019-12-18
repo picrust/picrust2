@@ -315,7 +315,7 @@ def full_pipeline(study_fasta,
             pathway_pipeline_cmd.append("--verbose")
 
         system_call_check(pathway_pipeline_cmd, print_command=verbose,
-                          print_stdout=verbose, print_stderr=True)
+                          print_stdout=False, print_stderr=True)
 
         if verbose:
             print("Wrote predicted pathway abundances and coverages to " +
