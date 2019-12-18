@@ -1,9 +1,9 @@
 name: picrust2
 
 channels:
+- bioconda
 - conda-forge
 - r
-- bioconda
 - defaults
 
 dependencies:
