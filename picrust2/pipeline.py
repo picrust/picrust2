@@ -45,13 +45,6 @@ def full_pipeline(study_fasta,
     Descriptions of all of these input arguments/options are given in the
     picrust2_pipeline.py script.'''
 
-    if path.exists(output_folder):
-        sys.exit("Stopping since output directory " + output_folder +
-                 " already exists.")
-
-    # Make output folder.
-    make_output_dir(output_folder)
-
     # Throw warning if --per_sequence_contrib set but --stratified unset.
     if per_sequence_contrib and not stratified:
         print("\nThe option --per_sequence_contrib was set, but not the option "
@@ -123,6 +116,13 @@ def full_pipeline(study_fasta,
 
     # Check that sequence names in FASTA overlap with input table.
     check_overlapping_seqs(study_fasta, input_table, verbose)
+
+    if path.exists(output_folder):
+        sys.exit("Stopping since output directory " + output_folder +
+                 " already exists.")
+
+    # Make output folder.
+    make_output_dir(output_folder)
 
     if verbose:
         print("Placing sequences onto reference tree", file=sys.stderr)
