@@ -13,7 +13,8 @@ from picrust2.default import (default_ref_dir, default_fasta, default_tree,
                               default_hmm, default_model)
 from picrust2.place_seqs import (place_seqs_pipeline, split_ref_study_papara,
                                  run_epa_ng, gappa_jplace_to_newick,
-                                 identify_ref_files, parse_jplace)
+                                 identify_ref_files, parse_jplace,
+                                 check_alignments)
 
 # Set paths to test files.
 test_dir_path = path.join(path.dirname(path.abspath(__file__)), "test_data",
@@ -163,6 +164,28 @@ class place_seqs_tests(unittest.TestCase):
         identified_files = identify_ref_files(default_ref_dir)
 
         self.assertEqual(expected_files, identified_files)
+
+    def test_check_alignment(self):
+        '''Test that poorly aligned sequences identified correctly.'''
+
+
+        test_to_align = path.join(test_dir_path, "seqs_to_align.fasta")
+        test_aligned = path.join(test_dir_path, "hmmalign_out.fasta")
+
+        test_to_align_in = read_fasta(test_to_align)
+        test_aligned_in = read_fasta(test_aligned)
+
+        exp_passing_seqs = ['barely_passable',
+                            'fc72d6433952bdcfab2b357f4198bc2e',
+                            'fdae4a46c18c4727fe027a0fb8e57c8a',
+                            'feab23adead1ecdd465a0e900f45132f']
+
+        obs_subset = check_alignments(raw_seqs=test_to_align_in,
+                                      aligned_seqs=test_aligned_in,
+                                      min_align=0.8,
+                                      verbose=True)
+
+        self.assertEqual(exp_passing_seqs, sorted(list(obs_subset.keys())))
 
 
 if __name__ == '__main__':

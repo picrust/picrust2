@@ -47,69 +47,13 @@ def place_seqs_pipeline(study_fasta,
 
     ref_seqnames = set(list(read_fasta(ref_msa).keys()))
     study_seqs = read_fasta(study_fasta)
-    study_seqnames = set(study_seqs.keys())
 
     ref_hmmalign_subset = {seq: hmmalign_out[seq] for seq in ref_seqnames}
 
-    # Check that all study sequences are at least a high % of their original
-    # length in alignment. If not then remove sequences below this cut-off and
-    # throw detailed warning. Throw critical error if all sequences are below
-    # cut-off. This cut-off is specified by --min_align option. Also keep
-    # track of input sequence lengths and report range of lengths (only if 
-    # verbose set).
-    study_hmmalign_subset = {}
-    poorly_aligned = []
-
-    min_study_seq_length = None
-    max_study_seq_length = None
-
-    for seq_id in study_seqnames:
-        orig_seq = study_seqs[seq_id]
-        aligned_seq = hmmalign_out[seq_id]
-
-        orig_seq = orig_seq.replace("-", "")
-        orig_seq = orig_seq.replace(".", "")
-
-        aligned_seq = aligned_seq.replace("-", "")
-        aligned_seq = aligned_seq.replace(".", "")
-
-        orig_seq_length = len(orig_seq)
-
-        if len(aligned_seq) < orig_seq_length * min_align:
-            poorly_aligned.append(seq_id)
-        else:
-            study_hmmalign_subset[seq_id] = hmmalign_out[seq_id]
-
-        if verbose:
-            if not min_study_seq_length or orig_seq_length < min_study_seq_length:
-                min_study_seq_length = orig_seq_length
-
-            if not max_study_seq_length or orig_seq_length > max_study_seq_length:
-                max_study_seq_length = orig_seq_length
-
-    if len(poorly_aligned) == len(study_seqnames):
-        sys.exit("Stopping - all " + str(len(study_seqnames)) + " input "
-                 "sequences aligned poorly to reference sequences (--min_align "
-                 "option specified a minimum proportion of " + str(min_align) +
-                 " aligning to reference sequences).")
-
-    elif len(poorly_aligned) > 0:
-        print("Warning - " + str(len(poorly_aligned)) + " input sequences "
-              "aligned poorly to reference sequences (--min_align option "
-              "specified a minimum proportion of " + str(min_align) +
-              " aligning to reference sequences). These input sequences will "
-              "not be placed and will be excluded from downstream steps.\n\n"
-              "This is the set of poorly aligned input sequences to be "
-              "excluded: " + ", ".join(poorly_aligned) + "\n", file=sys.stderr)
-
-    if verbose:
-        if min_study_seq_length == max_study_seq_length:
-            print("All raw input sequences were the same length (" +
-                  str(min_study_seq_length) + ")\n", file=sys.stderr)
-        else:
-            print("Raw input sequences ranged in length from " +
-                  str(min_study_seq_length) + " to " +
-                  str(max_study_seq_length) + "\n", file=sys.stderr)
+    study_hmmalign_subset = check_alignments(raw_seqs=study_seqs,
+                                             aligned_seqs=hmmalign_out,
+                                             min_align=min_align,
+                                             verbose=verbose)
 
     write_fasta(ref_hmmalign_subset, ref_msa_fastafile)
     write_fasta(study_hmmalign_subset, study_msa_fastafile)
@@ -117,14 +61,19 @@ def place_seqs_pipeline(study_fasta,
     # Run EPA-ng to place input sequences and output JPLACE file.
     epa_out_dir = path.join(out_dir, "epa_out")
 
-    run_epa_ng(tree=tree, ref_msa_fastafile=ref_msa_fastafile,
-               study_msa_fastafile=study_msa_fastafile, model=model,
-               chunk_size=chunk_size, threads=threads, out_dir=epa_out_dir,
+    run_epa_ng(tree=tree,
+               ref_msa_fastafile=ref_msa_fastafile,
+               study_msa_fastafile=study_msa_fastafile,
+               model=model,
+               chunk_size=chunk_size,
+               threads=threads,
+               out_dir=epa_out_dir,
                print_cmds=verbose)
 
     jplace_outfile = path.join(epa_out_dir, "epa_result_parsed.jplace")
 
-    gappa_jplace_to_newick(jplace_file=jplace_outfile, outfile=out_tree,
+    gappa_jplace_to_newick(jplace_file=jplace_outfile,
+                           outfile=out_tree,
                            print_cmds=verbose)
 
 
@@ -344,3 +293,69 @@ def parse_jplace(jplace_in, jplace_out):
     # Write out sorted and parsed jplace object.
     with open(jplace_out, 'w') as f:
         json.dump(datastore, f, indent=4, sort_keys=False)
+
+def check_alignments(raw_seqs, aligned_seqs, min_align, verbose):
+    '''Check that all study sequences are at least a high % of their original
+    length in alignment. If not then remove sequences below this cut-off and
+    throw detailed warning. Throw critical error if all sequences are below
+    cut-off. This cut-off is specified by --min_align option. Also keep
+    track of input sequence lengths and report range of lengths (only if 
+    verbose set).'''
+
+    poorly_aligned = []
+    passing = {}
+
+    min_study_seq_length = None
+    max_study_seq_length = None
+
+    raw_seqnames = set(raw_seqs.keys())
+
+    for seq_id in raw_seqnames:
+        orig_seq = raw_seqs[seq_id]
+        aligned_seq = aligned_seqs[seq_id]
+
+        orig_seq = orig_seq.replace("-", "")
+        orig_seq = orig_seq.replace(".", "")
+
+        aligned_seq = aligned_seq.replace("-", "")
+        aligned_seq = aligned_seq.replace(".", "")
+
+        orig_seq_length = len(orig_seq)
+
+        if len(aligned_seq) < orig_seq_length * min_align:
+            poorly_aligned.append(seq_id)
+        else:
+            passing[seq_id] = aligned_seqs[seq_id]
+
+        if verbose:
+            if not min_study_seq_length or orig_seq_length < min_study_seq_length:
+                min_study_seq_length = orig_seq_length
+
+            if not max_study_seq_length or orig_seq_length > max_study_seq_length:
+                max_study_seq_length = orig_seq_length
+
+    if len(poorly_aligned) == len(raw_seqnames):
+        sys.exit("Stopping - all " + str(len(raw_seqnames)) + " input "
+                 "sequences aligned poorly to reference sequences (--min_align "
+                 "option specified a minimum proportion of " + str(min_align) +
+                 " aligning to reference sequences).")
+
+    elif len(poorly_aligned) > 0:
+        print("Warning - " + str(len(poorly_aligned)) + " input sequences "
+              "aligned poorly to reference sequences (--min_align option "
+              "specified a minimum proportion of " + str(min_align) +
+              " aligning to reference sequences). These input sequences will "
+              "not be placed and will be excluded from downstream steps.\n\n"
+              "This is the set of poorly aligned input sequences to be "
+              "excluded: " + ", ".join(poorly_aligned) + "\n", file=sys.stderr)
+
+    if verbose:
+        if min_study_seq_length == max_study_seq_length:
+            print("All raw input sequences were the same length (" +
+                  str(min_study_seq_length) + ")\n", file=sys.stderr)
+        else:
+            print("Raw input sequences ranged in length from " +
+                  str(min_study_seq_length) + " to " +
+                  str(max_study_seq_length) + "\n", file=sys.stderr)
+
+    return(passing)
