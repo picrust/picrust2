@@ -15,11 +15,11 @@ TRAIT_OPTIONS = ['16S', 'COG', 'EC', 'KO', 'PFAM', 'TIGRFAM', 'PHENO']
 
 parser = argparse.ArgumentParser(
 
-    description="This script performs hidden state prediction on tips in " +
-                "the input tree with unknown trait values. Typically this " +
-                "script is used to predict the copy number of gene families " +
-                "present in the predicted genome for each amplicon sequence " +
-                "variant, given a tree and a set of known trait values. " +
+    description="This script performs hidden state prediction on tips in "
+                "the input tree with unknown trait values. Typically this "
+                "script is used to predict the copy number of gene families "
+                "present in the predicted genome for each amplicon sequence "
+                "variant, given a tree and a set of known trait values. "
                 "This script outputs a table of trait predictions.",
     epilog='''
 Usage example:

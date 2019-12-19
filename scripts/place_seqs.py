@@ -15,8 +15,8 @@ parser = argparse.ArgumentParser(
                 "(i.e. OTUs or ASVs) into a reference tree. This is "
                 "typically done to prep for subsequent hidden-state "
                 "prediction with PICRUSt2. Requires unaligned FASTA of study "
-                "sequences. Users can specify a non-default reference fasta "
-                "and treefile if needed.",
+                "sequences. Users can specify a non-default reference files "
+                "if needed.",
 epilog='''
 Usage example:
 place_seqs.py -s study_seqs.fna -o placed_seqs.tre --processes 1 --intermediate placement_working
