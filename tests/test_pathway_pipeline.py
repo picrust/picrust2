@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-__copyright__ = "Copyright 2018-2019, The PICRUSt Project"
+__copyright__ = "Copyright 2018-2020, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.2.0-b"
+__version__ = "2.3.0-b"
 
 import unittest
 import pandas as pd
@@ -75,7 +75,7 @@ class run_minpath_tests(unittest.TestCase):
                                                             regroup_mapfile=default_regroup_map,
                                                             gap_fill_on=True,
                                                             per_sequence_contrib=False,
-                                                            print_cmds=False,
+                                                            verbose=True,
                                                             wide_table=True)
 
         # Compare these predicted tables to expected tables.
@@ -127,7 +127,7 @@ class run_minpath_tests(unittest.TestCase):
                                                             regroup_mapfile=default_regroup_map,
                                                             gap_fill_on=True,
                                                             per_sequence_contrib=False,
-                                                            print_cmds=False)
+                                                            verbose=True)
 
         # Compare these predicted tables to expected tables.
         exp_abun_unstrat = pd.read_csv(exp_abun_unstrat_file, sep="\t",
@@ -165,7 +165,7 @@ class run_minpath_tests(unittest.TestCase):
                                                             per_sequence_contrib=True,
                                                             per_sequence_abun=in_per_seq_abun,
                                                             per_sequence_function=in_per_seq_func,
-                                                            print_cmds=False)
+                                                            verbose=True)
 
 
         # Compare these predicted tables to expected tables.
@@ -233,7 +233,7 @@ class run_minpath_tests(unittest.TestCase):
                                                             per_sequence_contrib=True,
                                                             per_sequence_abun=in_per_seq_abun,
                                                             per_sequence_function=in_per_seq_func,
-                                                            print_cmds=False)
+                                                            verbose=True)
 
         # Compare these predicted tables to expected tables.
         exp_abun_unstrat = pd.read_csv(exp_abun_unstrat_per_genome_file,

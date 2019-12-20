@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-__copyright__ = "Copyright 2018-2019, The PICRUSt Project"
+__copyright__ = "Copyright 2018-2020, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.2.0-b"
+__version__ = "2.3.0-b"
 
 import unittest
 from os import path
@@ -60,8 +60,10 @@ class workflow_test(unittest.TestCase):
             metagenome_out = path.join(temp_dir, "meta_out")
 
             system_call_check("metagenome_pipeline.py -i " + test_seq_abun_tsv +
-                              " -f " + traits_predict + " --strat_out -m " +
-                              marker_predict + " -o " + metagenome_out)
+                              " -f " + traits_predict +
+                              " --strat_out " +
+                              " -m " + marker_predict +
+                              " -o " + metagenome_out)
 
             metagenome_outfile = path.join(metagenome_out,
                                            "pred_metagenome_unstrat.tsv.gz")

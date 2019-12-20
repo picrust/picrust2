@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-__copyright__ = "Copyright 2018-2019, The PICRUSt Project"
+__copyright__ = "Copyright 2018-2020, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.2.0-b"
+__version__ = "2.3.0-b"
 
 from os import path
 import sys
@@ -31,6 +31,7 @@ def full_pipeline(study_fasta,
                   min_reads,
                   min_samples,
                   hsp_method,
+                  min_align,
                   skip_nsti,
                   skip_minpath,
                   no_gap_fill,
@@ -43,13 +44,6 @@ def full_pipeline(study_fasta,
     '''Function that contains wrapper commands for full PICRUSt2 pipeline.
     Descriptions of all of these input arguments/options are given in the
     picrust2_pipeline.py script.'''
-
-    if path.exists(output_folder):
-        sys.exit("Stopping since output directory " + output_folder +
-                 " already exists.")
-
-    # Make output folder.
-    make_output_dir(output_folder)
 
     # Throw warning if --per_sequence_contrib set but --stratified unset.
     if per_sequence_contrib and not stratified:
@@ -123,6 +117,13 @@ def full_pipeline(study_fasta,
     # Check that sequence names in FASTA overlap with input table.
     check_overlapping_seqs(study_fasta, input_table, verbose)
 
+    if path.exists(output_folder):
+        sys.exit("Stopping since output directory " + output_folder +
+                 " already exists.")
+
+    # Make output folder.
+    make_output_dir(output_folder)
+
     if verbose:
         print("Placing sequences onto reference tree", file=sys.stderr)
 
@@ -143,12 +144,14 @@ def full_pipeline(study_fasta,
                       "--out_tree", out_tree,
                       "--processes", str(processes),
                       "--intermediate", place_seqs_intermediate,
+                      "--min_align", str(min_align),
                       "--chunk_size", str(5000)]
 
     if verbose:
-        place_seqs_cmd.append("--print_cmds")
+        place_seqs_cmd.append("--verbose")
 
-    system_call_check(place_seqs_cmd, print_out=verbose)
+    system_call_check(place_seqs_cmd, print_command=verbose,
+                      print_stdout=verbose, print_stderr=True)
 
     if verbose:
         print("Finished placing sequences on output tree: " + out_tree,
@@ -193,7 +196,11 @@ def full_pipeline(study_fasta,
         else:
             hsp_cmd += ["--processes", str(processes)]
 
-        system_call_check(hsp_cmd, print_out=verbose)
+        if verbose:
+            hsp_cmd.append("--verbose")
+
+        system_call_check(hsp_cmd, print_command=verbose,
+                          print_stdout=verbose, print_stderr=True)
 
     # Now run metagenome pipeline commands.
     # Inititalize dictionary of function names --> metagenome output files.
@@ -217,7 +224,7 @@ def full_pipeline(study_fasta,
                                    "--min_samples", str(min_samples),
                                    "--out_dir", func_output_dir]
 
-        # Initialize 2-element list as value for each function.
+        # Initialize two-element list as value for each function.
         # First value will be unstratified output and second will be
         # stratified output.
         func_output[func] = [None, None]
@@ -246,10 +253,8 @@ def full_pipeline(study_fasta,
                 func_output[func][1] = path.join(func_output_dir,
                                                  "pred_metagenome_contrib.tsv.gz")
 
-        # Note that STDERR is printed for this command since it outputs how
-        # many ASVs were above the NSTI cut-off (if specified).
-        system_call_check(metagenome_pipeline_cmd, print_out=verbose,
-                          print_stderr=True)
+        system_call_check(metagenome_pipeline_cmd, print_command=verbose,
+                          print_stdout=verbose, print_stderr=True)
 
     # Now infer pathway abundances and coverages unless --no_pathways set.
     pathway_outfiles = None
@@ -307,9 +312,10 @@ def full_pipeline(study_fasta,
                                       predicted_funcs[rxn_func]]
 
         if verbose:
-            pathway_pipeline_cmd.append("--print_cmds")
+            pathway_pipeline_cmd.append("--verbose")
 
-        system_call_check(pathway_pipeline_cmd, print_out=verbose)
+        system_call_check(pathway_pipeline_cmd, print_command=verbose,
+                          print_stdout=False, print_stderr=True)
 
         if verbose:
             print("Wrote predicted pathway abundances and coverages to " +
@@ -349,13 +355,21 @@ def full_pipeline(study_fasta,
 def check_overlapping_seqs(in_seq, in_tab, verbose):
     '''Check that ASV ids overlap between the input FASTA and sequence
     abundance table. Will throw an error if none overlap and will otherwise
-    print number of overlapping ids to STDERR.'''
+    print number of overlapping ids to STDERR. Also throw warning if input
+    ASV table contains a column called taxonomy'''
 
     FASTA_ASVs = set(read_fasta(in_seq).keys())
 
-    table_ASVs = set(read_seqabun(in_tab).index.values)
+    in_table = read_seqabun(in_tab)
+
+    table_ASVs = set(in_table.index.values)
 
     num_ASV_overlap = len(table_ASVs.intersection(FASTA_ASVs))
+
+    if 'taxonomy' in in_table.columns:
+        print("Warning - column named \"taxonomy\" in abundance table - if "
+              "this corresponds to taxonomic labels this should be removed "
+              "before running this pipeline.", file=sys.stderr)
 
     # Throw error if 0 ASVs overlap between the two files.
     if num_ASV_overlap == 0:

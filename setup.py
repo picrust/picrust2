@@ -3,9 +3,9 @@
 from setuptools import setup
 from glob import glob
 
-__copyright__ = "Copyright 2018-2019, The PICRUSt Project"
+__copyright__ = "Copyright 2018-2020, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.2.0-b"
+__version__ = "2.3.0-b"
 __maintainer__ = "Gavin Douglas"
 
 long_description = ("Please visit the google group here if you have questions: "

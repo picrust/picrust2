@@ -112,7 +112,7 @@ trait_values <- rbind(trait_values, unknown_df)
 
 # Remove unknown_df object from memory.
 remove(unknown_df)
-gc()
+invisible(gc(verbose = FALSE))
 
 # Order this combined trait table by the order of tips in the tree.
 trait_values <- trait_values[full_tree$tip.label, , drop=FALSE]
@@ -148,7 +148,7 @@ if (hsp_method == "pic" | hsp_method == "scp" | hsp_method == "subtree_average")
   
   # Remove raw predict_out object from memory.
   remove(predict_out)
-  gc()
+  invisible(gc(verbose = FALSE))
   
 } else if(hsp_method == "emp_prob" | hsp_method == "mp") {
   

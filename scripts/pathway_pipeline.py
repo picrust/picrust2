@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-__copyright__ = "Copyright 2018-2019, The PICRUSt Project"
+__copyright__ = "Copyright 2018-2020, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.2.0-b"
+__version__ = "2.3.0-b"
 
 import argparse
 from picrust2.pathway_pipeline import pathway_pipeline
@@ -139,8 +139,9 @@ parser.add_argument('--wide_table', default=False,
                          'of generating stratified tables since it is '
                          'extremely memory intensive (default: %(default)s).')
 
-parser.add_argument('--print_cmds', default=False, action="store_true",
-                    help='If specified, print out wrapped commands to screen')
+parser.add_argument('--verbose', default=False, action='store_true',
+                    help='If specified, print out wrapped commands and other '
+                         'details to screen.')
 
 parser.add_argument('-v', '--version', default=False, action='version',
                     version="%(prog)s " + __version__)
@@ -183,7 +184,7 @@ def main():
                             per_sequence_abun=args.per_sequence_abun,
                             per_sequence_function=args.per_sequence_function,
                             wide_table=args.wide_table,
-                            print_cmds=args.print_cmds)
+                            verbose=args.verbose)
     else:
         with TemporaryDirectory() as temp_dir:
             unstrat_abun, \
@@ -206,7 +207,7 @@ def main():
                             per_sequence_abun=args.per_sequence_abun,
                             per_sequence_function=args.per_sequence_function,
                             wide_table=args.wide_table,
-                            print_cmds=args.print_cmds)
+                            verbose=args.verbose)
 
     make_output_dir(args.out_dir)
 

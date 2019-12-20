@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-__copyright__ = "Copyright 2018-2019, The PICRUSt Project"
+__copyright__ = "Copyright 2018-2020, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.2.0-b"
+__version__ = "2.3.0-b"
 
 import argparse
 from os import path
@@ -11,13 +11,13 @@ from picrust2.util import check_files_exist
 
 parser = argparse.ArgumentParser(
 
-    description="Per-sample metagenome functional profiles are generated " +
-                "based on the predicted functions for each study sequence. " +
-                "Note that typically these sequences correspond to OTUs or " +
-                "ASVs. The specified sequence abundance table will be " +
-                "normalized by the predicted number of marker gene copies " +
-                "before outputting the final files by default. The sample " +
-                "metagenome table stratified by contributing ASVs can " +
+    description="Per-sample metagenome functional profiles are generated "
+                "based on the predicted functions for each study sequence. "
+                "Note that typically these sequences correspond to OTUs or "
+                "ASVs. The specified sequence abundance table will be "
+                "normalized by the predicted number of marker gene copies "
+                "before outputting the final files by default. The sample "
+                "metagenome table stratified by contributing ASVs can "
                 "optionally also be output.",
 
     epilog='''Usage example:
@@ -26,32 +26,32 @@ metagenome_pipeline.py -i seqabun.biom -f predicted_EC.tsv.gz -m predicted_16S.t
     formatter_class=argparse.RawDescriptionHelpFormatter)
 
 parser.add_argument('-i', '--input', metavar='PATH', required=True, type=str,
-                    help='Input table of sequence abundances (BIOM, TSV, or ' +
+                    help='Input table of sequence abundances (BIOM, TSV, or '
                          'mothur shared file format).')
 
 parser.add_argument('-f', '--function', metavar='PATH', required=True,
                     type=str,
-                    help='Table of predicted gene family copy numbers ' +
+                    help='Table of predicted gene family copy numbers '
                          '(output of hsp.py).')
 
 parser.add_argument('-m', '--marker', metavar='PATH', type=str,
-                    help='Table of predicted marker gene copy numbers ' +
+                    help='Table of predicted marker gene copy numbers '
                          '(output of hsp.py - typically for 16S).')
 
 parser.add_argument('--max_nsti', metavar='FLOAT', type=float, default=2.0,
-                    help='Sequences with NSTI values above this value will ' +
+                    help='Sequences with NSTI values above this value will '
                          'be excluded (default: %(default)d).')
 
 parser.add_argument('--min_reads', metavar='INT', type=int, default=1,
-                    help='Minimum number of reads across all samples for ' +
-                         'each input ASV. ASVs below this cut-off will be ' +
-                         'counted as part of the \"RARE\" category in the ' +
+                    help='Minimum number of reads across all samples for '
+                         'each input ASV. ASVs below this cut-off will be '
+                         'counted as part of the \"RARE\" category in the '
                          'stratified output (default: %(default)d).')
 
 parser.add_argument('--min_samples', metavar='INT', type=int, default=1,
-                    help='Minimum number of samples that an ASV needs to be ' +
-                         'identfied within. ASVs below this cut-off will be ' +
-                         'counted as part of the \"RARE\" category in the ' +
+                    help='Minimum number of samples that an ASV needs to be '
+                         'identfied within. ASVs below this cut-off will be '
+                         'counted as part of the \"RARE\" category in the '
                          'stratified output (default: %(default)d).')
 
 parser.add_argument('--strat_out', default=False, action='store_true',
@@ -78,7 +78,7 @@ parser.add_argument('--skip_norm', default=False, action='store_true',
 
 parser.add_argument('-o', '--out_dir', metavar='PATH', type=str,
                     default='metagenome_out',
-                    help='Output directory for metagenome predictions. ' +
+                    help='Output directory for metagenome predictions. '
                          '(default: %(default)s).')
 
 parser.add_argument('-v', '--version', default=False, action='version',

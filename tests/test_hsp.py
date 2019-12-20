@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-__copyright__ = "Copyright 2018-2019, The PICRUSt Project"
+__copyright__ = "Copyright 2018-2020, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.2.0-b"
+__version__ = "2.3.0-b"
 
 import unittest
 from os import path
@@ -131,7 +131,8 @@ class castor_hsp_workflow_tests(unittest.TestCase):
                                     dtype={'assembly' : str})
 
         nsti_out = castor_nsti(tree_path=in_tree1,
-                               known_tips=in_traits1_df.index.values)
+                               known_tips=in_traits1_df.index.values,
+                               verbose=True)
 
        # Only compare NSTI column.
         hsp_mp_pred_in_nsti_subset = hsp_mp_pred_in_nsti.loc[:, ["metadata_NSTI"]]

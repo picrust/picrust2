@@ -1,13 +1,14 @@
 #!/usr/bin/env python
 
-__copyright__ = "Copyright 2018-2019, The PICRUSt Project"
+__copyright__ = "Copyright 2018-2020, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.2.0-b"
+__version__ = "2.3.0-b"
 
 from os import makedirs, chmod
 from os.path import abspath, dirname, isdir, join, exists, splitext
 from collections import defaultdict
 from subprocess import call
+import argparse
 import stat
 import shutil as _shutil
 import weakref as _weakref
@@ -205,7 +206,8 @@ def read_stockholm(filename, clean_char=True):
     return seq
 
 
-def system_call_check(cmd, print_out=False, print_stderr=False):
+def system_call_check(cmd, print_command=False, print_stdout=False,
+                      print_stderr=False):
     '''Run system command and throw and error if return is not 0. Input command
     can be a list containing the command or a string.'''
 
@@ -214,8 +216,11 @@ def system_call_check(cmd, print_out=False, print_stderr=False):
         cmd = cmd.split()
 
     # Print command out if option set.
-    if print_out:
+    if print_command:
         print(" ".join(cmd), file=sys.stderr)
+
+    stdout_log = ""
+    stderr_log = ""
 
     # Write stdout and stderr of command to temporary files.
     # Only output the content of these files if the job fails.
@@ -230,26 +235,34 @@ def system_call_check(cmd, print_out=False, print_stderr=False):
             return_value = call(cmd, stdout=stdout_fh,
                                 stderr=stderr_fh)
 
+        # Capture stdout and stderr.
+        with open(stdout_file, 'r') as stdout_fh:
+            stdout_log = stdout_fh.read()
+
+        with open(stderr_file, 'r') as stderr_fh:
+            stderr_log = stderr_fh.read()
+
         # Exit with error if command did not finish successfully.
         if return_value != 0:
             print("\nError running this command:\n" + " ".join(cmd),
                   file=sys.stderr)
 
-            # Print out stdout and stderr.
-            with open(stdout_file, 'r') as f:
-                print("\nStandard output of failed command:", file=sys.stderr)
-                print("\"" + f.read() + "\"", file=sys.stderr)
+            if stdout_log:
+                print("\nStandard output of the above failed command:\n" +
+                      stdout_log, file=sys.stderr)
 
-            with open(stderr_file, 'r') as f:
-                print("\nStandard error of failed command:", file=sys.stderr)
-                print("\"" + f.read() + "\"", file=sys.stderr)
+            if stderr_log:
+                print("\nStandard error of the above failed command:\n" +
+                      stderr_log, file=sys.stderr)
 
             sys.exit(1)
 
-        # Print log info to stderr is helpful for certain subprocesses.
-        elif print_stderr:
-            with open(stderr_file, 'r') as f:
-                print(f.read(), file=sys.stderr)
+        # Print stdout and stderr if specified.
+        if print_stdout:
+            print(stdout_log)
+
+        if print_stderr:
+            print(stderr_log, file=sys.stderr)
 
     return(return_value)
 
@@ -333,17 +346,18 @@ def read_seqabun(infile):
         input_seqabun = pd.read_csv(filepath_or_buffer=infile, sep="\t",
                                     dtype={'Group': str}, low_memory=False)
         input_seqabun.drop(labels=["label", "numOtus"], axis=1, inplace=True)
-        input_seqabun.set_index(keys="Group", drop=True, inplace=True,
-                                verify_integrity=True)
+        input_seqabun.set_index(keys="Group", drop=True, inplace=True)
         input_seqabun.index.name = None
         input_seqabun = input_seqabun.transpose()
         input_seqabun.index.astype('str', copy=False)
         return(input_seqabun)
     else:
+        first_col = str(pd.read_csv(infile, sep="\t", nrows=0).columns[0])
         input_seqabun = pd.read_csv(filepath_or_buffer=infile, sep="\t",
-                                    index_col=0, low_memory=False)
-        input_seqabun.index.astype('str', copy=False)
+                                    dtype={first_col: str}, low_memory=False)
+        input_seqabun.set_index(first_col, drop=True, inplace=True)
         return(input_seqabun)
+
 
 def three_df_index_overlap_sort(df1, df2, df3):
     '''Given 3 pandas dataframes, will first determine which index labels
@@ -403,11 +417,12 @@ def add_descrip_col(inputfile, mapfile, in_df=False):
     if in_df:
         function_tab = inputfile
     else:
-        function_tab = pd.read_csv(inputfile, sep="\t", low_memory=False)
+        function_tab = pd.read_csv(inputfile, sep="\t", low_memory=False,
+                                   dtype={'function': str, 'sequence': str})
     
     map_tab = pd.read_csv(mapfile, sep="\t", index_col=0, header=None,
                           names=["function", "description"],
-                          low_memory=False)
+                          low_memory=False, dtype=object)
 
     # Check to see if any of the mapfile row indices are in the function table
     # id column and throw an error if not.
@@ -433,8 +448,11 @@ def convert_humann2_to_picrust2(infiles, outfile, stratified):
 
     # Loop over all sample infiles and add their data to this list.
     for infile in infiles:
-        humann2_samples.append(pd.read_csv(infile, sep="\t", index_col=0,
-                                           low_memory=False))
+        first_col = str(pd.read_csv(infile, sep="\t", nrows=0).columns[0])
+        humann2_single = pd.read_csv(infile, sep="\t", low_memory=False,
+                                     dtype={first_col: str})
+        humann2_single.set_index(first_col, drop=True, inplace=True)
+        humann2_samples.append(humann2_single)
 
     # Get the index name for each table and make sure they are identical.
     infile_index_names = []
@@ -499,7 +517,7 @@ def convert_picrust2_to_humann2(infiles, outfolder, stratified):
                      'from PICRUSt2 unstratified table to HUMAnN2 format')
 
         in_tab = pd.read_csv(infiles[0], sep="\t", index_col=0,
-                             low_memory=False)
+                             low_memory=False, dtype={'function': str})
 
         # Double-check that this table isn't stratified.
         if 'sequence' in in_tab.columns:
@@ -518,8 +536,10 @@ def convert_picrust2_to_humann2(infiles, outfolder, stratified):
                      'HUMAnN2 stratified format')
 
         # Read in both input tables.
-        in_tab1 = pd.read_csv(infiles[0], sep="\t", low_memory=False)
-        in_tab2 = pd.read_csv(infiles[1], sep="\t", low_memory=False)
+        in_tab1 = pd.read_csv(infiles[0], sep="\t", low_memory=False,
+                              dtype={'function': str, 'sequence': str})
+        in_tab2 = pd.read_csv(infiles[1], sep="\t", low_memory=False,
+                              dtype={'function': str, 'sequence': str})
 
         # Make sure that only 1 input table is stratified.
         strat_table_count = 0
@@ -610,7 +630,8 @@ def convert_picrust2_to_humann2_merged(infiles, outfile):
         
     for infile in infiles:
 
-        in_table = pd.read_csv(infile, sep="\t", low_memory=False)
+        in_table = pd.read_csv(infile, sep="\t", low_memory=False,
+                               dtype={'function': str, 'sequence': str})
 
         infile_index_names.append(in_table.columns[0])
 
@@ -672,9 +693,9 @@ def contrib_to_legacy(infiles, outfile, use_rel_abun=True):
         sys.exit('Stopping - only expected one input file when converting '
                  'contributional file to legacy format.')
 
-    contrib_df = pd.read_csv(infiles[0], sep="\t", low_memory=False)
-    contrib_df['sample'] = contrib_df['sample'].astype('str')
-    contrib_df['taxon'] = contrib_df['taxon'].astype('str')
+    contrib_df = pd.read_csv(infiles[0], sep="\t", low_memory=False,
+                             dtype={'function': str, 'sequence': str,
+                                    'sample': str, 'taxon': str})
 
     contrib_df.rename(columns={'sample' : 'Sample',
                                'function' : 'Gene',
@@ -721,6 +742,18 @@ def contrib_to_legacy(infiles, outfile, use_rel_abun=True):
 
     contrib_df.to_csv(path_or_buf=outfile, sep="\t", index=False,
                               compression="gzip")
+
+def restricted_float(in_arg):
+    '''Custom argparse type to force an input float to be between 0 and 1.'''
+    try:
+        in_arg = float(in_arg)
+    except ValueError:
+        raise argparse.ArgumentTypeError(in_arg + " is not a floating-point "
+                                         "literal (i.e. not a proportion)")
+
+    if in_arg < 0.0 or in_arg > 1.0:
+        raise argparse.ArgumentTypeError(in_arg + "is not in range 0.0 - 1.0")
+    return in_arg
 
 
 class TemporaryDirectory(object):

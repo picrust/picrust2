@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-__copyright__ = "Copyright 2018-2019, The PICRUSt Project"
+__copyright__ = "Copyright 2018-2020, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.2.0-b"
+__version__ = "2.3.0-b"
 
 from os import path
 import pandas as pd
@@ -19,18 +19,19 @@ def castor_hsp_workflow(tree_path,
                         calc_ci=False,
                         check_input=False,
                         num_proc=1,
-                        ran_seed=None):
+                        ran_seed=None,
+                        verbose=False):
     '''Runs full HSP workflow. Main purpose is to read in trait table and run
     HSP on subsets of column at a time to be more memory efficient. Will return
     a single table of predictions and also a table of CIs (if specified).'''
 
     # Read in trait table as pandas dataframe.
-    trait_tab = pd.read_csv(trait_table_path, sep="\t", index_col="assembly",
-                            dtype={'assembly': str})
+    trait_tab = pd.read_csv(trait_table_path, sep="\t", dtype={'assembly': str})
+    trait_tab.set_index('assembly', drop=True, inplace=True)
 
     # Calculate NSTI values if option set.
     if calc_nsti:
-        nsti_values = castor_nsti(tree_path, trait_tab.index.values)
+        nsti_values = castor_nsti(tree_path, trait_tab.index.values, verbose)
 
     # Create output directory for writing trait table subsets.
     with TemporaryDirectory() as temp_dir:
@@ -59,7 +60,8 @@ def castor_hsp_workflow(tree_path,
                                                         hsp_method,
                                                         calc_ci,
                                                         check_input,
-                                                        ran_seed)
+                                                        ran_seed,
+                                                        verbose)
                                     for trait_in in file_subsets)
 
     # Get lists of predictions and CIs for all chunks.
@@ -86,7 +88,7 @@ def castor_hsp_workflow(tree_path,
 
 
 def castor_hsp_wrapper(tree_path, trait_tab, hsp_method, calc_ci=False,
-                       check_input=False, ran_seed=None):
+                       check_input=False, ran_seed=None, verbose=False):
     '''Wrapper for making system calls to castor_hsp.py Rscript.'''
 
     castor_hsp_script = path.join(path.dirname(path.abspath(__file__)),
@@ -121,21 +123,22 @@ def castor_hsp_wrapper(tree_path, trait_tab, hsp_method, calc_ci=False,
                             str(ran_seed)])
 
         # Run castor_hsp.R
-        system_call_check(hsp_cmd)
+        system_call_check(hsp_cmd, print_command=verbose,
+                          print_stdout=verbose, print_stderr=verbose)
 
         # Load the output into Table objects
         try:
             asr_table = pd.read_csv(filepath_or_buffer=output_count_path,
-                                    sep="\t", index_col="sequence",
-                                    dtype={'sequence': str})
+                                    sep="\t", dtype={'sequence': str})
+            asr_table.set_index('sequence', drop=True, inplace=True)
         except IOError:
             raise ValueError("Cannot read in expected output file" +
                             output_ci_path)
 
         if calc_ci:
             asr_ci_table = pd.read_csv(filepath_or_buffer=output_ci_path,
-                                       sep="\t", index_col="sequence",
-                                       dtype={'sequence': str})
+                                       sep="\t", dtype={'sequence': str})
+            asr_ci_table.set_index('sequence', drop=True, inplace=True)
         else:
             asr_ci_table = None
 
@@ -144,7 +147,8 @@ def castor_hsp_wrapper(tree_path, trait_tab, hsp_method, calc_ci=False,
 
 
 def castor_nsti(tree_path,
-                known_tips):
+                known_tips,
+                verbose):
     '''Will calculate distance from each study sequence to the closest
     reference sequence. Takes in the path to treefile and the known tips
     (i.e. the rownames in the trait table - the reference genome ids).'''
@@ -166,11 +170,15 @@ def castor_nsti(tree_path,
                                     castor_nsti_script,
                                     tree_path,
                                     known_tips_out,
-                                    nsti_tmp_out]))
+                                    nsti_tmp_out]),
+                          print_command=verbose,
+                          print_stdout=verbose,
+                          print_stderr=verbose)
+
 
         # Read in calculated NSTI values.
-        nsti_out = pd.read_csv(nsti_tmp_out, sep="\t", index_col="sequence",
-                               dtype={'sequence': str})
+        nsti_out = pd.read_csv(nsti_tmp_out, sep="\t", dtype={'sequence': str})
+        nsti_out.set_index('sequence', drop=True, inplace=True)
 
     # Make sure that the table has the correct number of rows.
     if len(known_tips) != nsti_out.shape[0]:

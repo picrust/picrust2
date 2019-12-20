@@ -2,10 +2,7 @@ PICRUSt2.egg-info/
 .cache/
 *.pyc
 tests/__pycache__/
-tutorial_files/tutorial_out/
-testing_datasets/
 .pytest_cache/
 picrust2/default_files/prokaryotic/untracked/
-example_files/old/
 picrust2/default_files/prokaryotic/pro_ref/pro_ref.fna.COPY
 tests/test_data/pathway_pipeline/per_seq_contrib/humann2_run/*

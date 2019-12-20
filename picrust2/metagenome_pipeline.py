@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-__copyright__ = "Copyright 2018-2019, The PICRUSt Project"
+__copyright__ = "Copyright 2018-2020, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.2.0-b"
+__version__ = "2.3.0-b"
 
 import sys
 import pandas as pd
@@ -40,9 +40,8 @@ def run_metagenome_pipeline(input_seqabun,
 
     study_seq_counts = read_seqabun(input_seqabun)
 
-    pred_function = pd.read_csv(function, sep="\t", index_col="sequence",
-                                dtype={'sequence': str})
-    pred_function.index = pred_function.index.astype(str)
+    pred_function = pd.read_csv(function, sep="\t", dtype={'sequence': str})
+    pred_function.set_index('sequence', drop=True, inplace=True)
 
     # If NSTI column present then remove all rows with value above specified
     # max value. Also, remove NSTI column (in both dataframes).
@@ -52,9 +51,8 @@ def run_metagenome_pipeline(input_seqabun,
                                                     max_nsti=max_nsti)
     if not skip_norm:
         check_files_exist([marker])
-        pred_marker = pd.read_csv(marker, sep="\t", index_col="sequence",
-                                  dtype={'sequence': str})
-        pred_marker.index = pred_marker.index.astype(str)
+        pred_marker = pd.read_csv(marker, sep="\t", dtype={'sequence': str})
+        pred_marker.set_index('sequence', drop=True, inplace=True)
 
         if 'metadata_NSTI' in pred_marker.columns:
             pred_marker, nsti_val = drop_tips_by_nsti(tab=pred_marker,
@@ -146,7 +144,8 @@ def strat_funcs_by_samples(func_abun, sample_abun, rare_seqs=[],
         raw_seqs_slice.index = raw_seqs_slice.index.droplevel('sequence')
         raw_seqs_slice = raw_seqs_slice.sum(level=['function'])
         raw_seqs_slice['sequence'] = 'RARE'
-        raw_seqs_slice.set_index('sequence', append=True, inplace=True)
+        raw_seqs_slice.set_index('sequence', append=True, drop=True,
+                                 inplace=True)
 
         # Concat the RARE seqs to the full df.
         strat_func = pd.concat([strat_func, raw_seqs_slice], axis=0, sort=True)

@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-__copyright__ = "Copyright 2018-2019, The PICRUSt Project"
+__copyright__ = "Copyright 2018-2020, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.2.0-b"
+__version__ = "2.3.0-b"
 
 import argparse
 from picrust2.wrap_hsp import castor_hsp_workflow
@@ -15,11 +15,11 @@ TRAIT_OPTIONS = ['16S', 'COG', 'EC', 'KO', 'PFAM', 'TIGRFAM', 'PHENO']
 
 parser = argparse.ArgumentParser(
 
-    description="This script performs hidden state prediction on tips in " +
-                "the input tree with unknown trait values. Typically this " +
-                "script is used to predict the copy number of gene families " +
-                "present in the predicted genome for each amplicon sequence " +
-                "variant, given a tree and a set of known trait values. " +
+    description="This script performs hidden state prediction on tips in "
+                "the input tree with unknown trait values. Typically this "
+                "script is used to predict the copy number of gene families "
+                "present in the predicted genome for each amplicon sequence "
+                "variant, given a tree and a set of known trait values. "
                 "This script outputs a table of trait predictions.",
     epilog='''
 Usage example:
@@ -85,6 +85,10 @@ parser.add_argument('--seed', default=100, type=int,
                          'necessary for the emp_prob method '
                          '(default: %(default)d).')
 
+parser.add_argument('--verbose', default=False, action='store_true',
+                    help='If specified, print out wrapped commands and other '
+                         'details to screen.')
+
 parser.add_argument('-v', '--version', default=False, action='version',
                     version="%(prog)s " + __version__)
 
@@ -119,7 +123,8 @@ def main():
                                               calc_ci=ci_setting,
                                               check_input=args.check,
                                               num_proc=args.processes,
-                                              ran_seed=args.seed)
+                                              ran_seed=args.seed,
+                                              verbose=args.verbose)
 
     # Output the table to file.
     make_output_dir_for_file(args.output)

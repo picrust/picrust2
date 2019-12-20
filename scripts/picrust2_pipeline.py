@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-__copyright__ = "Copyright 2018-2019, The PICRUSt Project"
+__copyright__ = "Copyright 2018-2020, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.2.0-b"
+__version__ = "2.3.0-b"
 
 import argparse
 from os import path
@@ -10,7 +10,7 @@ import sys
 import time
 from picrust2.default import (default_ref_dir, default_tables, default_map,
                               default_regroup_map, default_pathway_map)
-from picrust2.util import make_output_dir
+from picrust2.util import make_output_dir, restricted_float
 from picrust2.pipeline import full_pipeline
 
 HSP_METHODS = ['mp', 'emp_prob', 'pic', 'scp', 'subtree_average']
@@ -35,9 +35,6 @@ picrust2_pipeline.py -s study_seqs.fna -i seqabun.biom -o picrust2_out --process
 
 Run full default pipeline with 10 cores with stratified output (including pathway stratified output based on per-sequence contributions):
 picrust2_pipeline.py -s study_seqs.fna -i seqabun.biom -o picrust2_out --processes 10 --stratified --per_sequence_contrib
-
-Run full pipeline to generate EC number predictions for custom fungi ITS database:
-picrust2_pipeline.py -s study_seqs_ITS.fna -i seqabun_ITS.biom -o picrust2_out_ITS --ref_dir picrust2/picrust2/default_files/fungi/fungi_ref_ITS --custom_trait_tables picrust2/picrust2/default_files/fungi/ec_ITS_counts.txt.gz --marker_gene_table picrust2/picrust2/default_files/fungi/ITS_counts.txt.gz --pathway_map picrust2/picrust2/default_files/pathway_mapfiles/metacyc_path2rxn_struc_filt_fungi.txt
 
 ''', formatter_class=argparse.RawDescriptionHelpFormatter)
 
@@ -155,6 +152,14 @@ parser.add_argument('-m', '--hsp_method', default='mp',
                     'traits using squared-change parsimony (default: '
                     '%(default)s).')
 
+parser.add_argument('--min_align', type=restricted_float, default=0.8,
+                    help='Proportion of the total length of an input query '
+                         'sequence that must align with reference sequences. '
+                         'Any sequences with lengths below this value after '
+                         'making an alignment with reference sequences will '
+                         'be excluded from the placement and all subsequent '
+                         'steps. (default: %(default)d).')
+
 parser.add_argument('--skip_nsti', default=False, action='store_true',
                     help='Do not calculate nearest-sequenced taxon index '
                     '(NSTI).')
@@ -240,6 +245,7 @@ def main():
                                                     min_reads=args.min_reads,
                                                     min_samples=args.min_samples,
                                                     hsp_method=args.hsp_method,
+                                                    min_align=args.min_align,
                                                     skip_nsti=args.skip_nsti,
                                                     no_gap_fill=args.no_gap_fill,
                                                     per_sequence_contrib=args.per_sequence_contrib,

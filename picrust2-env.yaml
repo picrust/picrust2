@@ -8,18 +8,18 @@ channels:
 
 dependencies:
 - biom-format >=2.1.7
-- epa-ng=0.3.5
-- gappa=0.4.0
+- epa-ng=0.3.6
+- gappa=0.5.1
 - glpk=4.65
 - h5py >=2.9.0
-- hmmer=3.2.1
+- hmmer >=3.1b2,<=3.2.1
 - jinja2 >=2.10.1
 - joblib >=0.13.1
 - numpy >=1.16.2
-- pandas >=0.24.2
+- pandas >=0.24.2,<=0.25.0
 - pytest >=4.4.1
 - pytest-cov >=2.6.1
 - python >=3.5,<3.7
 - r-base >=3.5.1
-- r-castor=1.4.1
+- r-castor=1.5.0
 - scipy >=1.2.1
