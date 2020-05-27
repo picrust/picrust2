@@ -19,6 +19,8 @@ default_hmm = path.join(default_ref_dir, "pro_ref.hmm")
 
 default_model = path.join(default_ref_dir, "pro_ref.model")
 
+default_raxml_info = path.join(default_ref_dir, "pro_ref.raxml_info")
+
 default_regroup_map = path.join(project_dir, "default_files",
                                 "pathway_mapfiles",
                                 "ec_level4_to_metacyc_rxn.tsv")

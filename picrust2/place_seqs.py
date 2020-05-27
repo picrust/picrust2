@@ -15,6 +15,7 @@ from picrust2.util import (system_call_check, make_output_dir, read_fasta,
 
 def place_seqs_pipeline(study_fasta,
                         ref_dir,
+                        placement_tool,
                         out_tree,
                         threads,
                         out_dir,
@@ -27,50 +28,72 @@ def place_seqs_pipeline(study_fasta,
     if " " in study_fasta:
         sys.exit("Stopping - remove the space from the input FASTA filepath.")
 
-    # Identify reference files to use.
-    ref_msa, tree, hmm, model = identify_ref_files(ref_dir)
+    # Identify reference files to use. Note that model file will be different
+    # depending on which placement pipeline is indicated.
+    ref_msa, tree, hmm, model = identify_ref_files(ref_dir, placement_tool)
 
-    # Run hmmalign to place study sequences into reference MSA.
-    out_stockholm = path.join(out_dir, "query_align.stockholm")
+    if placement_tool == "epa-ng":
 
-    system_call_check("hmmalign --trim --dna --mapali " +
-                      ref_msa + " --informat FASTA -o " +
-                      out_stockholm + " " + hmm + " " + study_fasta,
-                      print_command=verbose, print_stdout=verbose,
-                      print_stderr=verbose)
+        # Run hmmalign to place study sequences into reference MSA.
+        out_stockholm = path.join(out_dir, "query_align.stockholm")
 
-    hmmalign_out = read_stockholm(out_stockholm, clean_char=True)
+        system_call_check("hmmalign --trim --dna --mapali " +
+                          ref_msa + " --informat FASTA -o " +
+                          out_stockholm + " " + hmm + " " + study_fasta,
+                          print_command=verbose, print_stdout=verbose,
+                          print_stderr=verbose)
 
-    # Specify split FASTA files to be created.
-    study_msa_fastafile = path.join(out_dir, "study_seqs_hmmalign.fasta")
-    ref_msa_fastafile = path.join(out_dir, "ref_seqs_hmmalign.fasta")
+        hmmalign_out = read_stockholm(out_stockholm, clean_char=True)
 
-    ref_seqnames = set(list(read_fasta(ref_msa).keys()))
-    study_seqs = read_fasta(study_fasta)
+        # Specify split FASTA files to be created.
+        study_msa_fastafile = path.join(out_dir, "study_seqs_hmmalign.fasta")
+        ref_msa_fastafile = path.join(out_dir, "ref_seqs_hmmalign.fasta")
 
-    ref_hmmalign_subset = {seq: hmmalign_out[seq] for seq in ref_seqnames}
+        ref_seqnames = set(list(read_fasta(ref_msa).keys()))
+        study_seqs = read_fasta(study_fasta)
 
-    study_hmmalign_subset = check_alignments(raw_seqs=study_seqs,
-                                             aligned_seqs=hmmalign_out,
-                                             min_align=min_align,
-                                             verbose=verbose)
+        ref_hmmalign_subset = {seq: hmmalign_out[seq] for seq in ref_seqnames}
 
-    write_fasta(ref_hmmalign_subset, ref_msa_fastafile)
-    write_fasta(study_hmmalign_subset, study_msa_fastafile)
+        study_hmmalign_subset = check_alignments(raw_seqs=study_seqs,
+                                                 aligned_seqs=hmmalign_out,
+                                                 min_align=min_align,
+                                                 verbose=verbose)
 
-    # Run EPA-ng to place input sequences and output JPLACE file.
-    epa_out_dir = path.join(out_dir, "epa_out")
+        write_fasta(ref_hmmalign_subset, ref_msa_fastafile)
+        write_fasta(study_hmmalign_subset, study_msa_fastafile)
 
-    run_epa_ng(tree=tree,
-               ref_msa_fastafile=ref_msa_fastafile,
-               study_msa_fastafile=study_msa_fastafile,
-               model=model,
-               chunk_size=chunk_size,
-               threads=threads,
-               out_dir=epa_out_dir,
-               print_cmds=verbose)
+        # Run EPA-ng to place input sequences and output JPLACE file.
+        epa_out_dir = path.join(out_dir, "epa_out")
 
-    jplace_outfile = path.join(epa_out_dir, "epa_result_parsed.jplace")
+        run_epa_ng(tree=tree,
+                   ref_msa_fastafile=ref_msa_fastafile,
+                   study_msa_fastafile=study_msa_fastafile,
+                   model=model,
+                   chunk_size=chunk_size,
+                   threads=threads,
+                   out_dir=epa_out_dir,
+                   print_cmds=verbose)
+
+        jplace_outfile = path.join(epa_out_dir, "epa_result_parsed.jplace")
+
+    elif placement_tool == "sepp":
+
+        sepp_out_dir = path.join(out_dir, "sepp_out")
+
+        run_sepp(tree=tree,
+                 ref_msa_fastafile=ref_msa,
+                 study_msa_fastafile=study_msa_fastafile,
+                 raxml_model=model,
+                 threads=threads,
+                 out_dir=sepp_out_dir,
+                 print_cmds=verbose)
+
+        jplace_outfile = path.join(epa_out_dir, "epa_result_parsed.jplace")
+
+    else:
+        sys.exit("Option placement_tool needs to be either \"epa-ng\" or \
+                 \"sepp\". It was set to this instead: \"" + placement_tool +
+                 "\".")
 
     gappa_jplace_to_newick(jplace_file=jplace_outfile,
                            outfile=out_tree,
@@ -175,10 +198,11 @@ def gappa_jplace_to_newick(jplace_file: str, outfile: str, print_cmds=False):
     system_call_check("mv " + newick_file + " " + outfile,
                       print_command=print_cmds)
 
-def identify_ref_files(in_dir):
+def identify_ref_files(in_dir, placement_method):
     '''Given a directory will check whether the four required reference files
     are present and will return the path to each file in a list in the order:
-    FASTA, TREE, HMM, MODEL.'''
+    FASTA, TREE, HMM, MODEL. Will return paths to different model files
+    depending if the EPA-ng or SEPP placement methods are specified.'''
 
     # Remove any trailing slashes.
     in_dir = in_dir.rstrip('/')
@@ -215,9 +239,18 @@ def identify_ref_files(in_dir):
     # List to keep track of which required files are missing.
     missing_files = []
 
+    if placement_method == "epa-ng":
+        expected_modelfile = path.join(in_dir, base_path + ".model")
+    elif placement_method == "sepp":
+        expected_modelfile = path.join(in_dir, base_path + ".raxml_info")
+    else:
+        sys.exit("Option placement_method needs to be either \"epa-ng\" or \
+                 \"sepp\". It was set to this instead: \"" + placement_method +
+                 "\".")
+
     other_expected = [path.join(in_dir, base_path + ".tre"),
                       path.join(in_dir, base_path + ".hmm"),
-                      path.join(in_dir, base_path + ".model")]
+                      expected_modelfile]
 
     for other in other_expected:
         if path.isfile(other):
@@ -359,3 +392,24 @@ def check_alignments(raw_seqs, aligned_seqs, min_align, verbose):
                   str(max_study_seq_length) + "\n", file=sys.stderr)
 
     return(passing)
+
+
+def run_sepp(tree: str, ref_msa_fastafile: str, study_msa_fastafile: str,
+             raxml_model: str, out_dir: str, threads=1, print_cmds=False):
+    '''Run SEPP on specified tree, reference MSA, and study sequence MSA.
+    Will output a .jplace file in out_dir.'''
+
+    make_output_dir(out_dir)
+
+    sepp_command = ["run_sepp.py",
+                    "--tree", tree,
+                    "--alignment", ref_msa_fastafile,
+                    "--fragment", study_msa_fastafile,
+                    "--raxml", raxml_model,
+                    "--cpu", str(threads),
+                    "--molecule", "dna",
+                    "--outdir", out_dir,
+                    "--seed", "297834"]
+
+    system_call_check(sepp_command, print_command=print_cmds,
+                      print_stdout=print_cmds, print_stderr=print_cmds)
