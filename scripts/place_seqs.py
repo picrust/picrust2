@@ -52,7 +52,7 @@ parser.add_argument('--min_align', type=restricted_float, default=0.8,
                          'Any sequences with lengths below this value after '
                          'making an alignment with reference sequences will '
                          'be excluded from the placement and all subsequent '
-                         'steps. (default: %(default)d).')
+                         'steps. (default: %(default).2f).')
 
 parser.add_argument('--chunk_size', type=int, default=5000,
                     help='Number of query seqs to read in at once for EPA-ng '
