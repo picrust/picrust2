@@ -17,6 +17,7 @@ def full_pipeline(study_fasta,
                   input_table,
                   output_folder,
                   processes,
+                  placement_tool,
                   ref_dir,
                   in_traits,
                   custom_trait_tables,
@@ -145,7 +146,8 @@ def full_pipeline(study_fasta,
                       "--processes", str(processes),
                       "--intermediate", place_seqs_intermediate,
                       "--min_align", str(min_align),
-                      "--chunk_size", str(5000)]
+                      "--chunk_size", str(5000),
+                      "--placement_tool", args.placement_tool]
 
     if verbose:
         place_seqs_cmd.append("--verbose")

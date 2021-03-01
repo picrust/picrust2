@@ -53,6 +53,12 @@ parser.add_argument('-p', '--processes', type=int, default=1,
                     help='Number of processes to run in parallel (default: '
                          '%(default)d).')
 
+parser.add_argument('-t', '--placement_tool', metavar='PATH',
+                    choices=['epa-ng', 'sepp'], default="epa-ng",
+                    help='Placement tool to use when placing sequences into '
+                         'reference tree. One of \"epa-ng\" or \"sepp\" '
+                         'must be input (default: %(default)s)')
+
 parser.add_argument('-r', '--ref_dir', metavar='PATH', type=str,
                     default=default_ref_dir,
                     help='Directory containing reference sequence files '
@@ -229,6 +235,7 @@ def main():
                                                     input_table=args.input,
                                                     output_folder=args.output,
                                                     processes=args.processes,
+                                                    placement_tool=args.placement_tool,
                                                     ref_dir=args.ref_dir,
                                                     in_traits=args.in_traits,
                                                     custom_trait_tables=args.custom_trait_tables,

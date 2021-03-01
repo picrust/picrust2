@@ -26,6 +26,12 @@ place_seqs.py -s study_seqs.fna -o placed_seqs.tre --processes 1 --intermediate 
 parser.add_argument('-s', '--study_fasta', metavar='PATH', required=True,
                     type=str, help='FASTA of unaligned study sequences.')
 
+parser.add_argument('-t', '--placement_tool', metavar='PATH',
+                    choices=['epa-ng', 'sepp'], default="epa-ng",
+                    help='Placement tool to use when placing sequences into '
+                         'reference tree. One of \"epa-ng\" or \"sepp\" '
+                         'must be input (default: %(default)s)')
+
 parser.add_argument('-r', '--ref_dir', metavar='PATH', type=str,
                     default=default_ref_dir,
                     help='Directory containing reference sequence files '
@@ -77,6 +83,7 @@ def main():
         make_output_dir(args.intermediate)
 
         place_seqs_pipeline(study_fasta=args.study_fasta,
+                            placement_tools=args.placement_tool,
                             ref_dir=args.ref_dir,
                             out_tree=args.out_tree,
                             threads=args.processes,
@@ -88,6 +95,7 @@ def main():
     else:
         with TemporaryDirectory() as temp_dir:
                 place_seqs_pipeline(study_fasta=args.study_fasta,
+                                    placement_tools=args.placement_tool,
                                     ref_dir=args.ref_dir,
                                     out_tree=args.out_tree,
                                     threads=args.processes,
