@@ -1,0 +1,43 @@
+This is RAxML version RAxML-NG v. 0.5.1b BETA released on 01.12.2017 by The Exelixis Lab.
+Authors: Alexey Kozlov, Alexandros Stamatakis, Diego Darriba, Tomas Flouri, Benoit Morel.
+Latest version: https://github.com/amkozlov/raxml-ng
+Questions/problems/suggestions? Please visit: https://groups.google.com/forum/#!forum/raxml
+
+RAxML-NG was called as follows:
+
+raxml-ng-mpi --msa ../ssu_align_out.bacteria.mask.derep.afa --model GTR+G --threads 5 --prefix ssu_align_out.bacteria.mask.derep
+
+Analysis options:
+  run mode: ML tree search
+  start tree(s): random
+  random seed: 1529079635
+  tip-inner: ON
+  pattern compression: ON
+  per-rate scalers: OFF
+  site repeats: OFF
+  fast spr radius: AUTO
+  spr subtree cutoff: 1.000000
+  branch lengths: ML estimate (linked)
+  SIMD kernels: AVX2
+  parallelization: PTHREADS (5 threads)
+
+Partition: 0
+Alignment Patterns: 1582
+Name: No Name Provided
+DataType: DNA
+Substitution Matrix: GTR
+  
+Base frequencies: 0.229585 0.220080 0.298596 0.251739
+alpha[0]: 0.453141 rates[0] ac ag at cg ct gt: 1.003189 2.790774 1.530098 0.874410 3.839661 1.000000
+Final GAMMA likelihood: -2765744.304045
+
+Best ML tree saved to: /home/gavin/projects/picrust_pipeline/IMG_pipeline_prep/ssu_align_pipeline/raxml_out/ssu_align_out.bacteria.mask.derep.raxml.bestTree
+Optimized model saved to: /home/gavin/projects/picrust_pipeline/IMG_pipeline_prep/ssu_align_pipeline/raxml_out/ssu_align_out.bacteria.mask.derep.raxml.bestModel
+
+Execution log saved to: /home/gavin/projects/picrust_pipeline/IMG_pipeline_prep/ssu_align_pipeline/raxml_out/ssu_align_out.bacteria.mask.derep.raxml.log
+
+Analysis started: 15-Jun-2018 16:20:35 / finished: 13-Jul-2018 10:06:19
+
+Elapsed time: 2396743.698 seconds
+
+
