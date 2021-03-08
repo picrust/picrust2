@@ -498,6 +498,14 @@ def pathway_pipeline(inputfile,
             path_abun_unstrat_by_seq = contrib_to_unstrat(contrib_table=path_abun_strat,
                                                           sample_order=list(path_abun_unstrat.columns.values))
 
+    # Check if an abundance table is empty, which can happen when very few gene
+    # families are input.
+    if len(path_abun_unstrat.index) == 0:
+        sys.exit("\nStopping, because no pathways were identified. This "
+                 "can especially happen when either a test input file with "
+                 "few gene families is input or when gene family regrouping "
+                 "is not done properly.\n")
+
     return(path_abun_unstrat, path_cov_unstrat, path_abun_strat,
            path_cov_strat, path_abun_by_seq, path_cov_by_seq,
            path_abun_unstrat_by_seq)
