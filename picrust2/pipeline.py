@@ -32,6 +32,7 @@ def full_pipeline(study_fasta,
                   min_reads,
                   min_samples,
                   hsp_method,
+                  edge_exponent,
                   min_align,
                   skip_nsti,
                   skip_minpath,
@@ -186,6 +187,7 @@ def full_pipeline(study_fasta,
                    "--output", hsp_outfile,
                    "--observed_trait_table", func_tables[func],
                    "--hsp_method", hsp_method,
+                   "--edge_exponent", str(edge_exponent),
                    "--seed", "100"]
 
         # Add flags to command if specified.

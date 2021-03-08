@@ -9,11 +9,12 @@ Args <- commandArgs(TRUE)
 full_tree <- read_tree(file=Args[1], check_label_uniqueness = TRUE)
 trait_values <- read.delim(Args[2], check.names=FALSE, row.names=1)
 hsp_method <- Args[3]
-calc_ci <- as.logical(Args[4])
-check_input_set <- as.logical(Args[5])
-predict_outfile <- Args[6]
-ci_outfile <- Args[7]
-seed_setting <- Args[8]
+edge_exponent_set <- as.numeric(Args[4])
+calc_ci <- as.logical(Args[5])
+check_input_set <- as.logical(Args[6])
+predict_outfile <- Args[7]
+ci_outfile <- Args[8]
+seed_setting <- Args[9]
 
 # Set random seed if integer specified.
 if(seed_setting != "None") {
@@ -67,7 +68,7 @@ mp_study_probs <- function(in_trait, in_tree ,unknown_i, check_input) {
                                   tip_states = in_trait,
                                   check_input=check_input,
                                   transition_costs = "proportional",
-                                  edge_exponent=0.5,
+                                  edge_exponent=edge_exponent_set,
                                   weight_by_scenarios = TRUE)
   
   return(get_sorted_prob(mp_hsp_out$likelihoods,
@@ -148,7 +149,7 @@ trait_values <- trait_values[full_tree$tip.label, , drop=FALSE]
 
 num_tip <- nrow(trait_values)
 
-if (hsp_method == "pic" | hsp_method == "scp" | hsp_method == "subtree_average") {
+if (hsp_method == "pic" || hsp_method == "scp" || hsp_method == "subtree_average") {
   
   if (hsp_method == "pic") {
     predict_out <- lapply(trait_values,
@@ -179,7 +180,7 @@ if (hsp_method == "pic" | hsp_method == "scp" | hsp_method == "subtree_average")
   remove(predict_out)
   invisible(gc(verbose = FALSE))
   
-} else if(hsp_method == "emp_prob" | hsp_method == "mp") {
+} else if(hsp_method == "emp_prob" || hsp_method == "mp") {
   
   # Add 1 to all input counts because because traits states need to start at 1.
   trait_values <- trait_values + 1
@@ -243,9 +244,9 @@ predicted_values <- predicted_values[, c("sequence", colnames(trait_values))]
 # Check to see if there are any columns that are totally missing.
 missing_values_by_column <- colSums(is.na(predicted_values))
 
-if(length(which(missing_values_by_column == nrow(predicted_values)))) {
+if(length(which(missing_values_by_column == nrow(predicted_values))) > 0) {
     stop("\nError - at least one trait in the prediction table was entirely missing values.")
-} else if(length(which(missing_values_by_column) > 0) > 0) {
+} else if(length(which(missing_values_by_column > 0)) > 0) {
     cat("\nWarning: there are missing values in the output prediction table.")
 }
 

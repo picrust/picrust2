@@ -48,6 +48,14 @@ parser.add_argument('--observed_trait_table', metavar='PATH', type=str,
                          'tab-delimited format. Necessary if you want to '
                          'use a custom table.')
 
+parser.add_argument('-e', '--edge_exponent', default=0.5, type=float,
+                    help='Setting for maximum parisomony hidden-state '
+                          'prediction. Specifies weighting transition costs '
+                          'by the inverse length of edge lengths. If 0, then '
+                          'edge lengths do not influence predictions. Must be '
+                          'a non-negative real-valued number (default: '
+                          '%(default)d).')
+
 parser.add_argument('--chunk_size', default=500, type=int,
                     help='Number of functions to run at a time on one '
                          'processor. Note that you should consider how many '
@@ -118,6 +126,7 @@ def main():
     hsp_table, ci_table = castor_hsp_workflow(tree_path=args.tree,
                                               trait_table_path=trait_table,
                                               hsp_method=args.hsp_method,
+                                              edge_exponent=args.edge_exponent,
                                               chunk_size=args.chunk_size,
                                               calc_nsti=args.calculate_NSTI,
                                               calc_ci=ci_setting,

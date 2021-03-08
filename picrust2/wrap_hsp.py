@@ -5,6 +5,7 @@ __license__ = "GPL"
 __version__ = "2.3.0-b"
 
 from os import path
+import sys
 import pandas as pd
 from math import ceil
 from joblib import Parallel, delayed
@@ -14,6 +15,7 @@ from picrust2.util import system_call_check, TemporaryDirectory
 def castor_hsp_workflow(tree_path,
                         trait_table_path,
                         hsp_method,
+                        edge_exponent=0.5,
                         chunk_size=500,
                         calc_nsti=False,
                         calc_ci=False,
@@ -24,6 +26,10 @@ def castor_hsp_workflow(tree_path,
     '''Runs full HSP workflow. Main purpose is to read in trait table and run
     HSP on subsets of column at a time to be more memory efficient. Will return
     a single table of predictions and also a table of CIs (if specified).'''
+
+    # Check edge exponent input.
+    if edge_exponent < 0:
+        sys.exit("Stopping - edge_exponent setting must be >= 0.")
 
     # Read in trait table as pandas dataframe.
     trait_tab = pd.read_csv(trait_table_path, sep="\t", dtype={'assembly': str})
@@ -58,6 +64,7 @@ def castor_hsp_workflow(tree_path,
                                     castor_hsp_wrapper)(tree_path,
                                                         trait_in,
                                                         hsp_method,
+                                                        edge_exponent,
                                                         calc_ci,
                                                         check_input,
                                                         ran_seed,
@@ -87,8 +94,9 @@ def castor_hsp_workflow(tree_path,
     return(predict_out_combined, ci_out_combined)
 
 
-def castor_hsp_wrapper(tree_path, trait_tab, hsp_method, calc_ci=False,
-                       check_input=False, ran_seed=None, verbose=False):
+def castor_hsp_wrapper(tree_path, trait_tab, hsp_method, edge_exponent=0.5,
+                       calc_ci=False, check_input=False, ran_seed=None,
+                       verbose=False):
     '''Wrapper for making system calls to castor_hsp.py Rscript.'''
 
     castor_hsp_script = path.join(path.dirname(path.abspath(__file__)),
@@ -116,6 +124,7 @@ def castor_hsp_wrapper(tree_path, trait_tab, hsp_method, calc_ci=False,
                             tree_path,
                             trait_tab,
                             hsp_method,
+                            str(edge_exponent),
                             calc_ci_setting,
                             check_input_setting,
                             output_count_path,

@@ -158,6 +158,14 @@ parser.add_argument('-m', '--hsp_method', default='mp',
                     'traits using squared-change parsimony (default: '
                     '%(default)s).')
 
+parser.add_argument('-e', '--edge_exponent', default=0.5, type=float,
+                    help='Setting for maximum parisomony hidden-state '
+                          'prediction. Specifies weighting transition costs '
+                          'by the inverse length of edge lengths. If 0, then '
+                          'edge lengths do not influence predictions. Must be '
+                          'a non-negative real-valued number (default: '
+                          '%(default)d).')
+
 parser.add_argument('--min_align', type=restricted_float, default=0.8,
                     help='Proportion of the total length of an input query '
                          'sequence that must align with reference sequences. '
@@ -252,6 +260,7 @@ def main():
                                                     min_reads=args.min_reads,
                                                     min_samples=args.min_samples,
                                                     hsp_method=args.hsp_method,
+                                                    edge_exponent=args.edge_exponent,
                                                     min_align=args.min_align,
                                                     skip_nsti=args.skip_nsti,
                                                     no_gap_fill=args.no_gap_fill,
