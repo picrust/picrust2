@@ -41,6 +41,8 @@ def read_fasta(filename, cut_header=False):
 
     for line in fasta_in:
 
+        line = line.rstrip()
+
         # If header-line then split by whitespace, take the first element,
         # and define the sequence name as everything after the ">".
         if line[0] == ">":
