@@ -240,5 +240,14 @@ predicted_values <- data.frame(predicted_values, check.names = FALSE)
 predicted_values$sequence <- unknown_tips
 predicted_values <- predicted_values[, c("sequence", colnames(trait_values))]
 
+# Check to see if there are any columns that are totally missing.
+missing_values_by_column <- colSums(is.na(predicted_values))
+
+if(length(which(missing_values_by_column == nrow(predicted_values)))) {
+    stop("\nError - at least one trait in the prediction table was entirely missing values.")
+} else if(length(which(missing_values_by_column) > 0) > 0) {
+    cat("\nWarning: there are missing values in the output prediction table.")
+}
+
 # Write out predicted values.
 write.table(predicted_values, file=predict_outfile, row.names=FALSE, quote=FALSE, sep="\t")
