@@ -202,14 +202,20 @@ def drop_tips_by_nsti(tab, nsti_col, max_nsti):
 
     filt_num_rows = tab.shape[0]
 
-    if filt_num_rows == 0:
+    if orig_num_rows == filt_num_rows:
+        print("All ASVs were below the max NSTI cut-off of " + str(max_nsti) +
+              " and so all were retained for downstream analyses.",
+              file=sys.stderr)
+
+    elif filt_num_rows == 0:
         sys.exit("Stopping - all ASVs filtered from table when max NSTI "
                  "cut-off of " + str(max_nsti) + " used.")
+
     else:
         num_removed = orig_num_rows - filt_num_rows
         print(str(num_removed) + " of " + str(orig_num_rows) + " ASVs were "
               "above the max NSTI cut-off of " + str(max_nsti) + " and were "
-              "removed.", file=sys.stderr)
+              "removed from the downstream analyses.", file=sys.stderr)
 
     # Keep track of NSTI column as separate dataframe and remove this column
     # from the main dataframe.
