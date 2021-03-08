@@ -89,14 +89,43 @@ emp_prob_study_probs <- function(in_trait, in_tree, unknown_i, check_input) {
                          tree_tips=in_tree$tip.label))
 }
 
+
+# First check if any tip labels are present in the trait table but do not match
+# because they have quotes around them.
+if(length(grep("\"", full_tree$tip.label) > 0) || length(grep("\'", full_tree$tip.label) > 0)) {
+
+    tmp_unknown_tips_index <- which(! full_tree$tip.label %in% rownames(trait_values))
+    tmp_unknown_tips <- full_tree$tip.label[tmp_unknown_tips_index]
+
+    unknown_labels_no_quotes <- gsub("\'", "", tmp_unknown_tips)
+    unknown_labels_no_quotes <- gsub("\"", "", unknown_labels_no_quotes)
+
+    no_quote_matches = which(unknown_labels_no_quotes %in% rownames(trait_values))
+
+    # Remove quotes from around tips where matches only occur when quotes are removed.
+    if(length(no_quote_matches) > 0) {
+        indices_to_change <- tmp_unknown_tips_index[no_quote_matches]
+        full_tree$tip.label[indices_to_change] <- unknown_labels_no_quotes[no_quote_matches]
+    }
+
+    cat(paste("\nWhile running castor_hsp.R: Fixed ", length(no_quote_matches),
+        " tip label(s) that had quotations around them that stopped them from matching the function abundance table.",
+        sep=""))
+}
+
 # Order the trait table to match the tree tip labels. Set all tips without a value to be NA.
 unknown_tips_index <- which(! full_tree$tip.label %in% rownames(trait_values))
 unknown_tips <- full_tree$tip.label[unknown_tips_index]
-num_unknown = length(unknown_tips)
+num_unknown <- length(unknown_tips)
+num_known <- length(full_tree$tip.label) - num_unknown
 
 # Throw error if all tips are unknown.
 if(num_unknown == length(full_tree$tip.label)) {
   stop("None of the reference ids within the function abundance table are found within the input tree. This can occur when malformed or mismatched custom reference files are used.")
+
+# Check if only very few tips are "known".
+} else if(num_known / nrow(trait_values) < 0.1) {
+    stop("Fewer than 10% of reference ids in the function abundance table are in the tree. This could be because the ids are slightly different between the table and the tree.")
 }
 
 unknown_df <- as.data.frame(matrix(NA,
