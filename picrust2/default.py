@@ -11,7 +11,7 @@ project_dir = path.dirname(path.abspath(__file__))
 default_ref_dir = path.join(project_dir, "default_files", "prokaryotic",
                             "pro_ref")
 
-default_fasta = path.join(default_ref_dir, "pro_ref.fna.gz")
+default_fasta = path.join(default_ref_dir, "pro_ref.fna")
 
 default_tree = path.join(default_ref_dir, "pro_ref.tre")
 

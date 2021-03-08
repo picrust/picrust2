@@ -10,7 +10,7 @@ import hashlib
 from os import path
 from picrust2.util import read_phylip, read_fasta, TemporaryDirectory
 from picrust2.default import (default_ref_dir, default_fasta, default_tree,
-                              default_hmm, default_model)
+                              default_hmm, default_model, default_raxml_info)
 from picrust2.place_seqs import (place_seqs_pipeline, split_ref_study_papara,
                                  run_epa_ng, gappa_jplace_to_newick,
                                  identify_ref_files, parse_jplace,
@@ -60,7 +60,7 @@ class place_seqs_tests(unittest.TestCase):
         hmm_hash = hashlib.md5()
         model_hash = hashlib.md5()
 
-        with gzip.open(default_fasta, 'rt') as fasta_in:
+        with open(default_fasta, 'rt') as fasta_in:
             fasta_hash.update(fasta_in.read().encode())
 
         with open(default_tree) as tree_in:
@@ -136,18 +136,17 @@ class place_seqs_tests(unittest.TestCase):
                        study_msa_fastafile=exp_study_fasta,
                        out_dir=temp_dir)
 
-    def test_run_place_seqs_pipeline(self):
-        '''Basic test of full place seqs pipeline. As for EPA-NG, exact
-        matches to a treefile are not checked since slight differences
-        are expected depending on different versions.'''
+    def test_run_place_seqs_pipeline_epa_ng(self):
+        '''Basic test of full place seqs pipeline with EPA-ng. Just run to
+           see if any errors occur. Note that a subsampled reference dir is to
+           make it run faster'''
 
         with TemporaryDirectory() as temp_dir:
             tmp_tree = path.join(temp_dir, "out.tre")
 
-
-
             place_seqs_pipeline(study_fasta=test_study_seqs,
                                 ref_dir=test_ref_dir,
+                                placement_tool="epa-ng",
                                 out_tree=tmp_tree,
                                 threads=1,
                                 out_dir=temp_dir,
@@ -155,13 +154,39 @@ class place_seqs_tests(unittest.TestCase):
                                 chunk_size=5000,
                                 verbose=True)
 
-    def test_identify_ref_files(self):
+    def test_run_place_seqs_pipeline_sepp(self):
+        '''Basic test of full place seqs pipeline with SEPP. Just run to
+           see if any errors occur'''
+        with TemporaryDirectory() as temp_dir:
+            tmp_tree = path.join(temp_dir, "out.tre")
+
+            place_seqs_pipeline(study_fasta=test_study_seqs,
+                                ref_dir=default_ref_dir,
+                                placement_tool="sepp",
+                                out_tree=tmp_tree,
+                                threads=1,
+                                out_dir=temp_dir,
+                                min_align=0.8,
+                                chunk_size=5000,
+                                verbose=True)
+
+    def test_identify_ref_files_epa_ng(self):
         '''Test for reference files being identified correctly.'''
 
         expected_files = [default_fasta, default_tree, default_hmm,
                           default_model]
 
-        identified_files = identify_ref_files(default_ref_dir)
+        identified_files = identify_ref_files(default_ref_dir, "epa-ng")
+
+        self.assertEqual(expected_files, identified_files)
+
+    def test_identify_ref_files_sepp(self):
+        '''Test for reference files being identified correctly.'''
+
+        expected_files = [default_fasta, default_tree, default_hmm,
+                          default_raxml_info]
+
+        identified_files = identify_ref_files(default_ref_dir, "sepp")
 
         self.assertEqual(expected_files, identified_files)
 

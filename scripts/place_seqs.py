@@ -83,7 +83,7 @@ def main():
         make_output_dir(args.intermediate)
 
         place_seqs_pipeline(study_fasta=args.study_fasta,
-                            placement_tools=args.placement_tool,
+                            placement_tool=args.placement_tool,
                             ref_dir=args.ref_dir,
                             out_tree=args.out_tree,
                             threads=args.processes,
@@ -95,7 +95,7 @@ def main():
     else:
         with TemporaryDirectory() as temp_dir:
                 place_seqs_pipeline(study_fasta=args.study_fasta,
-                                    placement_tools=args.placement_tool,
+                                    placement_tool=args.placement_tool,
                                     ref_dir=args.ref_dir,
                                     out_tree=args.out_tree,
                                     threads=args.processes,

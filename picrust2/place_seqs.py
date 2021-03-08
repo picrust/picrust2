@@ -82,13 +82,13 @@ def place_seqs_pipeline(study_fasta,
 
         run_sepp(tree=tree,
                  ref_msa_fastafile=ref_msa,
-                 study_msa_fastafile=study_msa_fastafile,
+                 study_msa_fastafile=study_fasta,
                  raxml_model=model,
                  threads=threads,
                  out_dir=sepp_out_dir,
                  print_cmds=verbose)
 
-        jplace_outfile = path.join(epa_out_dir, "epa_result_parsed.jplace")
+        jplace_outfile = path.join(sepp_out_dir, "output_placement.json")
 
     else:
         sys.exit("Option placement_tool needs to be either \"epa-ng\" or \
@@ -395,21 +395,49 @@ def check_alignments(raw_seqs, aligned_seqs, min_align, verbose):
 
 
 def run_sepp(tree: str, ref_msa_fastafile: str, study_msa_fastafile: str,
-             raxml_model: str, out_dir: str, threads=1, print_cmds=False):
+             raxml_model: str, out_dir: str, threads=1, print_cmds=False,
+             set_seed=297834):
     '''Run SEPP on specified tree, reference MSA, and study sequence MSA.
     Will output a .jplace file in out_dir.'''
 
-    make_output_dir(out_dir)
-
     sepp_command = ["run_sepp.py",
                     "--tree", tree,
-                    "--alignment", ref_msa_fastafile,
-                    "--fragment", study_msa_fastafile,
                     "--raxml", raxml_model,
                     "--cpu", str(threads),
                     "--molecule", "dna",
                     "--outdir", out_dir,
-                    "--seed", "297834"]
+                    "-seed", str(set_seed),
+                    "--alignment", ref_msa_fastafile,
+                    "--fragment", study_msa_fastafile]
+
+    # Give error if either reference or query FASTA gzipped.
+    ref_fasta_basename = path.basename(ref_msa_fastafile)
+    ref_fasta_ext = path.splitext(ref_fasta_basename)[1]
+    
+    study_fasta_basename = path.basename(study_msa_fastafile)
+    study_fasta_ext = path.splitext(study_fasta_basename)[1]
+
+    if ref_fasta_ext == ".gz" or study_fasta_ext == ".gz":
+
+        if ref_fasta_ext == ".gz":
+
+            print("\nTo place sequences with SEPP all input FASTAs must be "
+                  "decompressed. Please run gunzip on this reference file "
+                  "before re-running: " + ref_msa_fastafile + "\n",
+                  file=sys.stderr)
+        
+        if study_fasta_ext == ".gz":
+
+            print("\nTo place sequences with SEPP all input FASTAs must be "
+                  "decompressed. Please run gunzip on the query FASTA file "
+                  "before re-running: " + study_msa_fastafile + "\n",
+                  file=sys.stderr)
+        
+        sys.exit("\nStopped running due to at least one input FASTA being "
+                 "gzipped (which SEPP does not allow).\n")
+
+    print(sepp_command)
 
     system_call_check(sepp_command, print_command=print_cmds,
                       print_stdout=print_cmds, print_stderr=print_cmds)
+
