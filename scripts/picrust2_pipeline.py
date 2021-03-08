@@ -25,8 +25,8 @@ parser = argparse.ArgumentParser(
                 "which can be optionally stratified by the contributing "
                 "sequence. Finally, pathway abundances are predicted based on "
                 "metagenome profiles. By default, output files include "
-                "predictions for Enzyme classification (EC) numbers, "
-                "KEGG orthologs (KOs), and MetaCyc "
+                "predictions for Enzyme Commission (EC) numbers, "
+                "KEGG Orthologs (KOs), and MetaCyc "
                 "pathway abundances. However, this script enables users to "
                 "use custom reference and trait tables to customize analyses.",
 epilog='''
