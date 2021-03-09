@@ -102,13 +102,11 @@ class metagenome_pipeline_test(unittest.TestCase):
                                                              strat_out=True,
                                                              wide_table=False)
 
-        print(strat_out)
-        print(exp_strat_simple_in)
         pd.testing.assert_frame_equal(strat_out.reset_index(drop=True),
                                       exp_strat_simple_in.reset_index(drop=True),
-                                      check_like=True)
+                                      check_like=True, atol=1e-3)
         pd.testing.assert_frame_equal(unstrat_out, exp_unstrat_simple_in,
-                                      check_like=True)
+                                      check_like=True, atol=1e-3)
 
     def test_full_pipeline_strat_tsv_skip_norm(self):
         '''Test that run_metagenome_pipeline works on tsv input seqtab and skip
@@ -125,9 +123,9 @@ class metagenome_pipeline_test(unittest.TestCase):
 
         pd.testing.assert_frame_equal(strat_out.reset_index(drop=True),
                                       exp_strat_simple_in.reset_index(drop=True),
-                                      check_like=True)
+                                      check_like=True, atol=1e-3)
         pd.testing.assert_frame_equal(unstrat_out, exp_unstrat_simple_in,
-                                      check_like=True)
+                                      check_like=True, atol=1e-3)
 
     def test_full_pipeline_strat_wide_tsv(self):
         '''Test that run_metagenome_pipeline works on tsv input seqtab. Compare
