@@ -102,6 +102,8 @@ class metagenome_pipeline_test(unittest.TestCase):
                                                              strat_out=True,
                                                              wide_table=False)
 
+        print(strat_out)
+        print(exp_strat_simple_in)
         pd.testing.assert_frame_equal(strat_out.reset_index(drop=True),
                                       exp_strat_simple_in.reset_index(drop=True),
                                       check_like=True)
