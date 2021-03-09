@@ -30,11 +30,11 @@ test_model = path.join(test_ref_dir, "img_centroid_16S_aligned_head30.model")
 
 exp_study_fasta = path.join(test_dir_path, "place_seqs_output",
                             "place_seqs_working",
-                            "study_seqs_papara.fasta")
+                            "study_seqs_papara.fasta.gz")
 
 exp_ref_fasta = path.join(test_dir_path, "place_seqs_output",
                           "place_seqs_working",
-                          "ref_seqs_papara.fasta")
+                          "ref_seqs_papara.fasta.gz")
 
 exp_newick = path.join(test_dir_path, "place_seqs_output",
                        "img_centroid_16S_aligned_head30_placed.tre")

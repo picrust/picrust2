@@ -96,7 +96,7 @@ def full_pipeline(study_fasta,
         func_tables["marker"] = marker_gene_table
 
     # Check that all input files exist.
-    ref_msa, tree, hmm, model = identify_ref_files(ref_dir)
+    ref_msa, tree, hmm, model = identify_ref_files(ref_dir, placement_tool)
     files2check = [study_fasta, input_table, ref_msa, tree, hmm, model] + list(func_tables.values())
 
     if not no_pathways:
@@ -148,7 +148,7 @@ def full_pipeline(study_fasta,
                       "--intermediate", place_seqs_intermediate,
                       "--min_align", str(min_align),
                       "--chunk_size", str(5000),
-                      "--placement_tool", args.placement_tool]
+                      "--placement_tool", placement_tool]
 
     if verbose:
         place_seqs_cmd.append("--verbose")
