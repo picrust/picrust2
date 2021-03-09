@@ -705,6 +705,11 @@ def contrib_to_legacy(infiles, outfile, use_rel_abun=True):
                                'genome_function_count' : 'GeneCountPerGenome'},
                       inplace=True)
 
+    if 'norm_taxon_function_contrib' in contrib_df:
+        contrib_df.rename(columns={'norm_taxon_function_contrib' : \
+                                   'ContributionPercentOfSample'},
+                          inplace=True)
+
     abun_col_counter = 0
 
     abun_columns = ['taxon_abun', 'taxon_rel_abun', 'taxon_function_abun',
