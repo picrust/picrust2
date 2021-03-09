@@ -310,7 +310,10 @@ def metagenome_contributions(func_abun, sample_abun, rare_seqs=[],
         single_relabun = sample_relabun[sample]
         single_relabun = single_relabun.iloc[single_relabun.to_numpy().nonzero()]
 
-        func_abun_subset = func_abun.loc[single_abun.index, :]
+        intersecting_taxa = single_abun.index.intersection(func_abun.index)
+        func_abun_subset = func_abun.loc[intersecting_taxa]
+        single_abun = single_abun.loc[intersecting_taxa]
+        single_relabun = single_relabun.loc[intersecting_taxa]
 
         # Melt function table to be long format.
         func_abun_subset['taxon'] = func_abun_subset.index.to_list()
@@ -331,6 +334,13 @@ def metagenome_contributions(func_abun, sample_abun, rare_seqs=[],
             func_abun_subset_melt['taxon_function_abun'] = func_abun_subset_melt['genome_function_count'] * func_abun_subset_melt['taxon_abun']
 
             func_abun_subset_melt['taxon_rel_function_abun'] = func_abun_subset_melt['genome_function_count'] * func_abun_subset_melt['taxon_rel_abun']
+
+            func_abun_subset_melt['norm_taxon_function_contrib'] = 0
+
+            for func in func_abun_subset_melt['function'].unique():
+                func_abun_subset_melt.loc[func_abun_subset_melt['function'] == func, 'norm_taxon_function_contrib' ] = \
+                                                                                (func_abun_subset_melt.loc[func_abun_subset_melt['function'] == func, 'taxon_function_abun' ] / \
+                                                                                func_abun_subset_melt.loc[func_abun_subset_melt['function'] == func, 'taxon_function_abun' ].sum())
 
         # Collapse sequences identified as "rare" to the same category.
         rare_seqs = [r for r in rare_seqs if r in func_abun_subset_melt['taxon'].to_list()]
@@ -356,7 +366,8 @@ def metagenome_contributions(func_abun, sample_abun, rare_seqs=[],
                                                            'taxon_rel_abun',
                                                            'genome_function_count',
                                                            'taxon_function_abun',
-                                                           'taxon_rel_function_abun']]
+                                                           'taxon_rel_function_abun',
+                                                           'norm_taxon_function_contrib']]
 
         if s_i == 0:
             metagenome_contrib_out = func_abun_subset_melt.copy()
@@ -365,6 +376,28 @@ def metagenome_contributions(func_abun, sample_abun, rare_seqs=[],
             metagenome_contrib_out = pd.concat([metagenome_contrib_out,
                                                 func_abun_subset_melt],
                                                 axis=0)
+
+    # Round columns with long stretch of decimals (unless really small numbers
+    # are present in the table).
+    min_value = metagenome_contrib_out.loc[:,
+                                              ['taxon_rel_abun',
+                                               'taxon_rel_function_abun',
+                                               'norm_taxon_function_contrib']].min().min()
+
+    if min_value >= 1e-5:
+        metagenome_contrib_out['taxon_rel_abun'] = metagenome_contrib_out['taxon_rel_abun'].round(decimals=3)
+        metagenome_contrib_out['taxon_rel_function_abun'] = metagenome_contrib_out['taxon_rel_function_abun'].round(decimals=3)
+        metagenome_contrib_out['norm_taxon_function_contrib'] = metagenome_contrib_out['norm_taxon_function_contrib'].round(decimals=3)
+        
+    elif min_value >= 1e-7:
+        metagenome_contrib_out['taxon_rel_abun'] = metagenome_contrib_out['taxon_rel_abun'].round(decimals=5)
+        metagenome_contrib_out['taxon_rel_function_abun'] = metagenome_contrib_out['taxon_rel_function_abun'].round(decimals=5)
+        metagenome_contrib_out['norm_taxon_function_contrib'] = metagenome_contrib_out['norm_taxon_function_contrib'].round(decimals=5)
+        
+    elif min_value >= 1e-9:
+        metagenome_contrib_out['taxon_rel_abun'] = metagenome_contrib_out['taxon_rel_abun'].round(decimals=7)
+        metagenome_contrib_out['taxon_rel_function_abun'] = metagenome_contrib_out['taxon_rel_function_abun'].round(decimals=7)
+        metagenome_contrib_out['norm_taxon_function_contrib'] = metagenome_contrib_out['norm_taxon_function_contrib'].round(decimals=7)
 
     return(metagenome_contrib_out)
 
