@@ -661,7 +661,7 @@ def contributional_path_abun(reaction_abun, func_ids, total_sum, path_abun,
 
 
 def minpath_wrapper(sample_id, unstrat_input, minpath_map, minpath_outdir,
-                    print_opt=False, extra_str=""):
+                    print_log=False, extra_str=""):
     '''Run MinPath based on gene abundances in a single sample. Will return
     a set of all pathways called as present.'''
 
@@ -703,8 +703,8 @@ def minpath_wrapper(sample_id, unstrat_input, minpath_map, minpath_outdir,
                   minpath_map + " -report " + minpath_report +\
                   " -details " + minpath_details + " -mps " + minpath_mps
 
-    system_call_check(minpath_cmd, print_command=print_opt,
-                      print_stdout=print_opt, print_stderr=print_opt)
+    system_call_check(minpath_cmd, print_command=print_log,
+                      print_stdout=print_log, print_stderr=print_log)
 
     # Read through MinPath report and keep track of pathways identified
     # to be present.
@@ -863,8 +863,7 @@ def contrib_format_pathway_levels(sample_id, contrib_input, minpath_map, out_dir
 
     if run_minpath:
         pathways_present = minpath_wrapper(sample_id, unstrat_input,
-                                           minpath_map, out_dir,
-                                           print_opt)
+                                           minpath_map, out_dir)
     else:
         pathways_present = set(pathway_db.pathway_list())
 
@@ -967,8 +966,7 @@ def basic_strat_pathway_levels(sample_id, strat_input, minpath_map, out_dir,
     if run_minpath:
 
         pathways_present = minpath_wrapper(sample_id, unstrat_input,
-                                           minpath_map, out_dir,
-                                           print_opt)
+                                           minpath_map, out_dir)
     else:
         pathways_present = set(pathway_db.pathway_list())
 
@@ -1049,14 +1047,13 @@ def unstrat_pathway_levels(sample_id, unstrat_input, minpath_map, out_dir,
     if run_minpath:
 
         pathways_present = minpath_wrapper(sample_id, unstrat_input,
-                                           minpath_map, out_dir,
-                                           print_opt)
+                                           minpath_map, out_dir)
     else:
         pathways_present = set(pathway_db.pathway_list())
 
     # Initialize series that will contain pathway abundances and coverage.
-    unstrat_abun = pd.Series([])
-    unstrat_cov = pd.Series([])
+    unstrat_abun = pd.Series([], dtype=float)
+    unstrat_cov = pd.Series([], dtype=float)
 
     # Return empty series if no pathways are present.
     if len(pathways_present) == 0:
