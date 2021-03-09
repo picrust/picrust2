@@ -501,7 +501,11 @@ def convert_humann2_to_picrust2(infiles, outfile, stratified):
 
         original_col = list(humann2_combined.columns)
 
-        humann2_combined[first_col], humann2_combined['sequence'] = humann2_combined.index.str.split('\\|', 1).str
+        split_df = pd.DataFrame.from_records(list(humann2_combined.index.str.split('\\|', 1)), columns=[first_col, 'sequence'])
+
+        humann2_combined.reset_index(inplace=True)
+
+        humann2_combined[[first_col, 'sequence']] = split_df
 
         # Reorder columns.
         humann2_combined = humann2_combined.loc[:, [first_col, 'sequence'] +
@@ -748,7 +752,8 @@ def contrib_to_legacy(infiles, outfile, use_rel_abun=True):
 
         contrib_df = contrib_df[['Gene', 'Sample', 'OTU',
                                  'OTUAbundanceInSample', 'GeneCountPerGenome',
-                                 'CountContributedByOTU']]
+                                 'CountContributedByOTU',
+                                 'ContributionPercentOfSample']]
 
     contrib_df.to_csv(path_or_buf=outfile, sep="\t", index=False,
                               compression="gzip")
