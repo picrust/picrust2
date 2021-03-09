@@ -198,9 +198,6 @@ class run_minpath_tests(unittest.TestCase):
         pd.testing.assert_frame_equal(exp_abun_unstrat, unstrat_pathabun,
                                       check_like=True)
 
-        print(exp_abun_unstrat_per_seq)
-        print(unstrat_pathabun_per_seq)
-
         pd.testing.assert_frame_equal(exp_abun_unstrat_per_seq, unstrat_pathabun_per_seq,
                                       check_like=True, atol=1e-2)
 
