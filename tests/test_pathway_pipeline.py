@@ -53,7 +53,7 @@ exp_cov_strat_per_genome_file = path.join(test_dir_path, "per_seq_contrib",  "ex
 class run_minpath_tests(unittest.TestCase):
     """Tests for running MinPath on stratified and unstratified tables."""
 
-    def test_strat_default_pipeline(self):
+    def test_strat_default_pipeline_wide(self):
         '''Test running strat_minpath default pipeline. Make sure that
         community wide stratified abundances are calculated correctly and
         that unstratified abundances are right. Note that wide-format
@@ -98,13 +98,13 @@ class run_minpath_tests(unittest.TestCase):
         strat_pathabun.reset_index(drop=True, inplace=True)
 
         pd.testing.assert_frame_equal(exp_abun_unstrat, unstrat_pathabun,
-                                      check_like=True, check_less_precise=True)
+                                      check_like=True, atol=1e-3)
 
         pd.testing.assert_frame_equal(exp_cov_unstrat, unstrat_pathcov,
-                                      check_like=True, check_less_precise=True)
+                                      check_like=True, atol=1e-3)
 
         pd.testing.assert_frame_equal(exp_abun_strat, strat_pathabun,
-                                      check_like=True, check_less_precise=True)
+                                      check_like=True, atol=1e-3)
 
 
     def test_unstrat_default_pipeline(self):
@@ -137,10 +137,10 @@ class run_minpath_tests(unittest.TestCase):
                                        index_col="pathway")
 
         pd.testing.assert_frame_equal(exp_abun_unstrat, unstrat_pathabun,
-                                      check_like=True, check_less_precise=True)
+                                      check_like=True, atol=1e-3)
 
         pd.testing.assert_frame_equal(exp_cov_unstrat, unstrat_pathcov,
-                                      check_like=True, check_less_precise=True)
+                                      check_like=True, atol=1e-3)
 
 
     def test_strat_per_genome_pipeline(self):
@@ -196,19 +196,22 @@ class run_minpath_tests(unittest.TestCase):
         strat_pathcov.reset_index(drop=True, inplace=True)
 
         pd.testing.assert_frame_equal(exp_abun_unstrat, unstrat_pathabun,
-                                      check_like=True, check_less_precise=True)
+                                      check_like=True)
+
+        print(exp_abun_unstrat_per_seq)
+        print(unstrat_pathabun_per_seq)
 
         pd.testing.assert_frame_equal(exp_abun_unstrat_per_seq, unstrat_pathabun_per_seq,
-                                      check_like=True, check_less_precise=True)
+                                      check_like=True, atol=1e-2)
 
         pd.testing.assert_frame_equal(exp_cov_unstrat, unstrat_pathcov,
-                                      check_like=True, check_less_precise=True)
+                                      check_like=True)
 
         pd.testing.assert_frame_equal(exp_abun_strat, strat_pathabun,
-                                      check_like=True, check_less_precise=True)
+                                      check_like=True)
 
         pd.testing.assert_frame_equal(exp_cov_strat, strat_pathcov,
-                                      check_like=True, check_less_precise=True)
+                                      check_like=True)
 
     def test_strat_per_genome_pipeline_strat_input(self):
         '''Test running strat_minpath default pipeline. Make sure that
@@ -263,19 +266,19 @@ class run_minpath_tests(unittest.TestCase):
         strat_pathcov.reset_index(drop=True, inplace=True)
 
         pd.testing.assert_frame_equal(exp_abun_unstrat, unstrat_pathabun,
-                                      check_like=True, check_less_precise=True)
+                                      check_like=True)
 
         pd.testing.assert_frame_equal(exp_abun_unstrat_per_seq, unstrat_pathabun_per_seq,
-                                      check_like=True, check_less_precise=True)
+                                      check_like=True)
 
         pd.testing.assert_frame_equal(exp_cov_unstrat, unstrat_pathcov,
-                                      check_like=True, check_less_precise=True)
+                                      check_like=True)
 
         pd.testing.assert_frame_equal(exp_abun_strat, strat_pathabun,
-                                      check_like=True, check_less_precise=True)
+                                      check_like=True)
 
         pd.testing.assert_frame_equal(exp_cov_strat, strat_pathcov,
-                                      check_like=True, check_less_precise=True)
+                                      check_like=True)
 
 if __name__ == '__main__':
     unittest.main()

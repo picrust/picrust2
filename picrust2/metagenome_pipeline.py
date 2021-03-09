@@ -377,28 +377,6 @@ def metagenome_contributions(func_abun, sample_abun, rare_seqs=[],
                                                 func_abun_subset_melt],
                                                 axis=0)
 
-    # Round columns with long stretch of decimals (unless really small numbers
-    # are present in the table).
-    min_value = metagenome_contrib_out.loc[:,
-                                              ['taxon_rel_abun',
-                                               'taxon_rel_function_abun',
-                                               'norm_taxon_function_contrib']].min().min()
-
-    if min_value >= 1e-5:
-        metagenome_contrib_out['taxon_rel_abun'] = metagenome_contrib_out['taxon_rel_abun'].round(decimals=3)
-        metagenome_contrib_out['taxon_rel_function_abun'] = metagenome_contrib_out['taxon_rel_function_abun'].round(decimals=3)
-        metagenome_contrib_out['norm_taxon_function_contrib'] = metagenome_contrib_out['norm_taxon_function_contrib'].round(decimals=3)
-        
-    elif min_value >= 1e-7:
-        metagenome_contrib_out['taxon_rel_abun'] = metagenome_contrib_out['taxon_rel_abun'].round(decimals=5)
-        metagenome_contrib_out['taxon_rel_function_abun'] = metagenome_contrib_out['taxon_rel_function_abun'].round(decimals=5)
-        metagenome_contrib_out['norm_taxon_function_contrib'] = metagenome_contrib_out['norm_taxon_function_contrib'].round(decimals=5)
-        
-    elif min_value >= 1e-9:
-        metagenome_contrib_out['taxon_rel_abun'] = metagenome_contrib_out['taxon_rel_abun'].round(decimals=7)
-        metagenome_contrib_out['taxon_rel_function_abun'] = metagenome_contrib_out['taxon_rel_function_abun'].round(decimals=7)
-        metagenome_contrib_out['norm_taxon_function_contrib'] = metagenome_contrib_out['norm_taxon_function_contrib'].round(decimals=7)
-
     return(metagenome_contrib_out)
 
 

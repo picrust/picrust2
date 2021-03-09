@@ -530,7 +530,9 @@ def prep_pathway_df_out(in_tab, strat_index=False, num_digits=4):
 
         if not in_tab_df.empty:
             # Split stratified index into 2 new columns.
-            in_tab_df[['pathway', 'sequence']] = pd.DataFrame.from_records(list(in_tab_df.index.str.split('\\|\\|\\|', 1)), columns=['pathway', 'sequence'])
+            split_df = pd.DataFrame.from_records(list(in_tab_df.index.str.split('\\|\\|\\|', 1)), columns=['pathway', 'sequence'])
+            in_tab_df.reset_index(inplace=True)
+            in_tab_df[['pathway', 'sequence']] = split_df
 
         else:
             in_tab_df['pathway'], in_tab_df['sequence'] = "", ""
@@ -538,8 +540,7 @@ def prep_pathway_df_out(in_tab, strat_index=False, num_digits=4):
         # Add these columns to be first.
         in_tab_df = in_tab_df[['pathway', 'sequence'] + orig_col]
 
-    # Round to 4 decimals and return.
-    return(in_tab_df.round(decimals=num_digits))
+    return(in_tab_df)
 
 
 def read_metagenome_input(filename):
@@ -605,9 +606,8 @@ def path_abun_weighted_by_seq(reaction_abun, func_ids, total_sum, path_abun,
     seq_path_abun = pd.pivot_table(data=reaction_abun, index="sequence",
                                    aggfunc=np.sum)
 
-    # Get weighted pathway abundance (rounded).
-    strat_path_abun = np.around((seq_path_abun / total_sum) * path_abun,
-                                decimals=4)
+    # Get weighted pathway abundance.
+    strat_path_abun = (seq_path_abun / total_sum) * path_abun
 
     # Remove rows that are all 0.
     strat_path_abun = strat_path_abun.loc[strat_path_abun[strat_path_abun.columns[0]] > 0, :]
@@ -643,12 +643,10 @@ def contributional_path_abun(reaction_abun, func_ids, total_sum, path_abun,
 
     contrib_path.columns.name = None
 
-    # Get weighted pathway abundance (rounded).
-    contrib_path['taxon_function_abun'] = np.around((contrib_path['taxon_function_abun'] / total_sum) * path_abun,
-                                                    decimals=4)
+    # Get weighted pathway abundance
+    contrib_path['taxon_function_abun'] = (contrib_path['taxon_function_abun'] / total_sum) * path_abun
+    contrib_path['taxon_rel_function_abun'] = (contrib_path['taxon_rel_function_abun'] / total_sum) * path_abun
 
-    contrib_path['taxon_rel_function_abun'] = np.around((contrib_path['taxon_rel_function_abun'] / total_sum) * path_abun,
-                                                        decimals=4)
 
     # Remove rows that are all 0.
     contrib_path = contrib_path.loc[contrib_path['taxon_function_abun'] > 0, :]
