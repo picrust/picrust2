@@ -530,7 +530,7 @@ def prep_pathway_df_out(in_tab, strat_index=False, num_digits=4):
 
         if not in_tab_df.empty:
             # Split stratified index into 2 new columns.
-            in_tab_df['pathway'], in_tab_df['sequence'] = in_tab_df.index.str.split('\\|\\|\\|', 1).str
+            in_tab_df[['pathway', 'sequence']] = pd.DataFrame.from_records(list(in_tab_df.index.str.split('\\|\\|\\|', 1)), columns=['pathway', 'sequence'])
 
         else:
             in_tab_df['pathway'], in_tab_df['sequence'] = "", ""
@@ -869,8 +869,8 @@ def contrib_format_pathway_levels(sample_id, contrib_input, minpath_map, out_dir
 
     # Initialize series and dataframe that will contain pathway abundances and
     # coverage scores.
-    unstrat_abun = pd.Series()
-    unstrat_cov = pd.Series()
+    unstrat_abun = pd.Series(dtype=float)
+    unstrat_cov = pd.Series(dtype=float)
     strat_abun = pd.DataFrame()
 
     # Return empty series if no pathways are present.
@@ -972,13 +972,14 @@ def basic_strat_pathway_levels(sample_id, strat_input, minpath_map, out_dir,
 
     # Initialize series and dataframe that will contain pathway abundances and
     # coverage scores.
-    unstrat_abun = pd.Series()
-    unstrat_cov = pd.Series()
-    strat_abun = pd.Series()
+    unstrat_abun = pd.Series(dtype=float)
+    unstrat_cov = pd.Series(dtype=float)
+    strat_abun = pd.Series(dtype=float)
 
     # Return empty series if no pathways are present.
     if len(pathways_present) == 0:
-        return([unstrat_abun, unstrat_cov, pd.Series(), pd.Series()])
+        return([unstrat_abun, unstrat_cov, pd.Series(dtype=float),
+                pd.Series(dtype=float)])
 
     # Get median reaction/gene family abundance for sample, which is used for
     # calculating coverage.
