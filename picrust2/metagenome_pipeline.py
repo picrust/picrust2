@@ -6,6 +6,7 @@ __version__ = "2.3.0-b"
 
 import sys
 import pandas as pd
+from joblib import Parallel, delayed
 import numpy as np
 from os import path
 from picrust2.util import (read_seqabun, make_output_dir, check_files_exist,
@@ -304,6 +305,7 @@ def metagenome_contributions(func_abun, sample_abun, rare_seqs=[],
     s_i = 0
 
     for sample in sample_abun.columns:
+
         single_abun = sample_abun[sample]
         single_abun = single_abun.iloc[single_abun.to_numpy().nonzero()]
 
@@ -327,6 +329,7 @@ def metagenome_contributions(func_abun, sample_abun, rare_seqs=[],
         func_abun_subset_melt = func_abun_subset_melt[func_abun_subset_melt['genome_function_count'] != 0]
 
         if not skip_abun:
+
             func_abun_subset_melt['taxon_abun'] = single_abun.loc[func_abun_subset_melt['taxon'].to_list()].to_list()
 
             func_abun_subset_melt['taxon_rel_abun'] = single_relabun.loc[func_abun_subset_melt['taxon'].to_list()].to_list()
@@ -335,12 +338,8 @@ def metagenome_contributions(func_abun, sample_abun, rare_seqs=[],
 
             func_abun_subset_melt['taxon_rel_function_abun'] = func_abun_subset_melt['genome_function_count'] * func_abun_subset_melt['taxon_rel_abun']
 
-            func_abun_subset_melt['norm_taxon_function_contrib'] = 0
-
-            for func in func_abun_subset_melt['function'].unique():
-                func_abun_subset_melt.loc[func_abun_subset_melt['function'] == func, 'norm_taxon_function_contrib' ] = \
-                                                                                (func_abun_subset_melt.loc[func_abun_subset_melt['function'] == func, 'taxon_function_abun' ] / \
-                                                                                func_abun_subset_melt.loc[func_abun_subset_melt['function'] == func, 'taxon_function_abun' ].sum())
+            func_abun_subset_melt['norm_taxon_function_contrib'] = func_abun_subset_melt['taxon_function_abun'] / \
+                                                                   func_abun_subset_melt.groupby("function").sum()["taxon_function_abun"][func_abun_subset_melt["function"]].reset_index(drop=True)
 
         # Collapse sequences identified as "rare" to the same category.
         rare_seqs = [r for r in rare_seqs if r in func_abun_subset_melt['taxon'].to_list()]
@@ -354,6 +353,7 @@ def metagenome_contributions(func_abun, sample_abun, rare_seqs=[],
 
         # Order column names.
         if skip_abun:
+
             func_abun_subset_melt = func_abun_subset_melt[['sample',
                                                            'function',
                                                            'taxon',
