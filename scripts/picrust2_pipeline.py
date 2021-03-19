@@ -53,7 +53,7 @@ parser.add_argument('-p', '--processes', type=int, default=1,
                     help='Number of processes to run in parallel (default: '
                          '%(default)d).')
 
-parser.add_argument('-t', '--placement_tool', metavar='PATH',
+parser.add_argument('-t', '--placement_tool', metavar='epa-ng|sepp',
                     choices=['epa-ng', 'sepp'], default="epa-ng",
                     help='Placement tool to use when placing sequences into '
                          'reference tree. One of \"epa-ng\" or \"sepp\" '

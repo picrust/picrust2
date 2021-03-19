@@ -26,7 +26,7 @@ place_seqs.py -s study_seqs.fna -o placed_seqs.tre --processes 1 --intermediate 
 parser.add_argument('-s', '--study_fasta', metavar='PATH', required=True,
                     type=str, help='FASTA of unaligned study sequences.')
 
-parser.add_argument('-t', '--placement_tool', metavar='PATH',
+parser.add_argument('-t', '--placement_tool', metavar='epa-ng|sepp',
                     choices=['epa-ng', 'sepp'], default="epa-ng",
                     help='Placement tool to use when placing sequences into '
                          'reference tree. One of \"epa-ng\" or \"sepp\" '
