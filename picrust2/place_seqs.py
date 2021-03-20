@@ -192,7 +192,8 @@ def gappa_jplace_to_newick(jplace_file: str, outfile: str, print_cmds=False):
                       print_stderr=print_cmds)
 
     # Expected name of output newick file.
-    newick_file = jplace_file.replace(".jplace", ".newick")
+    jplace_ext = path.splitext(jplace_file)[1]
+    newick_file = jplace_file.replace(jplace_ext, ".newick")
 
     # Rename newick file to be specified outfile.
     system_call_check("mv " + newick_file + " " + outfile,
