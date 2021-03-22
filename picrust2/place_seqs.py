@@ -32,32 +32,34 @@ def place_seqs_pipeline(study_fasta,
     # depending on which placement pipeline is indicated.
     ref_msa, tree, hmm, model = identify_ref_files(ref_dir, placement_tool)
 
+    # Run hmmalign to align study sequences with reference MSA.
+    # This is necessary for EPA-ng and is used as a check for sequences that
+    # should be excluded for both the EPA-ng and SEPP pipelines (based on
+    # sequences that align very little and are likely problematic).
+    out_stockholm = path.join(out_dir, "query_align.stockholm")
+
+    system_call_check("hmmalign --trim --dna --mapali " +
+                      ref_msa + " --informat FASTA -o " +
+                      out_stockholm + " " + hmm + " " + study_fasta,
+                      print_command=verbose, print_stdout=verbose,
+                      print_stderr=verbose)
+
+    hmmalign_out = read_stockholm(out_stockholm, clean_char=True)
+
+    ref_seqnames = set(list(read_fasta(ref_msa).keys()))
+    study_seqs = read_fasta(study_fasta)
+
+    ref_hmmalign_subset = {seq: hmmalign_out[seq] for seq in ref_seqnames}
+
+    study_hmmalign_subset = check_alignments(raw_seqs=study_seqs,
+                                             aligned_seqs=hmmalign_out,
+                                             min_align=min_align,
+                                             verbose=verbose)
     if placement_tool == "epa-ng":
 
-        # Run hmmalign to place study sequences into reference MSA.
-        out_stockholm = path.join(out_dir, "query_align.stockholm")
-
-        system_call_check("hmmalign --trim --dna --mapali " +
-                          ref_msa + " --informat FASTA -o " +
-                          out_stockholm + " " + hmm + " " + study_fasta,
-                          print_command=verbose, print_stdout=verbose,
-                          print_stderr=verbose)
-
-        hmmalign_out = read_stockholm(out_stockholm, clean_char=True)
-
-        # Specify split FASTA files to be created.
+        # Write out subsetted alignment and reference subset.
         study_msa_fastafile = path.join(out_dir, "study_seqs_hmmalign.fasta")
         ref_msa_fastafile = path.join(out_dir, "ref_seqs_hmmalign.fasta")
-
-        ref_seqnames = set(list(read_fasta(ref_msa).keys()))
-        study_seqs = read_fasta(study_fasta)
-
-        ref_hmmalign_subset = {seq: hmmalign_out[seq] for seq in ref_seqnames}
-
-        study_hmmalign_subset = check_alignments(raw_seqs=study_seqs,
-                                                 aligned_seqs=hmmalign_out,
-                                                 min_align=min_align,
-                                                 verbose=verbose)
 
         write_fasta(ref_hmmalign_subset, ref_msa_fastafile)
         write_fasta(study_hmmalign_subset, study_msa_fastafile)
@@ -78,11 +80,17 @@ def place_seqs_pipeline(study_fasta,
 
     elif placement_tool == "sepp":
 
+        # For SEPP, filter out any funky sequences from original FASTA before
+        # running.
+        study_seqs_subset = {seq: study_seqs[seq] for seq in study_hmmalign_subset}
+        study_fasta_filt = path.join(out_dir, "study_seqs_filtered.fasta")
+        write_fasta(study_seqs_subset, study_fasta_filt)
+
         sepp_out_dir = path.join(out_dir, "sepp_out")
 
         run_sepp(tree=tree,
                  ref_msa_fastafile=ref_msa,
-                 study_msa_fastafile=study_fasta,
+                 study_msa_fastafile=study_fasta_filt,
                  raxml_model=model,
                  threads=threads,
                  out_dir=sepp_out_dir,
