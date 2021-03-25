@@ -2,7 +2,7 @@
 
 __copyright__ = "Copyright 2018-2021, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.4.0-b"
+__version__ = "2.4.0"
 
 import argparse
 from os import path

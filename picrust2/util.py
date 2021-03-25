@@ -2,7 +2,7 @@
 
 __copyright__ = "Copyright 2018-2021, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.4.0-b"
+__version__ = "2.4.0"
 
 from os import makedirs, chmod
 from os.path import abspath, dirname, isdir, join, exists, splitext
@@ -811,3 +811,31 @@ class TemporaryDirectory(object):
             call(["chmod", "-R", "777", self.name])
 
             _shutil.rmtree(self.name)
+
+
+def shuffle_predictions(input, outdir, rep):
+    '''Function to shuffle sequence ids across a prediction table for a
+    specified number of replicates.'''
+
+    make_output_dir(outdir)
+
+    pred_table = pd.read_csv(input, sep="\t", dtype={'sequence': str})
+
+    if 'metadata_NSTI' in pred_table.columns:
+        pred_table = pred_table.drop('metadata_NSTI', axis=1)
+
+    for i in range(1, rep):
+
+        pred_table_shuffled = pred_table.copy()
+
+        pred_table_shuffled['sequence'] = np.random.permutation(pred_table['sequence'].values)
+
+        if(input[-7:] == ".tsv.gz"):
+            outfile = join(outdir, input.replace(".tsv.gz", "_shuf" + str(i) + ".tsv.gz"))
+        elif(input[-4:] == ".tsv"):
+            outfile = join(outdir, input.replace(".tsv", "_shuf" + str(i) + ".tsv"))
+        else:
+            outfile = join(outdir, input + "_shuf" + str(i) + ".tsv.gz")
+        
+        pred_table_shuffled.to_csv(path_or_buf=outfile, sep="\t",
+                                   compression="infer")
