@@ -813,7 +813,7 @@ class TemporaryDirectory(object):
             _shutil.rmtree(self.name)
 
 
-def shuffle_predictions(input, outdir, rep):
+def shuffle_predictions(input, outdir, rep, seed=None):
     '''Function to shuffle sequence ids across a prediction table for a
     specified number of replicates.'''
 
@@ -824,7 +824,10 @@ def shuffle_predictions(input, outdir, rep):
     if 'metadata_NSTI' in pred_table.columns:
         pred_table = pred_table.drop('metadata_NSTI', axis=1)
 
-    for i in range(1, rep):
+    if seed:
+        np.random.seed(seed)
+
+    for i in range(1, rep + 1):
 
         pred_table_shuffled = pred_table.copy()
 
@@ -837,5 +840,5 @@ def shuffle_predictions(input, outdir, rep):
         else:
             outfile = join(outdir, input + "_shuf" + str(i) + ".tsv.gz")
         
-        pred_table_shuffled.to_csv(path_or_buf=outfile, sep="\t",
+        pred_table_shuffled.to_csv(path_or_buf=outfile, sep="\t", index=False,
                                    compression="infer")

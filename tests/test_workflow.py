@@ -57,6 +57,13 @@ class workflow_test(unittest.TestCase):
                               " --observed_trait_table " + test_known_marker +
                               " -n -o " + marker_predict)
 
+            shuffled_out = path.join(temp_dir, "shuffled_out")
+
+            system_call_check("shuffle_predictions.py -i " + traits_predict +
+                              " -o " + shuffled_out +
+                              " -s " + str(14141) +
+                              " -r " + str(3))
+
             metagenome_out = path.join(temp_dir, "meta_out")
 
             system_call_check("metagenome_pipeline.py -i " + test_seq_abun_tsv +

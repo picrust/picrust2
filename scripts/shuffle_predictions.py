@@ -36,6 +36,11 @@ parser.add_argument('-r', '--rep', default=1, metavar='INT', required=False,
                     type=int, help="Number of shuffled replicates to create "
                                    "(default: %(default)d).")
 
+parser.add_argument('-s', '--seed', default=None, metavar='INT',
+                    required=False, type=int,
+                    help="Random seed: set this if you want reproducible "
+                         "shufflings (default: %(default)d).")
+
 parser.add_argument('-v', '--version', default=False, action='version',
                     version='%(prog)s ' + __version__)
 
@@ -45,9 +50,10 @@ def main():
     args = parser.parse_args()
 
     # Check that input file exists.
-    check_files_exist(args.input)
+    check_files_exist([args.input])
 
-    shuffle_predictions(input=args.input, outdir=args.outdir, rep=args.rep)
+    shuffle_predictions(input=args.input, outdir=args.outdir, rep=args.rep,
+                        seed=args.seed)
 
 if __name__ == '__main__':
     main()
