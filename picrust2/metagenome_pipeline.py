@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 
-__copyright__ = "Copyright 2018-2020, The PICRUSt Project"
+__copyright__ = "Copyright 2018-2021, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.3.0-b"
+__version__ = "2.4.0"
 
 import sys
 import pandas as pd
+from joblib import Parallel, delayed
 import numpy as np
 from os import path
 from picrust2.util import (read_seqabun, make_output_dir, check_files_exist,
@@ -202,14 +203,20 @@ def drop_tips_by_nsti(tab, nsti_col, max_nsti):
 
     filt_num_rows = tab.shape[0]
 
-    if filt_num_rows == 0:
+    if orig_num_rows == filt_num_rows:
+        print("All ASVs were below the max NSTI cut-off of " + str(max_nsti) +
+              " and so all were retained for downstream analyses.",
+              file=sys.stderr)
+
+    elif filt_num_rows == 0:
         sys.exit("Stopping - all ASVs filtered from table when max NSTI "
                  "cut-off of " + str(max_nsti) + " used.")
+
     else:
         num_removed = orig_num_rows - filt_num_rows
         print(str(num_removed) + " of " + str(orig_num_rows) + " ASVs were "
               "above the max NSTI cut-off of " + str(max_nsti) + " and were "
-              "removed.", file=sys.stderr)
+              "removed from the downstream analyses.", file=sys.stderr)
 
     # Keep track of NSTI column as separate dataframe and remove this column
     # from the main dataframe.
@@ -298,13 +305,17 @@ def metagenome_contributions(func_abun, sample_abun, rare_seqs=[],
     s_i = 0
 
     for sample in sample_abun.columns:
+
         single_abun = sample_abun[sample]
         single_abun = single_abun.iloc[single_abun.to_numpy().nonzero()]
 
         single_relabun = sample_relabun[sample]
         single_relabun = single_relabun.iloc[single_relabun.to_numpy().nonzero()]
 
-        func_abun_subset = func_abun.loc[single_abun.index, :]
+        intersecting_taxa = single_abun.index.intersection(func_abun.index)
+        func_abun_subset = func_abun.loc[intersecting_taxa]
+        single_abun = single_abun.loc[intersecting_taxa]
+        single_relabun = single_relabun.loc[intersecting_taxa]
 
         # Melt function table to be long format.
         func_abun_subset['taxon'] = func_abun_subset.index.to_list()
@@ -318,6 +329,7 @@ def metagenome_contributions(func_abun, sample_abun, rare_seqs=[],
         func_abun_subset_melt = func_abun_subset_melt[func_abun_subset_melt['genome_function_count'] != 0]
 
         if not skip_abun:
+
             func_abun_subset_melt['taxon_abun'] = single_abun.loc[func_abun_subset_melt['taxon'].to_list()].to_list()
 
             func_abun_subset_melt['taxon_rel_abun'] = single_relabun.loc[func_abun_subset_melt['taxon'].to_list()].to_list()
@@ -325,6 +337,9 @@ def metagenome_contributions(func_abun, sample_abun, rare_seqs=[],
             func_abun_subset_melt['taxon_function_abun'] = func_abun_subset_melt['genome_function_count'] * func_abun_subset_melt['taxon_abun']
 
             func_abun_subset_melt['taxon_rel_function_abun'] = func_abun_subset_melt['genome_function_count'] * func_abun_subset_melt['taxon_rel_abun']
+
+            func_abun_subset_melt['norm_taxon_function_contrib'] = func_abun_subset_melt['taxon_function_abun'] / \
+                                                                   func_abun_subset_melt.groupby("function").sum()["taxon_function_abun"][func_abun_subset_melt["function"]].reset_index(drop=True)
 
         # Collapse sequences identified as "rare" to the same category.
         rare_seqs = [r for r in rare_seqs if r in func_abun_subset_melt['taxon'].to_list()]
@@ -338,6 +353,7 @@ def metagenome_contributions(func_abun, sample_abun, rare_seqs=[],
 
         # Order column names.
         if skip_abun:
+
             func_abun_subset_melt = func_abun_subset_melt[['sample',
                                                            'function',
                                                            'taxon',
@@ -350,7 +366,8 @@ def metagenome_contributions(func_abun, sample_abun, rare_seqs=[],
                                                            'taxon_rel_abun',
                                                            'genome_function_count',
                                                            'taxon_function_abun',
-                                                           'taxon_rel_function_abun']]
+                                                           'taxon_rel_function_abun',
+                                                           'norm_taxon_function_contrib']]
 
         if s_i == 0:
             metagenome_contrib_out = func_abun_subset_melt.copy()

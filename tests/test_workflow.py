@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-__copyright__ = "Copyright 2018-2020, The PICRUSt Project"
+__copyright__ = "Copyright 2018-2021, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.3.0-b"
+__version__ = "2.4.0"
 
 import unittest
 from os import path
@@ -56,6 +56,13 @@ class workflow_test(unittest.TestCase):
             system_call_check("hsp.py -t " + out_tree +
                               " --observed_trait_table " + test_known_marker +
                               " -n -o " + marker_predict)
+
+            shuffled_out = path.join(temp_dir, "shuffled_out")
+
+            system_call_check("shuffle_predictions.py -i " + traits_predict +
+                              " -o " + shuffled_out +
+                              " -s " + str(14141) +
+                              " -r " + str(3))
 
             metagenome_out = path.join(temp_dir, "meta_out")
 

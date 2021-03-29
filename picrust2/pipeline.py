@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-__copyright__ = "Copyright 2018-2020, The PICRUSt Project"
+__copyright__ = "Copyright 2018-2021, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.3.0-b"
+__version__ = "2.4.0"
 
 from os import path
 import sys
@@ -17,6 +17,7 @@ def full_pipeline(study_fasta,
                   input_table,
                   output_folder,
                   processes,
+                  placement_tool,
                   ref_dir,
                   in_traits,
                   custom_trait_tables,
@@ -31,6 +32,7 @@ def full_pipeline(study_fasta,
                   min_reads,
                   min_samples,
                   hsp_method,
+                  edge_exponent,
                   min_align,
                   skip_nsti,
                   skip_minpath,
@@ -94,7 +96,7 @@ def full_pipeline(study_fasta,
         func_tables["marker"] = marker_gene_table
 
     # Check that all input files exist.
-    ref_msa, tree, hmm, model = identify_ref_files(ref_dir)
+    ref_msa, tree, hmm, model = identify_ref_files(ref_dir, placement_tool)
     files2check = [study_fasta, input_table, ref_msa, tree, hmm, model] + list(func_tables.values())
 
     if not no_pathways:
@@ -145,7 +147,8 @@ def full_pipeline(study_fasta,
                       "--processes", str(processes),
                       "--intermediate", place_seqs_intermediate,
                       "--min_align", str(min_align),
-                      "--chunk_size", str(5000)]
+                      "--chunk_size", str(5000),
+                      "--placement_tool", placement_tool]
 
     if verbose:
         place_seqs_cmd.append("--verbose")
@@ -184,6 +187,7 @@ def full_pipeline(study_fasta,
                    "--output", hsp_outfile,
                    "--observed_trait_table", func_tables[func],
                    "--hsp_method", hsp_method,
+                   "--edge_exponent", str(edge_exponent),
                    "--seed", "100"]
 
         # Add flags to command if specified.

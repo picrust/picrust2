@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-__copyright__ = "Copyright 2018-2020, The PICRUSt Project"
+__copyright__ = "Copyright 2018-2021, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.3.0-b"
+__version__ = "2.4.0"
 
 from os import path
 
@@ -11,13 +11,15 @@ project_dir = path.dirname(path.abspath(__file__))
 default_ref_dir = path.join(project_dir, "default_files", "prokaryotic",
                             "pro_ref")
 
-default_fasta = path.join(default_ref_dir, "pro_ref.fna.gz")
+default_fasta = path.join(default_ref_dir, "pro_ref.fna")
 
 default_tree = path.join(default_ref_dir, "pro_ref.tre")
 
 default_hmm = path.join(default_ref_dir, "pro_ref.hmm")
 
 default_model = path.join(default_ref_dir, "pro_ref.model")
+
+default_raxml_info = path.join(default_ref_dir, "pro_ref.raxml_info")
 
 default_regroup_map = path.join(project_dir, "default_files",
                                 "pathway_mapfiles",

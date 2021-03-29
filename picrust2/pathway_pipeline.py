@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-__copyright__ = "Copyright 2018-2020, The PICRUSt Project"
+__copyright__ = "Copyright 2018-2021, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.3.0-b"
+__version__ = "2.4.0"
 
 import sys
 from collections import defaultdict
@@ -498,6 +498,14 @@ def pathway_pipeline(inputfile,
             path_abun_unstrat_by_seq = contrib_to_unstrat(contrib_table=path_abun_strat,
                                                           sample_order=list(path_abun_unstrat.columns.values))
 
+    # Check if an abundance table is empty, which can happen when very few gene
+    # families are input.
+    if len(path_abun_unstrat.index) == 0:
+        sys.exit("\nStopping, because no pathways were identified. This "
+                 "can especially happen when either a test input file with "
+                 "few gene families is input or when gene family regrouping "
+                 "is not done properly.\n")
+
     return(path_abun_unstrat, path_cov_unstrat, path_abun_strat,
            path_cov_strat, path_abun_by_seq, path_cov_by_seq,
            path_abun_unstrat_by_seq)
@@ -522,7 +530,9 @@ def prep_pathway_df_out(in_tab, strat_index=False, num_digits=4):
 
         if not in_tab_df.empty:
             # Split stratified index into 2 new columns.
-            in_tab_df['pathway'], in_tab_df['sequence'] = in_tab_df.index.str.split('\\|\\|\\|', 1).str
+            split_df = pd.DataFrame.from_records(list(in_tab_df.index.str.split('\\|\\|\\|', 1)), columns=['pathway', 'sequence'])
+            in_tab_df.reset_index(inplace=True)
+            in_tab_df[['pathway', 'sequence']] = split_df
 
         else:
             in_tab_df['pathway'], in_tab_df['sequence'] = "", ""
@@ -530,8 +540,7 @@ def prep_pathway_df_out(in_tab, strat_index=False, num_digits=4):
         # Add these columns to be first.
         in_tab_df = in_tab_df[['pathway', 'sequence'] + orig_col]
 
-    # Round to 4 decimals and return.
-    return(in_tab_df.round(decimals=num_digits))
+    return(in_tab_df)
 
 
 def read_metagenome_input(filename):
@@ -597,9 +606,8 @@ def path_abun_weighted_by_seq(reaction_abun, func_ids, total_sum, path_abun,
     seq_path_abun = pd.pivot_table(data=reaction_abun, index="sequence",
                                    aggfunc=np.sum)
 
-    # Get weighted pathway abundance (rounded).
-    strat_path_abun = np.around((seq_path_abun / total_sum) * path_abun,
-                                decimals=4)
+    # Get weighted pathway abundance.
+    strat_path_abun = (seq_path_abun / total_sum) * path_abun
 
     # Remove rows that are all 0.
     strat_path_abun = strat_path_abun.loc[strat_path_abun[strat_path_abun.columns[0]] > 0, :]
@@ -635,12 +643,10 @@ def contributional_path_abun(reaction_abun, func_ids, total_sum, path_abun,
 
     contrib_path.columns.name = None
 
-    # Get weighted pathway abundance (rounded).
-    contrib_path['taxon_function_abun'] = np.around((contrib_path['taxon_function_abun'] / total_sum) * path_abun,
-                                                    decimals=4)
+    # Get weighted pathway abundance
+    contrib_path['taxon_function_abun'] = (contrib_path['taxon_function_abun'] / total_sum) * path_abun
+    contrib_path['taxon_rel_function_abun'] = (contrib_path['taxon_rel_function_abun'] / total_sum) * path_abun
 
-    contrib_path['taxon_rel_function_abun'] = np.around((contrib_path['taxon_rel_function_abun'] / total_sum) * path_abun,
-                                                        decimals=4)
 
     # Remove rows that are all 0.
     contrib_path = contrib_path.loc[contrib_path['taxon_function_abun'] > 0, :]
@@ -653,7 +659,7 @@ def contributional_path_abun(reaction_abun, func_ids, total_sum, path_abun,
 
 
 def minpath_wrapper(sample_id, unstrat_input, minpath_map, minpath_outdir,
-                    print_opt=False, extra_str=""):
+                    print_log=False, extra_str=""):
     '''Run MinPath based on gene abundances in a single sample. Will return
     a set of all pathways called as present.'''
 
@@ -695,8 +701,8 @@ def minpath_wrapper(sample_id, unstrat_input, minpath_map, minpath_outdir,
                   minpath_map + " -report " + minpath_report +\
                   " -details " + minpath_details + " -mps " + minpath_mps
 
-    system_call_check(minpath_cmd, print_command=print_opt,
-                      print_stdout=print_opt, print_stderr=print_opt)
+    system_call_check(minpath_cmd, print_command=print_log,
+                      print_stdout=print_log, print_stderr=print_log)
 
     # Read through MinPath report and keep track of pathways identified
     # to be present.
@@ -855,15 +861,14 @@ def contrib_format_pathway_levels(sample_id, contrib_input, minpath_map, out_dir
 
     if run_minpath:
         pathways_present = minpath_wrapper(sample_id, unstrat_input,
-                                           minpath_map, out_dir,
-                                           print_opt)
+                                           minpath_map, out_dir)
     else:
         pathways_present = set(pathway_db.pathway_list())
 
     # Initialize series and dataframe that will contain pathway abundances and
     # coverage scores.
-    unstrat_abun = pd.Series()
-    unstrat_cov = pd.Series()
+    unstrat_abun = pd.Series(dtype=float)
+    unstrat_cov = pd.Series(dtype=float)
     strat_abun = pd.DataFrame()
 
     # Return empty series if no pathways are present.
@@ -959,20 +964,20 @@ def basic_strat_pathway_levels(sample_id, strat_input, minpath_map, out_dir,
     if run_minpath:
 
         pathways_present = minpath_wrapper(sample_id, unstrat_input,
-                                           minpath_map, out_dir,
-                                           print_opt)
+                                           minpath_map, out_dir)
     else:
         pathways_present = set(pathway_db.pathway_list())
 
     # Initialize series and dataframe that will contain pathway abundances and
     # coverage scores.
-    unstrat_abun = pd.Series()
-    unstrat_cov = pd.Series()
-    strat_abun = pd.Series()
+    unstrat_abun = pd.Series(dtype=float)
+    unstrat_cov = pd.Series(dtype=float)
+    strat_abun = pd.Series(dtype=float)
 
     # Return empty series if no pathways are present.
     if len(pathways_present) == 0:
-        return([unstrat_abun, unstrat_cov, pd.Series(), pd.Series()])
+        return([unstrat_abun, unstrat_cov, pd.Series(dtype=float),
+                pd.Series(dtype=float)])
 
     # Get median reaction/gene family abundance for sample, which is used for
     # calculating coverage.
@@ -1041,14 +1046,13 @@ def unstrat_pathway_levels(sample_id, unstrat_input, minpath_map, out_dir,
     if run_minpath:
 
         pathways_present = minpath_wrapper(sample_id, unstrat_input,
-                                           minpath_map, out_dir,
-                                           print_opt)
+                                           minpath_map, out_dir)
     else:
         pathways_present = set(pathway_db.pathway_list())
 
     # Initialize series that will contain pathway abundances and coverage.
-    unstrat_abun = pd.Series([])
-    unstrat_cov = pd.Series([])
+    unstrat_abun = pd.Series([], dtype=float)
+    unstrat_cov = pd.Series([], dtype=float)
 
     # Return empty series if no pathways are present.
     if len(pathways_present) == 0:

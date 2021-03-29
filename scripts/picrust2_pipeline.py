@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-__copyright__ = "Copyright 2018-2020, The PICRUSt Project"
+__copyright__ = "Copyright 2018-2021, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.3.0-b"
+__version__ = "2.4.0"
 
 import argparse
 from os import path
@@ -25,8 +25,8 @@ parser = argparse.ArgumentParser(
                 "which can be optionally stratified by the contributing "
                 "sequence. Finally, pathway abundances are predicted based on "
                 "metagenome profiles. By default, output files include "
-                "predictions for Enzyme classification (EC) numbers, "
-                "KEGG orthologs (KOs), and MetaCyc "
+                "predictions for Enzyme Commission (EC) numbers, "
+                "KEGG Orthologs (KOs), and MetaCyc "
                 "pathway abundances. However, this script enables users to "
                 "use custom reference and trait tables to customize analyses.",
 epilog='''
@@ -52,6 +52,12 @@ parser.add_argument('-o', '--output', metavar='PATH', required=True,
 parser.add_argument('-p', '--processes', type=int, default=1,
                     help='Number of processes to run in parallel (default: '
                          '%(default)d).')
+
+parser.add_argument('-t', '--placement_tool', metavar='epa-ng|sepp',
+                    choices=['epa-ng', 'sepp'], default="epa-ng",
+                    help='Placement tool to use when placing sequences into '
+                         'reference tree. One of \"epa-ng\" or \"sepp\" '
+                         'must be input (default: %(default)s)')
 
 parser.add_argument('-r', '--ref_dir', metavar='PATH', type=str,
                     default=default_ref_dir,
@@ -152,6 +158,14 @@ parser.add_argument('-m', '--hsp_method', default='mp',
                     'traits using squared-change parsimony (default: '
                     '%(default)s).')
 
+parser.add_argument('-e', '--edge_exponent', default=0.5, type=float,
+                    help='Setting for maximum parisomony hidden-state '
+                          'prediction. Specifies weighting transition costs '
+                          'by the inverse length of edge lengths. If 0, then '
+                          'edge lengths do not influence predictions. Must be '
+                          'a non-negative real-valued number (default: '
+                          '%(default)d).')
+
 parser.add_argument('--min_align', type=restricted_float, default=0.8,
                     help='Proportion of the total length of an input query '
                          'sequence that must align with reference sequences. '
@@ -229,6 +243,7 @@ def main():
                                                     input_table=args.input,
                                                     output_folder=args.output,
                                                     processes=args.processes,
+                                                    placement_tool=args.placement_tool,
                                                     ref_dir=args.ref_dir,
                                                     in_traits=args.in_traits,
                                                     custom_trait_tables=args.custom_trait_tables,
@@ -245,6 +260,7 @@ def main():
                                                     min_reads=args.min_reads,
                                                     min_samples=args.min_samples,
                                                     hsp_method=args.hsp_method,
+                                                    edge_exponent=args.edge_exponent,
                                                     min_align=args.min_align,
                                                     skip_nsti=args.skip_nsti,
                                                     no_gap_fill=args.no_gap_fill,

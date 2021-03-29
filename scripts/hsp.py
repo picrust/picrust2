@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-__copyright__ = "Copyright 2018-2020, The PICRUSt Project"
+__copyright__ = "Copyright 2018-2021, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.3.0-b"
+__version__ = "2.4.0"
 
 import argparse
 from picrust2.wrap_hsp import castor_hsp_workflow
@@ -47,6 +47,14 @@ parser.add_argument('--observed_trait_table', metavar='PATH', type=str,
                          'observed traits (e.g. sequenced genomes) in '
                          'tab-delimited format. Necessary if you want to '
                          'use a custom table.')
+
+parser.add_argument('-e', '--edge_exponent', default=0.5, type=float,
+                    help='Setting for maximum parisomony hidden-state '
+                          'prediction. Specifies weighting transition costs '
+                          'by the inverse length of edge lengths. If 0, then '
+                          'edge lengths do not influence predictions. Must be '
+                          'a non-negative real-valued number (default: '
+                          '%(default)d).')
 
 parser.add_argument('--chunk_size', default=500, type=int,
                     help='Number of functions to run at a time on one '
@@ -118,6 +126,7 @@ def main():
     hsp_table, ci_table = castor_hsp_workflow(tree_path=args.tree,
                                               trait_table_path=trait_table,
                                               hsp_method=args.hsp_method,
+                                              edge_exponent=args.edge_exponent,
                                               chunk_size=args.chunk_size,
                                               calc_nsti=args.calculate_NSTI,
                                               calc_ci=ci_setting,

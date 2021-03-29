@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-__copyright__ = "Copyright 2018-2020, The PICRUSt Project"
+__copyright__ = "Copyright 2018-2021, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.3.0-b"
+__version__ = "2.4.0"
 
 import argparse
 from picrust2.place_seqs import place_seqs_pipeline
@@ -25,6 +25,12 @@ place_seqs.py -s study_seqs.fna -o placed_seqs.tre --processes 1 --intermediate 
 
 parser.add_argument('-s', '--study_fasta', metavar='PATH', required=True,
                     type=str, help='FASTA of unaligned study sequences.')
+
+parser.add_argument('-t', '--placement_tool', metavar='epa-ng|sepp',
+                    choices=['epa-ng', 'sepp'], default="epa-ng",
+                    help='Placement tool to use when placing sequences into '
+                         'reference tree. One of \"epa-ng\" or \"sepp\" '
+                         'must be input (default: %(default)s)')
 
 parser.add_argument('-r', '--ref_dir', metavar='PATH', type=str,
                     default=default_ref_dir,
@@ -52,7 +58,7 @@ parser.add_argument('--min_align', type=restricted_float, default=0.8,
                          'Any sequences with lengths below this value after '
                          'making an alignment with reference sequences will '
                          'be excluded from the placement and all subsequent '
-                         'steps. (default: %(default)d).')
+                         'steps. (default: %(default).2f).')
 
 parser.add_argument('--chunk_size', type=int, default=5000,
                     help='Number of query seqs to read in at once for EPA-ng '
@@ -77,6 +83,7 @@ def main():
         make_output_dir(args.intermediate)
 
         place_seqs_pipeline(study_fasta=args.study_fasta,
+                            placement_tool=args.placement_tool,
                             ref_dir=args.ref_dir,
                             out_tree=args.out_tree,
                             threads=args.processes,
@@ -88,6 +95,7 @@ def main():
     else:
         with TemporaryDirectory() as temp_dir:
                 place_seqs_pipeline(study_fasta=args.study_fasta,
+                                    placement_tool=args.placement_tool,
                                     ref_dir=args.ref_dir,
                                     out_tree=args.out_tree,
                                     threads=args.processes,

@@ -9,11 +9,12 @@ Args <- commandArgs(TRUE)
 full_tree <- read_tree(file=Args[1], check_label_uniqueness = TRUE)
 trait_values <- read.delim(Args[2], check.names=FALSE, row.names=1)
 hsp_method <- Args[3]
-calc_ci <- as.logical(Args[4])
-check_input_set <- as.logical(Args[5])
-predict_outfile <- Args[6]
-ci_outfile <- Args[7]
-seed_setting <- Args[8]
+edge_exponent_set <- as.numeric(Args[4])
+calc_ci <- as.logical(Args[5])
+check_input_set <- as.logical(Args[6])
+predict_outfile <- Args[7]
+ci_outfile <- Args[8]
+seed_setting <- Args[9]
 
 # Set random seed if integer specified.
 if(seed_setting != "None") {
@@ -67,7 +68,7 @@ mp_study_probs <- function(in_trait, in_tree ,unknown_i, check_input) {
                                   tip_states = in_trait,
                                   check_input=check_input,
                                   transition_costs = "proportional",
-                                  edge_exponent=0.5,
+                                  edge_exponent=edge_exponent_set,
                                   weight_by_scenarios = TRUE)
   
   return(get_sorted_prob(mp_hsp_out$likelihoods,
@@ -89,14 +90,43 @@ emp_prob_study_probs <- function(in_trait, in_tree, unknown_i, check_input) {
                          tree_tips=in_tree$tip.label))
 }
 
+
+# First check if any tip labels are present in the trait table but do not match
+# because they have quotes around them.
+if(length(grep("\"", full_tree$tip.label) > 0) || length(grep("\'", full_tree$tip.label) > 0)) {
+
+    tmp_unknown_tips_index <- which(! full_tree$tip.label %in% rownames(trait_values))
+    tmp_unknown_tips <- full_tree$tip.label[tmp_unknown_tips_index]
+
+    unknown_labels_no_quotes <- gsub("\'", "", tmp_unknown_tips)
+    unknown_labels_no_quotes <- gsub("\"", "", unknown_labels_no_quotes)
+
+    no_quote_matches = which(unknown_labels_no_quotes %in% rownames(trait_values))
+
+    # Remove quotes from around tips where matches only occur when quotes are removed.
+    if(length(no_quote_matches) > 0) {
+        indices_to_change <- tmp_unknown_tips_index[no_quote_matches]
+        full_tree$tip.label[indices_to_change] <- unknown_labels_no_quotes[no_quote_matches]
+    }
+
+    cat(paste("\nWhile running castor_hsp.R: Fixed ", length(no_quote_matches),
+        " tip label(s) that had quotations around them that stopped them from matching the function abundance table.",
+        sep=""))
+}
+
 # Order the trait table to match the tree tip labels. Set all tips without a value to be NA.
 unknown_tips_index <- which(! full_tree$tip.label %in% rownames(trait_values))
 unknown_tips <- full_tree$tip.label[unknown_tips_index]
-num_unknown = length(unknown_tips)
+num_unknown <- length(unknown_tips)
+num_known <- length(full_tree$tip.label) - num_unknown
 
 # Throw error if all tips are unknown.
 if(num_unknown == length(full_tree$tip.label)) {
   stop("None of the reference ids within the function abundance table are found within the input tree. This can occur when malformed or mismatched custom reference files are used.")
+
+# Check if only very few tips are "known".
+} else if(num_known / nrow(trait_values) < 0.1) {
+    stop("Fewer than 10% of reference ids in the function abundance table are in the tree. This could be because the ids are slightly different between the table and the tree.")
 }
 
 unknown_df <- as.data.frame(matrix(NA,
@@ -119,7 +149,7 @@ trait_values <- trait_values[full_tree$tip.label, , drop=FALSE]
 
 num_tip <- nrow(trait_values)
 
-if (hsp_method == "pic" | hsp_method == "scp" | hsp_method == "subtree_average") {
+if (hsp_method == "pic" || hsp_method == "scp" || hsp_method == "subtree_average") {
   
   if (hsp_method == "pic") {
     predict_out <- lapply(trait_values,
@@ -150,7 +180,7 @@ if (hsp_method == "pic" | hsp_method == "scp" | hsp_method == "subtree_average")
   remove(predict_out)
   invisible(gc(verbose = FALSE))
   
-} else if(hsp_method == "emp_prob" | hsp_method == "mp") {
+} else if(hsp_method == "emp_prob" || hsp_method == "mp") {
   
   # Add 1 to all input counts because because traits states need to start at 1.
   trait_values <- trait_values + 1
@@ -210,6 +240,15 @@ if (hsp_method == "pic" | hsp_method == "scp" | hsp_method == "subtree_average")
 predicted_values <- data.frame(predicted_values, check.names = FALSE)
 predicted_values$sequence <- unknown_tips
 predicted_values <- predicted_values[, c("sequence", colnames(trait_values))]
+
+# Check to see if there are any columns that are totally missing.
+missing_values_by_column <- colSums(is.na(predicted_values))
+
+if(length(which(missing_values_by_column == nrow(predicted_values))) > 0) {
+    stop("\nError - at least one trait in the prediction table was entirely missing values.")
+} else if(length(which(missing_values_by_column > 0)) > 0) {
+    cat("\nWarning: there are missing values in the output prediction table.")
+}
 
 # Write out predicted values.
 write.table(predicted_values, file=predict_outfile, row.names=FALSE, quote=FALSE, sep="\t")

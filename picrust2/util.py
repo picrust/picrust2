@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-__copyright__ = "Copyright 2018-2020, The PICRUSt Project"
+__copyright__ = "Copyright 2018-2021, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.3.0-b"
+__version__ = "2.4.0"
 
 from os import makedirs, chmod
 from os.path import abspath, dirname, isdir, join, exists, splitext
@@ -40,6 +40,11 @@ def read_fasta(filename, cut_header=False):
         fasta_in = open(filename, "r")
 
     for line in fasta_in:
+
+        line = line.rstrip()
+
+        if len(line) == 0:
+            continue
 
         # If header-line then split by whitespace, take the first element,
         # and define the sequence name as everything after the ">".
@@ -496,7 +501,11 @@ def convert_humann2_to_picrust2(infiles, outfile, stratified):
 
         original_col = list(humann2_combined.columns)
 
-        humann2_combined[first_col], humann2_combined['sequence'] = humann2_combined.index.str.split('\\|', 1).str
+        split_df = pd.DataFrame.from_records(list(humann2_combined.index.str.split('\\|', 1)), columns=[first_col, 'sequence'])
+
+        humann2_combined.reset_index(inplace=True)
+
+        humann2_combined[[first_col, 'sequence']] = split_df
 
         # Reorder columns.
         humann2_combined = humann2_combined.loc[:, [first_col, 'sequence'] +
@@ -703,6 +712,11 @@ def contrib_to_legacy(infiles, outfile, use_rel_abun=True):
                                'genome_function_count' : 'GeneCountPerGenome'},
                       inplace=True)
 
+    if 'norm_taxon_function_contrib' in contrib_df:
+        contrib_df.rename(columns={'norm_taxon_function_contrib' : \
+                                   'ContributionPercentOfSample'},
+                          inplace=True)
+
     abun_col_counter = 0
 
     abun_columns = ['taxon_abun', 'taxon_rel_abun', 'taxon_function_abun',
@@ -738,7 +752,8 @@ def contrib_to_legacy(infiles, outfile, use_rel_abun=True):
 
         contrib_df = contrib_df[['Gene', 'Sample', 'OTU',
                                  'OTUAbundanceInSample', 'GeneCountPerGenome',
-                                 'CountContributedByOTU']]
+                                 'CountContributedByOTU',
+                                 'ContributionPercentOfSample']]
 
     contrib_df.to_csv(path_or_buf=outfile, sep="\t", index=False,
                               compression="gzip")
@@ -796,3 +811,34 @@ class TemporaryDirectory(object):
             call(["chmod", "-R", "777", self.name])
 
             _shutil.rmtree(self.name)
+
+
+def shuffle_predictions(input, outdir, rep, seed=None):
+    '''Function to shuffle sequence ids across a prediction table for a
+    specified number of replicates.'''
+
+    make_output_dir(outdir)
+
+    pred_table = pd.read_csv(input, sep="\t", dtype={'sequence': str})
+
+    if 'metadata_NSTI' in pred_table.columns:
+        pred_table = pred_table.drop('metadata_NSTI', axis=1)
+
+    if seed:
+        np.random.seed(seed)
+
+    for i in range(1, rep + 1):
+
+        pred_table_shuffled = pred_table.copy()
+
+        pred_table_shuffled['sequence'] = np.random.permutation(pred_table['sequence'].values)
+
+        if(input[-7:] == ".tsv.gz"):
+            outfile = join(outdir, input.replace(".tsv.gz", "_shuf" + str(i) + ".tsv.gz"))
+        elif(input[-4:] == ".tsv"):
+            outfile = join(outdir, input.replace(".tsv", "_shuf" + str(i) + ".tsv"))
+        else:
+            outfile = join(outdir, input + "_shuf" + str(i) + ".tsv.gz")
+        
+        pred_table_shuffled.to_csv(path_or_buf=outfile, sep="\t", index=False,
+                                   compression="infer")
