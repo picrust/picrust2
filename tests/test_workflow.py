@@ -35,6 +35,21 @@ class workflow_test(unittest.TestCase):
     catch incompatabilities between the different scripts that the other tests
     might not catch.'''
 
+def test_help_calls(self):
+        '''Quick test that help commands can be run for all scripts, which is a
+        check that there are no obvious argparse syntax errors.'''
+
+    system_call_check("add_descriptions.py -h")
+    system_call_check("convert_table.py -h")
+    system_call_check("hsp.py -h")
+    system_call_check("metagenome_pipeline.py -h")
+    system_call_check("picrust2_pipeline.py -h")
+    system_call_check("place_seqs.py -h")
+    system_call_check("print_picrust2_config.py -h")
+    system_call_check("pathway_pipeline.py -h")
+    system_call_check("shuffle_predictions.py -h")
+
+
     def test_full_pipeline_tsv(self):
         '''Test that full pipeline can be run without error with
         TSV sequence abundance table.'''

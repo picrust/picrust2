@@ -39,7 +39,7 @@ parser.add_argument('-r', '--rep', default=1, metavar='INT', required=False,
 parser.add_argument('-s', '--seed', default=None, metavar='INT',
                     required=False, type=int,
                     help="Random seed: set this if you want reproducible "
-                         "shufflings (default: %(default)d).")
+                         "shufflings (default: None).")
 
 parser.add_argument('-v', '--version', default=False, action='version',
                     version='%(prog)s ' + __version__)
