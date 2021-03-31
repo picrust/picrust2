@@ -2,7 +2,7 @@
 
 __copyright__ = "Copyright 2018-2021, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.4.0"
+__version__ = "2.4.1"
 
 from sys import platform, version as python_version, executable
 
