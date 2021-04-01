@@ -2,7 +2,7 @@
 
 __copyright__ = "Copyright 2018-2021, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.4.0"
+__version__ = "2.4.1"
 
 import argparse
 from picrust2.util import check_files_exist, shuffle_predictions
@@ -39,7 +39,7 @@ parser.add_argument('-r', '--rep', default=1, metavar='INT', required=False,
 parser.add_argument('-s', '--seed', default=None, metavar='INT',
                     required=False, type=int,
                     help="Random seed: set this if you want reproducible "
-                         "shufflings (default: %(default)d).")
+                         "shufflings (default: None).")
 
 parser.add_argument('-v', '--version', default=False, action='version',
                     version='%(prog)s ' + __version__)
