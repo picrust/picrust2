@@ -2,7 +2,7 @@
 
 __copyright__ = "Copyright 2018-2021, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.4.1"
+__version__ = "2.4.2"
 
 import sys
 from os import path, chdir, getcwd
