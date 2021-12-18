@@ -158,7 +158,7 @@ def strat_funcs_by_samples(func_abun, sample_abun, rare_seqs=[],
 
     # Return dataframe and also unstratified dataframe if specified.
     if return_unstrat:
-        return(strat_func, strat_func.sum(level='function', axis=0))
+        return(strat_func, strat_func.groupby(level='function', axis=0).sum())
     else:
         return(strat_func)
 
