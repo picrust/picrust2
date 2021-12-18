@@ -54,7 +54,7 @@ parser.add_argument('-e', '--edge_exponent', default=0.5, type=float,
                           'by the inverse length of edge lengths. If 0, then '
                           'edge lengths do not influence predictions. Must be '
                           'a non-negative real-valued number (default: '
-                          '%(default)d).')
+                          '%(default)f).')
 
 parser.add_argument('--chunk_size', default=500, type=int,
                     help='Number of functions to run at a time on one '
