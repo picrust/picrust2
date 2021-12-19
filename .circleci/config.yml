@@ -13,15 +13,11 @@ jobs:
       - checkout
 
       - run:
-          name: install dependencies
+          name: install_and_run_tests
           command: |
             conda env create -f picrust2-env.yaml
             conda init bash
             source ~/.bashrc
             conda activate picrust2
             pip install --editable .
-
-      - run:
-          name: run tests
-          command: |
             pytest -v
