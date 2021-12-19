@@ -16,6 +16,8 @@ jobs:
           name: install dependencies
           command: |
             conda env create -f picrust2-env.yaml
+            conda init bash
+            source ~/.bashrc
             conda activate picrust2
             pip install --editable .
 
