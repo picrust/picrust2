@@ -2,7 +2,7 @@
 
 __copyright__ = "Copyright 2018-2021, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.4.1"
+__version__ = "2.4.2"
 
 import sys
 import pandas as pd
@@ -158,7 +158,7 @@ def strat_funcs_by_samples(func_abun, sample_abun, rare_seqs=[],
 
     # Return dataframe and also unstratified dataframe if specified.
     if return_unstrat:
-        return(strat_func, strat_func.sum(level='function', axis=0))
+        return(strat_func, strat_func.groupby(level='function', axis=0).sum())
     else:
         return(strat_func)
 

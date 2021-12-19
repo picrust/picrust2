@@ -2,7 +2,7 @@
 
 __copyright__ = "Copyright 2018-2021, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.4.1"
+__version__ = "2.4.2"
 
 import argparse
 from os import path
@@ -39,8 +39,8 @@ picrust2_pipeline.py -s study_seqs.fna -i seqabun.biom -o picrust2_out --process
 ''', formatter_class=argparse.RawDescriptionHelpFormatter)
 
 parser.add_argument('-s', '--study_fasta', metavar='PATH', required=True,
-                    type=str, help='FASTA of unaligned study sequences (i.e. '
-                                   'OTUs or ASVs).')
+                    type=str, help='FASTA of unaligned study sequences (e.g. '
+                                   'ASVs). The headerline should be only one field (i.e. no additional whitespace-delimited fields).')
 
 parser.add_argument('-i', '--input', metavar='PATH', required=True, type=str,
                     help='Input table of sequence abundances (BIOM, TSV or '
@@ -164,7 +164,7 @@ parser.add_argument('-e', '--edge_exponent', default=0.5, type=float,
                           'by the inverse length of edge lengths. If 0, then '
                           'edge lengths do not influence predictions. Must be '
                           'a non-negative real-valued number (default: '
-                          '%(default)d).')
+                          '%(default)f).')
 
 parser.add_argument('--min_align', type=restricted_float, default=0.8,
                     help='Proportion of the total length of an input query '

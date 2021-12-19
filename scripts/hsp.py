@@ -2,7 +2,7 @@
 
 __copyright__ = "Copyright 2018-2021, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.4.1"
+__version__ = "2.4.2"
 
 import argparse
 from picrust2.wrap_hsp import castor_hsp_workflow
@@ -54,7 +54,7 @@ parser.add_argument('-e', '--edge_exponent', default=0.5, type=float,
                           'by the inverse length of edge lengths. If 0, then '
                           'edge lengths do not influence predictions. Must be '
                           'a non-negative real-valued number (default: '
-                          '%(default)d).')
+                          '%(default)f).')
 
 parser.add_argument('--chunk_size', default=500, type=int,
                     help='Number of functions to run at a time on one '
@@ -107,14 +107,18 @@ def main():
 
     # Determine which input trait table was specified. If neither a default
     # or custom table was specified then throw an error.
-    if args.in_trait:
+    if args.in_trait and args.observed_trait_table:
+        raise RuntimeError(
+            "Only one of the arguments --in_trait and --observed_trait_table "
+            "can be specified, but currently both are set.")
+    elif args.in_trait:
         trait_table = default_tables[args.in_trait]
     elif args.observed_trait_table:
         trait_table = args.observed_trait_table
     else:
         raise RuntimeError(
-            "A default input trait table needs to be specified with the " +
-            "--in_trait option, or alternatively a custom table can be " +
+            "A default input trait table needs to be specified with the "
+            "--in_trait option, or alternatively a custom table can be "
             "specified with the --observed_trait_table option")
 
     # Check that input filenames exist.
