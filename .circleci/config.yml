@@ -17,6 +17,7 @@ jobs:
           command: |
             conda env create -f picrust2-env.yaml
             conda activate picrust2
+            pip install --editable .
 
       - run:
           name: run tests
