@@ -107,14 +107,18 @@ def main():
 
     # Determine which input trait table was specified. If neither a default
     # or custom table was specified then throw an error.
-    if args.in_trait:
+    if args.in_trait and args.observed_trait_table:
+        raise RuntimeError(
+            "Only one of the arguments --in_trait and --observed_trait_table "
+            "can be specified, but currently both are set.")
+    elif args.in_trait:
         trait_table = default_tables[args.in_trait]
     elif args.observed_trait_table:
         trait_table = args.observed_trait_table
     else:
         raise RuntimeError(
-            "A default input trait table needs to be specified with the " +
-            "--in_trait option, or alternatively a custom table can be " +
+            "A default input trait table needs to be specified with the "
+            "--in_trait option, or alternatively a custom table can be "
             "specified with the --observed_trait_table option")
 
     # Check that input filenames exist.
