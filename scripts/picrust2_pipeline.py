@@ -39,8 +39,8 @@ picrust2_pipeline.py -s study_seqs.fna -i seqabun.biom -o picrust2_out --process
 ''', formatter_class=argparse.RawDescriptionHelpFormatter)
 
 parser.add_argument('-s', '--study_fasta', metavar='PATH', required=True,
-                    type=str, help='FASTA of unaligned study sequences (i.e. '
-                                   'OTUs or ASVs).')
+                    type=str, help='FASTA of unaligned study sequences (e.g. '
+                                   'ASVs). The headerline should be only one field (i.e. no additional whitespace-delimited fields).')
 
 parser.add_argument('-i', '--input', metavar='PATH', required=True, type=str,
                     help='Input table of sequence abundances (BIOM, TSV or '

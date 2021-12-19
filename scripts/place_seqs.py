@@ -24,7 +24,9 @@ place_seqs.py -s study_seqs.fna -o placed_seqs.tre --processes 1 --intermediate 
 ''', formatter_class=argparse.RawDescriptionHelpFormatter)
 
 parser.add_argument('-s', '--study_fasta', metavar='PATH', required=True,
-                    type=str, help='FASTA of unaligned study sequences.')
+                    type=str, help='FASTA of unaligned study sequences. '
+                                   'The headerline should be only one field '
+                                   '(i.e. no additional whitespace-delimited fields).')
 
 parser.add_argument('-t', '--placement_tool', metavar='epa-ng|sepp',
                     choices=['epa-ng', 'sepp'], default="epa-ng",
