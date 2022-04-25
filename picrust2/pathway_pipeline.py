@@ -1240,7 +1240,7 @@ def convert_func_ids(functions, in_df, func_map):
         for new_id in new_ids:
             new_subset = in_df_subset.copy()
             new_subset['function'] = new_id
-            new_df = new_df.append(new_subset)
+            new_df = pd.concat([new_df, new_subset], axis=0, join='outer')
 
         new_dfs += [new_df]
 
