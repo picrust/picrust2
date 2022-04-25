@@ -4,10 +4,12 @@ channels:
 - conda-forge
 - r
 - bioconda
+- anaconda
 - defaults
 
 dependencies:
 - biom-format >=2.1.10
+- cython
 - epa-ng=0.3.8
 - gappa=0.7.0
 - glpk=4.65
