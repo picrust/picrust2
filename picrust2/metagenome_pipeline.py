@@ -339,7 +339,7 @@ def metagenome_contributions(func_abun, sample_abun, rare_seqs=[],
             func_abun_subset_melt['taxon_rel_function_abun'] = func_abun_subset_melt['genome_function_count'] * func_abun_subset_melt['taxon_rel_abun']
 
             func_abun_subset_melt['norm_taxon_function_contrib'] = func_abun_subset_melt['taxon_function_abun'] / \
-                                                                   func_abun_subset_melt.groupby("function").sum()["taxon_function_abun"][func_abun_subset_melt["function"]].reset_index(drop=True)
+                                                                   func_abun_subset_melt.groupby("function").sum()["taxon_function_abun"][func_abun_subset_melt["function"]].to_numpy()
 
         # Collapse sequences identified as "rare" to the same category.
         rare_seqs = [r for r in rare_seqs if r in func_abun_subset_melt['taxon'].to_list()]
@@ -376,6 +376,10 @@ def metagenome_contributions(func_abun, sample_abun, rare_seqs=[],
             metagenome_contrib_out = pd.concat([metagenome_contrib_out,
                                                 func_abun_subset_melt],
                                                 axis=0)
+
+    # Make sure there are no NaN values in final column.
+    if metagenome_contrib_out['norm_taxon_function_contrib'].isna().sum() > 0:
+        sys.exit("Error - NaN values are present in the norm_taxon_function_contrib column, which indicates that the calculation failed.")
 
     return(metagenome_contrib_out)
 
