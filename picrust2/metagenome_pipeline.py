@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-__copyright__ = "Copyright 2018-2022, The PICRUSt Project"
 __license__ = "GPL"
 __version__ = "2.5.0"
 
@@ -369,6 +368,11 @@ def metagenome_contributions(func_abun, sample_abun, rare_seqs=[],
                                                            'taxon_rel_function_abun',
                                                            'norm_taxon_function_contrib']]
 
+            # Make sure there are no NaN values in final column.
+            if func_abun_subset_melt['norm_taxon_function_contrib'].isna().sum() > 0:
+                sys.exit("Error - NaN values are present in the norm_taxon_function_contrib column, which indicates that the calculation failed.")
+
+
         if s_i == 0:
             metagenome_contrib_out = func_abun_subset_melt.copy()
             s_i += 1
@@ -376,10 +380,6 @@ def metagenome_contributions(func_abun, sample_abun, rare_seqs=[],
             metagenome_contrib_out = pd.concat([metagenome_contrib_out,
                                                 func_abun_subset_melt],
                                                 axis=0)
-
-    # Make sure there are no NaN values in final column.
-    if metagenome_contrib_out['norm_taxon_function_contrib'].isna().sum() > 0:
-        sys.exit("Error - NaN values are present in the norm_taxon_function_contrib column, which indicates that the calculation failed.")
 
     return(metagenome_contrib_out)
 
