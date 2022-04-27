@@ -324,12 +324,18 @@ def read_seqabun(infile):
     '''Will read in sequence abundance table in either TSV, BIOM, or mothur
     shared format.'''
 
+    def kill_if_unnamed_col_in_seqabun(df):
+        if df.columns.str.contains('^Unnamed:').any():
+            sys.exit("Stopping - sequence abundance table contains \"Unnamed\" column after reading it in with the pandas Python package. This indicates that it is malformed. "
+                     "Please make sure there are no missing column names and/or trailing whitespace.")
+
     # First check extension of input file. If extension is "biom" then read in
     # as BIOM table and return. This is expected to be the most common input.
     in_name, in_ext = splitext(infile)
     if in_ext == ".biom":
         input_seqabun = biom.load_table(infile).to_dataframe(dense=True)
         input_seqabun.index.astype('str', copy=False)
+        kill_if_unnamed_col_in_seqabun(input_seqabun)
         return(input_seqabun)
 
     # Next check if input file is a mothur shared file or not by read in first
@@ -355,12 +361,34 @@ def read_seqabun(infile):
         input_seqabun.index.name = None
         input_seqabun = input_seqabun.transpose()
         input_seqabun.index.astype('str', copy=False)
+        kill_if_unnamed_col_in_seqabun(input_seqabun)
         return(input_seqabun)
     else:
+
+        # Read through the sequence abundance table to run some quick sanity checks and give specific advice for how to fix if needed.
+        first_line_flag = True
+
+        with open(infile, 'r') as quick_read:
+            for line in quick_read:
+                if first_line_flag:
+                    first_num_field = len(line.split("\t"))
+                    first_line = line
+                    first_line_flag = False
+
+                elif len(line.split("\t")) != first_num_field:
+                    sys.exit("Stopping - this line of the sequence abundance table has a differing number of fields from the first line after delimitting by tabs. This will need to be fixed.\n\n" +\
+                             line +\
+                             "\n\nFor reference, this is what the first line looks like:\n\n" + first_line)
+
+                elif line[-1].isspace():
+                    sys.exit("Stopping - this line of the sequence abundance table ends in a trailing whitespace. This will need to be fixed.\n\n" + line)
+
         first_col = str(pd.read_csv(infile, sep="\t", nrows=0).columns[0])
         input_seqabun = pd.read_csv(filepath_or_buffer=infile, sep="\t",
                                     dtype={first_col: str}, low_memory=False)
         input_seqabun.set_index(first_col, drop=True, inplace=True)
+        kill_if_unnamed_col_in_seqabun(input_seqabun)
+
         return(input_seqabun)
 
 
@@ -373,8 +401,8 @@ def three_df_index_overlap_sort(df1, df2, df3):
 
     # If there are no overlapping labels then throw error.
     if len(label_overlap) == 0:
-        raise ValueError("No sequence ids overlap between all three of the " +
-                         "input files.")
+        sys.exit("Stopping - no sequence ids overlap between all three of the input files.")
+
     elif len(label_overlap) < len(df1.index) * 0.5:
         print("Warning: fewer than half of the sequence ids overlap between "
               "the input files.", file=sys.stderr)
@@ -403,10 +431,9 @@ def check_files_exist(filepaths):
     if num_nonexist == 0:
         pass
     elif num_nonexist == 1:
-        raise ValueError("This input file was not found: " + missing_files[0])
+        sys.exit("\n\nStopping - this input file was not found: " + missing_files[0])
     elif num_nonexist > 1:
-        raise ValueError("These input files were not found: " +
-                         ", ".join(missing_files))
+        sys.exit("\n\nStopping - these input files were not found: " + ", ".join(missing_files))
 
 
 def add_descrip_col(inputfile, mapfile, in_df=False):
