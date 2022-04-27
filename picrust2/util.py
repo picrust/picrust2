@@ -368,20 +368,36 @@ def read_seqabun(infile):
         # Read through the sequence abundance table to run some quick sanity checks and give specific advice for how to fix if needed.
         first_line_flag = True
 
-        with open(infile, 'r') as quick_read:
-            for line in quick_read:
-                if first_line_flag:
-                    first_num_field = len(line.split("\t"))
-                    first_line = line
-                    first_line_flag = False
+        if in_ext == ".gz":
+            with gzip.open(infile, 'rt') as quick_read:
+                for line in quick_read:
+                    if first_line_flag:
+                        first_num_field = len(line.split("\t"))
+                        first_line = line
+                        first_line_flag = False
 
-                elif len(line.split("\t")) != first_num_field:
-                    sys.exit("Stopping - this line of the sequence abundance table has a differing number of fields from the first line after delimitting by tabs. This will need to be fixed.\n\n" +\
-                             line +\
-                             "\n\nFor reference, this is what the first line looks like:\n\n" + first_line)
+                    elif len(line.split("\t")) != first_num_field:
+                        sys.exit("Stopping - this line of the sequence abundance table has a differing number of fields from the first line after delimitting by tabs. This will need to be fixed.\n\n" +\
+                                 line +\
+                                 "\n\nFor reference, this is what the first line looks like:\n" + first_line)
 
-                elif line[-1].isspace():
-                    sys.exit("Stopping - this line of the sequence abundance table ends in a trailing whitespace. This will need to be fixed.\n\n" + line)
+                    elif line[-2:].isspace():
+                        sys.exit("Stopping - this line of the sequence abundance table ends in trailing whitespace. This will need to be fixed.\n\n" + line)
+        else:
+            with open(infile, 'r') as quick_read:
+                for line in quick_read:
+                    if first_line_flag:
+                        first_num_field = len(line.split("\t"))
+                        first_line = line
+                        first_line_flag = False
+
+                    elif len(line.split("\t")) != first_num_field:
+                        sys.exit("Stopping - this line of the sequence abundance table has a differing number of fields from the first line after delimitting by tabs. This will need to be fixed.\n\n" +\
+                                 line +\
+                                 "\n\nFor reference, this is what the first line looks like:\n" + first_line)
+
+                    elif line[-2:].isspace():
+                        sys.exit("Stopping - this line of the sequence abundance table ends in trailing whitespace. This will need to be fixed.\n\n" + line)
 
         first_col = str(pd.read_csv(infile, sep="\t", nrows=0).columns[0])
         input_seqabun = pd.read_csv(filepath_or_buffer=infile, sep="\t",

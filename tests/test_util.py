@@ -189,7 +189,7 @@ class util_test(unittest.TestCase):
                                                  orient='index')
 
         # Check that ValueError assertion raised.
-        self.assertRaises(ValueError, three_df_index_overlap_sort, test1,
+        self.assertRaises(SystemExit, three_df_index_overlap_sort, test1,
                           test2, test_no_overlap)
 
 
