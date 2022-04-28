@@ -472,5 +472,5 @@ def check_fasta_headers(filename : str):
         if line[0] == ">":
 
             if len(line.split()) > 1:
-                sys.exit("\nStopping - input FASTA file header lines should not contain whitespace. Pleae alter and re-run. \n\nProblem header:\n\n" + line + "\n")
+                sys.exit("\nStopping - input FASTA file header lines should not contain whitespace. Please alter and re-run. \n\nHeader with whitespace:\n\n" + line + "\n")
 
