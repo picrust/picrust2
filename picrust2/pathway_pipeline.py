@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-__copyright__ = "Copyright 2018-2021, The PICRUSt Project"
+__copyright__ = "Copyright 2018-2022, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.4.2"
+__version__ = "2.5.0"
 
 import sys
 from collections import defaultdict
@@ -1240,7 +1240,7 @@ def convert_func_ids(functions, in_df, func_map):
         for new_id in new_ids:
             new_subset = in_df_subset.copy()
             new_subset['function'] = new_id
-            new_df = new_df.append(new_subset)
+            new_df = pd.concat([new_df, new_subset], axis=0, join='outer')
 
         new_dfs += [new_df]
 

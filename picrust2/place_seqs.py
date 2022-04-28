@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-__copyright__ = "Copyright 2018-2021, The PICRUSt Project"
+__copyright__ = "Copyright 2018-2022, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.4.2"
+__version__ = "2.5.0"
 
 import sys
 from os import path, chdir, getcwd
@@ -27,6 +27,11 @@ def place_seqs_pipeline(study_fasta,
     # Throw error if there is a space in the study FASTA filepath.
     if " " in study_fasta:
         sys.exit("Stopping - remove the space from the input FASTA filepath.")
+
+    # Check header-lines of FASTA: if they have multiple whitespace-delimited fields
+    # this can sometimes be an issue for hmmalign.
+    check_fasta_headers(study_fasta)
+
 
     # Identify reference files to use. Note that model file will be different
     # depending on which placement pipeline is indicated.
@@ -445,8 +450,27 @@ def run_sepp(tree: str, ref_msa_fastafile: str, study_msa_fastafile: str,
         sys.exit("\nStopped running due to at least one input FASTA being "
                  "gzipped (which SEPP does not allow).\n")
 
-    print(sepp_command)
-
     system_call_check(sepp_command, print_command=print_cmds,
                       print_stdout=print_cmds, print_stderr=print_cmds)
+
+
+def check_fasta_headers(filename : str):
+    '''Check that headers of specified FASTA do not contain whitespace.'''
+
+    if filename[-3:] == ".gz":
+        fasta_in = gzip.open(filename, "rt")
+    else:
+        fasta_in = open(filename, "r")
+
+    for line in fasta_in:
+
+        line = line.rstrip()
+
+        if len(line) == 0:
+            continue
+
+        if line[0] == ">":
+
+            if len(line.split()) > 1:
+                sys.exit("\nStopping - input FASTA file header lines should not contain whitespace. Please alter and re-run. \n\nHeader with whitespace:\n\n" + line + "\n")
 

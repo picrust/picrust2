@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-__copyright__ = "Copyright 2018-2021, The PICRUSt Project"
+__copyright__ = "Copyright 2018-2022, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.4.2"
+__version__ = "2.5.0"
 
 from os import path
 import sys

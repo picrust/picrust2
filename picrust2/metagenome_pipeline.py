@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 
-__copyright__ = "Copyright 2018-2021, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.4.2"
+__version__ = "2.5.0"
 
 import sys
 import pandas as pd
@@ -339,7 +338,7 @@ def metagenome_contributions(func_abun, sample_abun, rare_seqs=[],
             func_abun_subset_melt['taxon_rel_function_abun'] = func_abun_subset_melt['genome_function_count'] * func_abun_subset_melt['taxon_rel_abun']
 
             func_abun_subset_melt['norm_taxon_function_contrib'] = func_abun_subset_melt['taxon_function_abun'] / \
-                                                                   func_abun_subset_melt.groupby("function").sum()["taxon_function_abun"][func_abun_subset_melt["function"]].reset_index(drop=True)
+                                                                   func_abun_subset_melt.groupby("function").sum()["taxon_function_abun"][func_abun_subset_melt["function"]].to_numpy()
 
         # Collapse sequences identified as "rare" to the same category.
         rare_seqs = [r for r in rare_seqs if r in func_abun_subset_melt['taxon'].to_list()]
@@ -368,6 +367,11 @@ def metagenome_contributions(func_abun, sample_abun, rare_seqs=[],
                                                            'taxon_function_abun',
                                                            'taxon_rel_function_abun',
                                                            'norm_taxon_function_contrib']]
+
+            # Make sure there are no NaN values in final column.
+            if func_abun_subset_melt['norm_taxon_function_contrib'].isna().sum() > 0:
+                sys.exit("Error - NaN values are present in the norm_taxon_function_contrib column, which indicates that the calculation failed.")
+
 
         if s_i == 0:
             metagenome_contrib_out = func_abun_subset_melt.copy()
