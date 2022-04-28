@@ -8,11 +8,11 @@ __license__ = "GPL"
 __version__ = "2.5.0"
 __maintainer__ = "Gavin Douglas"
 
-long_description = ("Please visit the google group here if you have questions: "
+long_description = ("Please visit the google group if you have questions: "
                     "https://groups.google.com/forum/#!forum/picrust-users. "
-                    "Pre-print: Douglas et al. 2019. PICRUSt2: An improved and "
-                    "extensible approach for metagenome inference. bioRxiv. "
-                    "doi: https://doi.org/10.1101/672295"
+                    "Paper: Douglas et al. 2020. PICRUSt2 for prediction of "
+                    "metagenome functions. Nature Biotechnology. doi: "
+                    "10.1038/s41587-020-0548-6."
                     )
 
 setup(name='PICRUSt2',
