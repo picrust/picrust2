@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 __license__ = "GPL"
-__version__ = "2.5.0"
+__version__ = "2.5.1"
 
 import sys
 import pandas as pd

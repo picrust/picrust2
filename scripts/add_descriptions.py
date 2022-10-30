@@ -2,7 +2,7 @@
 
 __copyright__ = "Copyright 2018-2022, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.5.0"
+__version__ = "2.5.1"
 
 import argparse
 from picrust2.default import default_map
