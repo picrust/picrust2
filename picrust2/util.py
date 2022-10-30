@@ -544,7 +544,7 @@ def convert_humann2_to_picrust2(infiles, outfile, stratified):
 
         original_col = list(humann2_combined.columns)
 
-        split_df = pd.DataFrame.from_records(list(humann2_combined.index.str.split('\\|', 1)), columns=[first_col, 'sequence'])
+        split_df = pd.DataFrame.from_records(list(humann2_combined.index.str.split(pat = '\\|', n = 1)), columns=[first_col, 'sequence'])
 
         humann2_combined.reset_index(inplace=True)
 
