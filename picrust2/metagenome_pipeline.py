@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 __license__ = "GPL"
-__version__ = "2.5.0"
+__version__ = "2.5.1"
 
 import sys
 import pandas as pd
@@ -338,7 +338,7 @@ def metagenome_contributions(func_abun, sample_abun, rare_seqs=[],
             func_abun_subset_melt['taxon_rel_function_abun'] = func_abun_subset_melt['genome_function_count'] * func_abun_subset_melt['taxon_rel_abun']
 
             func_abun_subset_melt['norm_taxon_function_contrib'] = func_abun_subset_melt['taxon_function_abun'] / \
-                                                                   func_abun_subset_melt.groupby("function").sum()["taxon_function_abun"][func_abun_subset_melt["function"]].to_numpy()
+                                                                   func_abun_subset_melt.groupby("function").sum(numeric_only = True)["taxon_function_abun"][func_abun_subset_melt["function"]].to_numpy()
 
         # Collapse sequences identified as "rare" to the same category.
         rare_seqs = [r for r in rare_seqs if r in func_abun_subset_melt['taxon'].to_list()]

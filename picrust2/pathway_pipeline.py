@@ -2,7 +2,7 @@
 
 __copyright__ = "Copyright 2018-2022, The PICRUSt Project"
 __license__ = "GPL"
-__version__ = "2.5.0"
+__version__ = "2.5.1"
 
 import sys
 from collections import defaultdict
@@ -498,6 +498,8 @@ def pathway_pipeline(inputfile,
             path_abun_unstrat_by_seq = contrib_to_unstrat(contrib_table=path_abun_strat,
                                                           sample_order=list(path_abun_unstrat.columns.values))
 
+        path_abun_unstrat_by_seq.index.name = 'pathway'
+
     # Check if an abundance table is empty, which can happen when very few gene
     # families are input.
     if len(path_abun_unstrat.index) == 0:
@@ -530,7 +532,7 @@ def prep_pathway_df_out(in_tab, strat_index=False, num_digits=4):
 
         if not in_tab_df.empty:
             # Split stratified index into 2 new columns.
-            split_df = pd.DataFrame.from_records(list(in_tab_df.index.str.split('\\|\\|\\|', 1)), columns=['pathway', 'sequence'])
+            split_df = pd.DataFrame.from_records(list(in_tab_df.index.str.split(pat = '\\|\\|\\|', n = 1)), columns=['pathway', 'sequence'])
             in_tab_df.reset_index(inplace=True)
             in_tab_df[['pathway', 'sequence']] = split_df
 
@@ -539,6 +541,9 @@ def prep_pathway_df_out(in_tab, strat_index=False, num_digits=4):
 
         # Add these columns to be first.
         in_tab_df = in_tab_df[['pathway', 'sequence'] + orig_col]
+
+    else:
+        in_tab_df.index.name = 'pathway'
 
     return(in_tab_df)
 
