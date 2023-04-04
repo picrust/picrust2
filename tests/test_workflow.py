@@ -41,7 +41,6 @@ class workflow_test(unittest.TestCase):
         system_call_check("metagenome_pipeline.py -h")
         system_call_check("picrust2_pipeline.py -h")
         system_call_check("place_seqs.py -h")
-        system_call_check("print_picrust2_config.py -h")
         system_call_check("pathway_pipeline.py -h")
         system_call_check("shuffle_predictions.py -h")
 
