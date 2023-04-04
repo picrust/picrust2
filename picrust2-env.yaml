@@ -13,7 +13,7 @@ dependencies:
 - epa-ng=0.3.8
 - gappa=0.8.0
 - glpk=4.65
-- h5py >=3.1.0
+- h5py >=2.10.0
 - hmmer >=3.1b2,<=3.2.1
 - jinja2 >=2.11.3
 - joblib >=1.0.1

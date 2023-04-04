@@ -1,9 +1,5 @@
 #!/usr/bin/env python
 
-__copyright__ = "Copyright 2018-2022, The PICRUSt Project"
-__license__ = "GPL"
-__version__ = "2.5.1"
-
 from os import path
 import sys
 from picrust2.default import (default_tables, default_pathway_map,

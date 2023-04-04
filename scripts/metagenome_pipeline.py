@@ -1,9 +1,5 @@
 #!/usr/bin/env python
 
-__copyright__ = "Copyright 2018-2022, The PICRUSt Project"
-__license__ = "GPL"
-__version__ = "2.5.1"
-
 import argparse
 from os import path
 from picrust2.metagenome_pipeline import run_metagenome_pipeline

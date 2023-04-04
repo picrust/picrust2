@@ -1,9 +1,5 @@
 #!/usr/bin/env python
 
-__copyright__ = "Copyright 2018-2022, The PICRUSt Project"
-__license__ = "GPL"
-__version__ = "2.5.1"
-
 import argparse
 from picrust2.util import (check_files_exist, contrib_to_legacy,
                            convert_humann2_to_picrust2,

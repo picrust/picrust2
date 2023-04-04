@@ -1,9 +1,5 @@
 #!/usr/bin/env python
 
-__copyright__ = "Copyright 2018-2022, The PICRUSt Project"
-__license__ = "GPL"
-__version__ = "2.5.1"
-
 from sys import platform, version as python_version, executable
 
 try:

@@ -1,9 +1,5 @@
 #!/usr/bin/env python
 
-__copyright__ = "Copyright 2018-2022, The PICRUSt Project"
-__license__ = "GPL"
-__version__ = "2.5.1"
-
 import argparse
 from picrust2.pathway_pipeline import pathway_pipeline
 from picrust2.util import (make_output_dir, check_files_exist,
