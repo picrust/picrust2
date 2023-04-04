@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import argparse
+from importlib.metadata import version
 from picrust2.util import (check_files_exist, contrib_to_legacy,
                            convert_humann2_to_picrust2,
                            convert_picrust2_to_humann2,
@@ -58,7 +59,7 @@ parser.add_argument('--raw_abun', default=False, action='store_true',
                          '(relative abundances are the default).')
 
 parser.add_argument('-v', '--version', default=False, action='version',
-                    version='%(prog)s ' + __version__)
+                    version="PICRUSt2 " + version('PICRUSt2'))
 
 
 def main():

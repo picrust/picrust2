@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import argparse
+from importlib.metadata import version
 from picrust2.wrap_hsp import castor_hsp_workflow
 from picrust2.util import make_output_dir_for_file, check_files_exist
 from picrust2.default import default_tables
@@ -94,7 +95,7 @@ parser.add_argument('--verbose', default=False, action='store_true',
                          'details to screen.')
 
 parser.add_argument('-v', '--version', default=False, action='version',
-                    version="%(prog)s " + __version__)
+                    version="PICRUSt2 " + version('PICRUSt2'))
 
 
 def main():

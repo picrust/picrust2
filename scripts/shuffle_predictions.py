@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import argparse
+from importlib.metadata import version
 from picrust2.util import check_files_exist, shuffle_predictions
 
 parser = argparse.ArgumentParser(
@@ -38,7 +39,7 @@ parser.add_argument('-s', '--seed', default=None, metavar='INT',
                          "shufflings (default: None).")
 
 parser.add_argument('-v', '--version', default=False, action='version',
-                    version='%(prog)s ' + __version__)
+                    version="PICRUSt2 " + version('PICRUSt2'))
 
 
 def main():

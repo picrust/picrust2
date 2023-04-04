@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import argparse
+from importlib.metadata import version
 from os import path
 import sys
 import time
@@ -226,7 +227,7 @@ parser.add_argument('--verbose', default=False, action='store_true',
                     help='Print out details as commands are run.')
 
 parser.add_argument('-v', '--version', default=False, action='version',
-                    version="%(prog)s " + __version__)
+                    version="PICRUSt2 " + version('PICRUSt2'))
 
 
 def main():

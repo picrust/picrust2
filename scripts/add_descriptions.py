@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import argparse
+from importlib.metadata import version
 from picrust2.default import default_map
 from picrust2.util import add_descrip_col, make_output_dir_for_file
 import sys
@@ -41,7 +42,7 @@ parser.add_argument('--custom_map_table', metavar='PATH', type=str,
                          'descriptions for each function. ')
 
 parser.add_argument('-v', '--version', default=False, action='version',
-                    version="%(prog)s " + __version__)
+                    version="PICRUSt2 " + version('PICRUSt2'))
 
 
 def main():

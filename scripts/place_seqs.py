@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import argparse
+from importlib.metadata import version
 from picrust2.place_seqs import place_seqs_pipeline
 from picrust2.default import default_ref_dir
 from picrust2.util import make_output_dir, TemporaryDirectory, restricted_float
@@ -67,7 +68,7 @@ parser.add_argument('--verbose', default=False, action='store_true',
                          'details to screen.')
 
 parser.add_argument('-v', '--version', default=False, action='version',
-                    version="%(prog)s " + __version__)
+                    version="PICRUSt2 " + version('PICRUSt2'))
 
 
 def main():
