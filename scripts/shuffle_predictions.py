@@ -1,10 +1,7 @@
 #!/usr/bin/env python
 
-__copyright__ = "Copyright 2018-2022, The PICRUSt Project"
-__license__ = "GPL"
-__version__ = "2.5.1"
-
 import argparse
+from importlib.metadata import version
 from picrust2.util import check_files_exist, shuffle_predictions
 
 parser = argparse.ArgumentParser(
@@ -20,9 +17,9 @@ parser = argparse.ArgumentParser(
 
 Usage example:
 
-shuffle_predictions.py -i EC_predicted.tsv.gz -o EC_predicted_shuffled --rep 5
+shuffle_predictions.py -i EC_predicted.tsv.gz -o EC_predicted_shuffled --rep 5''',
 
-''', formatter_class=argparse.RawDescriptionHelpFormatter)
+    formatter_class=argparse.RawDescriptionHelpFormatter)
 
 parser.add_argument('-i', '--input', metavar='OUTPUT', required=True,
                     type=str,
@@ -42,7 +39,7 @@ parser.add_argument('-s', '--seed', default=None, metavar='INT',
                          "shufflings (default: None).")
 
 parser.add_argument('-v', '--version', default=False, action='version',
-                    version='%(prog)s ' + __version__)
+                    version="PICRUSt2 " + version('PICRUSt2'))
 
 
 def main():
@@ -55,6 +52,6 @@ def main():
     shuffle_predictions(input=args.input, outdir=args.outdir, rep=args.rep,
                         seed=args.seed)
 
+
 if __name__ == '__main__':
     main()
-

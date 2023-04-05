@@ -1,9 +1,5 @@
 #!/usr/bin/env python
 
-__copyright__ = "Copyright 2018-2022, The PICRUSt Project"
-__license__ = "GPL"
-__version__ = "2.5.1"
-
 import unittest
 from os import path
 import pandas as pd
@@ -28,7 +24,7 @@ metagenome_pipeline_test_dir_path = path.join(path.dirname(path.abspath(__file__
                                               "test_data",
                                               "metagenome_pipeline")
 seqtab_biom = path.join(metagenome_pipeline_test_dir_path,
-                       "test_input_sequence_abun.biom")
+                        "test_input_sequence_abun.biom")
 seqtab_msf = path.join(metagenome_pipeline_test_dir_path,
                        "test_input_sequence_abun.msf")
 
@@ -205,7 +201,6 @@ class add_description_tests(unittest.TestCase):
 
         pd.testing.assert_frame_equal(obs_out, exp_out, check_like=True)
 
-
     def test_ec_strat(self):
         '''Test that correct descriptions added to table of stratified EC
         abundances.'''
@@ -216,7 +211,6 @@ class add_description_tests(unittest.TestCase):
         exp_out = pd.read_csv(ec_strat_exp, sep='\t')
 
         pd.testing.assert_frame_equal(obs_out, exp_out, check_like=True)
-
 
     def test_nomatch_fail(self):
         '''Test that a system exit is made when the ids do not overlap.'''
@@ -318,6 +312,7 @@ class add_description_tests(unittest.TestCase):
         # Check that md5sum values match expected values.
         self.assertEqual(obs_hash, exp_hash)
 
+
 class convert_table_tests(unittest.TestCase):
 
     def test_picrust2_to_humann2_merged(self):
@@ -405,6 +400,7 @@ class convert_table_tests(unittest.TestCase):
         exp_out = pd.read_csv(metagenome_contrib_legacy, sep="\t")
 
         pd.testing.assert_frame_equal(obs_out, exp_out, check_like=True)
+
 
 if __name__ == '__main__':
     unittest.main()

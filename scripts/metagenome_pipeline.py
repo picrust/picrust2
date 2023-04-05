@@ -1,10 +1,7 @@
 #!/usr/bin/env python
 
-__copyright__ = "Copyright 2018-2022, The PICRUSt Project"
-__license__ = "GPL"
-__version__ = "2.5.1"
-
 import argparse
+from importlib.metadata import version
 from os import path
 from picrust2.metagenome_pipeline import run_metagenome_pipeline
 from picrust2.util import check_files_exist
@@ -20,9 +17,11 @@ parser = argparse.ArgumentParser(
                 "metagenome table stratified by contributing ASVs can "
                 "optionally also be output.",
 
-    epilog='''Usage example:
-metagenome_pipeline.py -i seqabun.biom -f predicted_EC.tsv.gz -m predicted_16S.tsv.gz --max_nsti 2.0 -o metagenome_out
-''',
+    epilog='''
+
+Usage example:
+metagenome_pipeline.py -i seqabun.biom -f predicted_EC.tsv.gz -m predicted_16S.tsv.gz --max_nsti 2.0 -o metagenome_out''',
+
     formatter_class=argparse.RawDescriptionHelpFormatter)
 
 parser.add_argument('-i', '--input', metavar='PATH', required=True, type=str,
@@ -82,7 +81,7 @@ parser.add_argument('-o', '--out_dir', metavar='PATH', type=str,
                          '(default: %(default)s).')
 
 parser.add_argument('-v', '--version', default=False, action='version',
-                    version="%(prog)s " + __version__)
+                    version="PICRUSt2 " + version('PICRUSt2'))
 
 
 def main():

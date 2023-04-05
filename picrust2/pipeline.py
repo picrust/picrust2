@@ -1,9 +1,5 @@
 #!/usr/bin/env python
 
-__copyright__ = "Copyright 2018-2022, The PICRUSt Project"
-__license__ = "GPL"
-__version__ = "2.5.1"
-
 from os import path
 import sys
 from picrust2.default import (default_tables, default_pathway_map,
@@ -313,7 +309,7 @@ def full_pipeline(study_fasta,
             pathway_pipeline_cmd += ["--per_sequence_abun", norm_sequence_abun]
 
             pathway_pipeline_cmd += ["--per_sequence_function",
-                                      predicted_funcs[rxn_func]]
+                                     predicted_funcs[rxn_func]]
 
         if verbose:
             pathway_pipeline_cmd.append("--verbose")

@@ -1,9 +1,5 @@
 #!/usr/bin/env python
 
-__copyright__ = "Copyright 2018-2022, The PICRUSt Project"
-__license__ = "GPL"
-__version__ = "2.5.1"
-
 from os import path
 import sys
 import pandas as pd
@@ -142,7 +138,7 @@ def castor_hsp_wrapper(tree_path, trait_tab, hsp_method, edge_exponent=0.5,
             asr_table.set_index('sequence', drop=True, inplace=True)
         except IOError:
             raise ValueError("Cannot read in expected output file" +
-                            output_ci_path)
+                             output_ci_path)
 
         if calc_ci:
             asr_ci_table = pd.read_csv(filepath_or_buffer=output_ci_path,
@@ -183,7 +179,6 @@ def castor_nsti(tree_path,
                           print_command=verbose,
                           print_stdout=verbose,
                           print_stderr=verbose)
-
 
         # Read in calculated NSTI values.
         nsti_out = pd.read_csv(nsti_tmp_out, sep="\t", dtype={'sequence': str})

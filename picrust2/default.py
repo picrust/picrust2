@@ -1,9 +1,5 @@
 #!/usr/bin/env python
 
-__copyright__ = "Copyright 2018-2022, The PICRUSt Project"
-__license__ = "GPL"
-__version__ = "2.5.1"
-
 from os import path
 
 project_dir = path.dirname(path.abspath(__file__))
@@ -54,14 +50,14 @@ default_tables = {"16S": path.join(prokaryotic_dir, "16S.txt.gz"),
 map_dir = path.join(project_dir, "default_files", "description_mapfiles")
 
 default_map = {"METACYC": path.join(map_dir,
-                                "metacyc_pathways_info.txt.gz"),
+                                    "metacyc_pathways_info.txt.gz"),
 
-                  "COG": path.join(map_dir, "cog_info.tsv.gz"),
+               "COG": path.join(map_dir, "cog_info.tsv.gz"),
 
-                  "EC": path.join(map_dir, "ec_level4_info.tsv.gz"),
+               "EC": path.join(map_dir, "ec_level4_info.tsv.gz"),
 
-                  "KO": path.join(map_dir, "ko_info.tsv.gz"),
+               "KO": path.join(map_dir, "ko_info.tsv.gz"),
 
-                  "PFAM": path.join(map_dir, "pfam_info.tsv.gz"),
+               "PFAM": path.join(map_dir, "pfam_info.tsv.gz"),
 
-                  "TIGRFAM": path.join(map_dir, "tigrfam_info.tsv.gz")}
+               "TIGRFAM": path.join(map_dir, "tigrfam_info.tsv.gz")}

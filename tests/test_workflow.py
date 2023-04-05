@@ -1,9 +1,5 @@
 #!/usr/bin/env python
 
-__copyright__ = "Copyright 2018-2022, The PICRUSt Project"
-__license__ = "GPL"
-__version__ = "2.5.1"
-
 import unittest
 from os import path
 from picrust2.util import system_call_check, TemporaryDirectory
@@ -24,7 +20,7 @@ test_known_traits = path.join(test_dir_path, "test_data", "workflow",
                               "workflow_known_traits.tsv.gz")
 
 test_seq_abun_tsv = path.join(test_dir_path, "test_data", "workflow",
-                             "workflow_seq_abun.tsv.gz")
+                              "workflow_seq_abun.tsv.gz")
 
 test_seq_abun_biom = path.join(test_dir_path, "test_data", "workflow",
                                "workflow_seq_abun.biom")
@@ -45,7 +41,6 @@ class workflow_test(unittest.TestCase):
         system_call_check("metagenome_pipeline.py -h")
         system_call_check("picrust2_pipeline.py -h")
         system_call_check("place_seqs.py -h")
-        system_call_check("print_picrust2_config.py -h")
         system_call_check("pathway_pipeline.py -h")
         system_call_check("shuffle_predictions.py -h")
 
@@ -173,6 +168,7 @@ class workflow_test(unittest.TestCase):
                               " --per_sequence_contrib" +
                               " --skip_norm" +
                               " --verbose")
+
 
 if __name__ == '__main__':
     unittest.main()

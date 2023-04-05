@@ -1,9 +1,5 @@
 #!/usr/bin/env python
 
-__copyright__ = "Copyright 2018-2022, The PICRUSt Project"
-__license__ = "GPL"
-__version__ = "2.5.1"
-
 import unittest
 from os import path
 import pandas as pd
@@ -35,17 +31,18 @@ hsp_subtree_average_pred = path.join(test_dir_path, "hsp_output",
 hsp_mp_pred_in = pd.read_csv(hsp_mp_pred, sep="\t", index_col="sequence")
 
 hsp_mp_pred_in_nsti = pd.read_csv(hsp_mp_pred_nsti, sep="\t",
-                                    index_col="sequence")
-
-hsp_emp_prob_pred_in_ci = pd.read_csv(hsp_emp_prob_pred_ci, sep="\t",
                                   index_col="sequence")
 
+hsp_emp_prob_pred_in_ci = pd.read_csv(hsp_emp_prob_pred_ci, sep="\t",
+                                      index_col="sequence")
+
 hsp_emp_prob_pred_in = pd.read_csv(hsp_emp_prob_pred, sep="\t",
-                                     index_col="sequence")
+                                   index_col="sequence")
 hsp_pic_pred_in = pd.read_csv(hsp_pic_pred, sep="\t", index_col="sequence")
 hsp_scp_pred_in = pd.read_csv(hsp_scp_pred, sep="\t", index_col="sequence")
 hsp_subtree_average_pred_in = pd.read_csv(hsp_subtree_average_pred, sep="\t",
-                                            index_col="sequence")
+                                          index_col="sequence")
+
 
 class castor_hsp_workflow_tests(unittest.TestCase):
     """Tests for castor hsp workflow."""
@@ -55,20 +52,20 @@ class castor_hsp_workflow_tests(unittest.TestCase):
     def test_mp_simple(self):
 
         predict_out, ci_out = castor_hsp_workflow(tree_path=in_tree1,
-                                                 trait_table_path=in_traits1,
-                                                 hsp_method="mp",
-                                                 ran_seed=10)
+                                                  trait_table_path=in_traits1,
+                                                  hsp_method="mp",
+                                                  ran_seed=10)
 
         pd.testing.assert_frame_equal(predict_out, hsp_mp_pred_in, check_like=True)
 
     def test_emp_prob_simple(self):
 
         predict_out, ci_out = castor_hsp_workflow(tree_path=in_tree1,
-                                                 trait_table_path=in_traits1,
-                                                 hsp_method="emp_prob",
-                                                 ran_seed=10)
+                                                  trait_table_path=in_traits1,
+                                                  hsp_method="emp_prob",
+                                                  ran_seed=10)
 
-	# Since values can differ depending on exact dependency versions, just comparing dimension and names.
+        # Since values can differ depending on exact dependency versions, just comparing dimension and names.
         predict_out[:] = 0
         hsp_emp_prob_pred_in[:] = 0
 
@@ -77,11 +74,11 @@ class castor_hsp_workflow_tests(unittest.TestCase):
     def test_pic_simple(self):
 
         predict_out, ci_out = castor_hsp_workflow(tree_path=in_tree1,
-                                                 trait_table_path=in_traits1,
-                                                 hsp_method="pic",
-                                                 ran_seed=10)
+                                                  trait_table_path=in_traits1,
+                                                  hsp_method="pic",
+                                                  ran_seed=10)
 
-	# Since values can differ depending on exact dependency versions, just comparing dimension and names.
+        # Since values can differ depending on exact dependency versions, just comparing dimension and names.
         predict_out[:] = 0
         hsp_pic_pred_in[:] = 0
 
@@ -90,11 +87,11 @@ class castor_hsp_workflow_tests(unittest.TestCase):
     def test_scp_simple(self):
 
         predict_out, ci_out = castor_hsp_workflow(tree_path=in_tree1,
-                                                 trait_table_path=in_traits1,
-                                                 hsp_method="scp",
-                                                 ran_seed=10)
+                                                  trait_table_path=in_traits1,
+                                                  hsp_method="scp",
+                                                  ran_seed=10)
 
-	# Since values can differ depending on exact dependency versions, just comparing dimension and names.
+        # Since values can differ depending on exact dependency versions, just comparing dimension and names.
         predict_out[:] = 0
         hsp_scp_pred_in[:] = 0
 
@@ -103,11 +100,11 @@ class castor_hsp_workflow_tests(unittest.TestCase):
     def test_subtree_average_simple(self):
 
         predict_out, ci_out = castor_hsp_workflow(tree_path=in_tree1,
-                                                 trait_table_path=in_traits1,
-                                                 hsp_method="subtree_average",
-                                                 ran_seed=10)
+                                                  trait_table_path=in_traits1,
+                                                  hsp_method="subtree_average",
+                                                  ran_seed=10)
 
-	# Since values can differ depending on exact dependency versions, just comparing dimension and names.
+        # Since values can differ depending on exact dependency versions, just comparing dimension and names.
         predict_out[:] = 0
         hsp_subtree_average_pred_in[:] = 0
 
@@ -116,25 +113,25 @@ class castor_hsp_workflow_tests(unittest.TestCase):
     def test_emp_prob_ci(self):
         '''Test that Emp Prob confidence intervals calculated correctly.'''
         predict_out, ci_out = castor_hsp_workflow(tree_path=in_tree1,
-                                                 trait_table_path=in_traits1,
-                                                 hsp_method="emp_prob",
-                                                 ran_seed=10,
-                                                 calc_ci=True)
+                                                  trait_table_path=in_traits1,
+                                                  hsp_method="emp_prob",
+                                                  ran_seed=10,
+                                                  calc_ci=True)
 
         pd.testing.assert_frame_equal(ci_out, hsp_emp_prob_pred_in_ci, check_like=True)
 
     def test_nsti(self):
         '''Test that calculated NSTI values match expected.'''
-    
+
         in_traits1_df = pd.read_csv(in_traits1, sep="\t",
                                     index_col="assembly",
-                                    dtype={'assembly' : str})
+                                    dtype={'assembly': str})
 
         nsti_out = castor_nsti(tree_path=in_tree1,
                                known_tips=in_traits1_df.index.values,
                                verbose=True)
 
-       # Only compare NSTI column.
+        # Only compare NSTI column.
         hsp_mp_pred_in_nsti_subset = hsp_mp_pred_in_nsti.loc[:, ["metadata_NSTI"]]
 
         pd.testing.assert_frame_equal(nsti_out, hsp_mp_pred_in_nsti_subset, check_like=True)
@@ -189,6 +186,7 @@ class table_mdf5sum_tests(unittest.TestCase):
 
         # Check that md5sum values match expected values.
         self.assertEqual(obs_hash, exp_hash)
+
 
 if __name__ == '__main__':
     unittest.main()
