@@ -2,7 +2,6 @@
 
 import sys
 from os import path, chdir, getcwd
-import gzip
 import json
 import numpy as np
 from picrust2.util import (system_call_check, make_output_dir, read_fasta,
@@ -28,6 +27,10 @@ def place_seqs_pipeline(study_fasta,
     # Check header-lines of FASTA: if they have multiple whitespace-delimited fields
     # this can sometimes be an issue for hmmalign.
     check_fasta_headers(study_fasta)
+
+    # Check that FASTA file is not gzipped.
+    if study_fasta[-3:] == '.gz':
+        sys.exit("Stopping - input FASTA should not be gzipped.")
 
     # Identify reference files to use. Note that model file will be different
     # depending on which placement pipeline is indicated.
@@ -459,19 +462,16 @@ def run_sepp(tree: str, ref_msa_fastafile: str, study_msa_fastafile: str,
 def check_fasta_headers(filename: str):
     '''Check that headers of specified FASTA do not contain whitespace.'''
 
-    if filename[-3:] == ".gz":
-        fasta_in = gzip.open(filename, "rt")
-    else:
-        fasta_in = open(filename, "r")
+    with open(filename, "r") as fasta_in:
 
-    for line in fasta_in:
+      for line in fasta_in:
 
-        line = line.rstrip()
+          line = line.rstrip()
 
-        if len(line) == 0:
-            continue
+          if len(line) == 0:
+              continue
 
-        if line[0] == ">":
+          if line[0] == ">":
 
-            if len(line.split()) > 1:
-                sys.exit("\nStopping - input FASTA file header lines should not contain whitespace. Please alter and re-run. \n\nHeader with whitespace:\n\n" + line + "\n")
+              if len(line.split()) > 1:
+                  sys.exit("\nStopping - input FASTA file header lines should not contain whitespace. Please alter and re-run. \n\nHeader with whitespace:\n\n" + line + "\n")
