@@ -24,13 +24,13 @@ def place_seqs_pipeline(study_fasta,
     if " " in study_fasta:
         sys.exit("Stopping - remove the space from the input FASTA filepath.")
 
-    # Check header-lines of FASTA: if they have multiple whitespace-delimited fields
-    # this can sometimes be an issue for hmmalign.
-    check_fasta_headers(study_fasta)
-
     # Check that FASTA file is not gzipped.
     if study_fasta[-3:] == '.gz':
         sys.exit("Stopping - input FASTA should not be gzipped.")
+
+    # Check header-lines of FASTA: if they have multiple whitespace-delimited fields
+    # this can sometimes be an issue for hmmalign.
+    check_fasta_headers(study_fasta)
 
     # Identify reference files to use. Note that model file will be different
     # depending on which placement pipeline is indicated.
