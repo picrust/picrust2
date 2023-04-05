@@ -309,7 +309,7 @@ def full_pipeline(study_fasta,
             pathway_pipeline_cmd += ["--per_sequence_abun", norm_sequence_abun]
 
             pathway_pipeline_cmd += ["--per_sequence_function",
-                                      predicted_funcs[rxn_func]]
+                                     predicted_funcs[rxn_func]]
 
         if verbose:
             pathway_pipeline_cmd.append("--verbose")

@@ -1,15 +1,20 @@
 #!/usr/bin/env python
 
 import unittest
-import gzip
 import hashlib
 from os import path
-from picrust2.util import read_phylip, read_fasta, TemporaryDirectory
-from picrust2.default import (default_ref_dir, default_fasta, default_tree,
-                              default_hmm, default_model, default_raxml_info)
-from picrust2.place_seqs import (place_seqs_pipeline, split_ref_study_papara,
-                                 run_epa_ng, gappa_jplace_to_newick,
-                                 identify_ref_files, parse_jplace,
+from picrust2.util import read_fasta, TemporaryDirectory
+from picrust2.default import (default_ref_dir,
+                              default_fasta,
+                              default_tree,
+                              default_hmm,
+                              default_model,
+                              default_raxml_info)
+from picrust2.place_seqs import (place_seqs_pipeline,
+                                 run_epa_ng,
+                                 gappa_jplace_to_newick,
+                                 identify_ref_files,
+                                 parse_jplace,
                                  check_alignments)
 
 # Set paths to test files.
@@ -76,17 +81,14 @@ class place_seqs_tests(unittest.TestCase):
                           'd50b0dac445b5243e86816dbdeadf898',
                           '478b5011ea8aeb0c720e9bb68774fabd'])
 
-
     def test_jplace_parse(self):
         '''Test that jplace files are being parsed consistently.'''
 
         with TemporaryDirectory() as temp_dir:
 
-            test_jplace1_out = temp_dir + path.basename(test_jplace1) +\
-                               "_parsed"
+            test_jplace1_out = temp_dir + path.basename(test_jplace1) + "_parsed"
 
-            test_jplace2_out = temp_dir + path.basename(test_jplace2) +\
-                               "_parsed"
+            test_jplace2_out = temp_dir + path.basename(test_jplace2) + "_parsed"
 
             parse_jplace(test_jplace1, test_jplace1_out)
 
@@ -103,7 +105,6 @@ class place_seqs_tests(unittest.TestCase):
 
         self.assertEqual(test_jplace1_hash.hexdigest(),
                          test_jplace2_hash.hexdigest())
-
 
     def test_gappa_jplace_to_newick(self):
         '''Basic test for gappa_jplace_to_newick function.'''
@@ -188,7 +189,6 @@ class place_seqs_tests(unittest.TestCase):
 
     def test_check_alignment(self):
         '''Test that poorly aligned sequences identified correctly.'''
-
 
         test_to_align = path.join(test_dir_path, "seqs_to_align.fasta")
         test_aligned = path.join(test_dir_path, "hmmalign_out.fasta")

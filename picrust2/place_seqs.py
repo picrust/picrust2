@@ -2,6 +2,7 @@
 
 import sys
 from os import path, chdir, getcwd
+import gzip
 import json
 import numpy as np
 from picrust2.util import (system_call_check, make_output_dir, read_fasta,
@@ -27,7 +28,6 @@ def place_seqs_pipeline(study_fasta,
     # Check header-lines of FASTA: if they have multiple whitespace-delimited fields
     # this can sometimes be an issue for hmmalign.
     check_fasta_headers(study_fasta)
-
 
     # Identify reference files to use. Note that model file will be different
     # depending on which placement pipeline is indicated.
@@ -143,6 +143,7 @@ def run_papara(tree: str, ref_msa: dict, study_fasta: str, out_dir: str,
     return(read_phylip(path.join(out_dir, "papara_alignment.out"),
                        check_input=True))
 
+
 def split_ref_study_papara(papara_out: dict, ref_seqnames: set, ref_fasta: str,
                            study_fasta: str):
     '''Split PaPaRa phylip output into FASTA MSA files of study sequences and
@@ -161,6 +162,7 @@ def split_ref_study_papara(papara_out: dict, ref_seqnames: set, ref_fasta: str,
 
     write_fasta(ref_papara_subset, ref_fasta)
     write_fasta(study_papara_subset, study_fasta)
+
 
 def run_epa_ng(tree: str, ref_msa_fastafile: str, study_msa_fastafile: str,
                model: str, out_dir: str, chunk_size=5000,
@@ -188,6 +190,7 @@ def run_epa_ng(tree: str, ref_msa_fastafile: str, study_msa_fastafile: str,
     jplace_parsed = path.join(out_dir, "epa_result_parsed.jplace")
     parse_jplace(jplace_orig, jplace_parsed)
 
+
 def gappa_jplace_to_newick(jplace_file: str, outfile: str, print_cmds=False):
     '''System call to gappa binary to convert jplace object to newick
     treefile (with specified filename).'''
@@ -207,6 +210,7 @@ def gappa_jplace_to_newick(jplace_file: str, outfile: str, print_cmds=False):
     # Rename newick file to be specified outfile.
     system_call_check("mv " + newick_file + " " + outfile,
                       print_command=print_cmds)
+
 
 def identify_ref_files(in_dir, placement_method):
     '''Given a directory will check whether the four required reference files
@@ -267,7 +271,7 @@ def identify_ref_files(in_dir, placement_method):
             path2return.append(other)
         else:
             missing_files.append(other)
-    
+
     if missing_fasta:
         print("No FASTA file found in specified directory. Expected to find "
               "one of:\n" + "\n".join(possible_fasta) + "\n\n", file=sys.stderr)
@@ -277,15 +281,16 @@ def identify_ref_files(in_dir, placement_method):
                   "expected file(s) could not be found:\n" +
                   "\n".join(missing_files) + "\n\n", file=sys.stderr)
     elif len(missing_files) > 0:
-            if len(missing_files) > 0:
-                print("The following expected file(s) could not be found:\n" +
-                      "\n".join(missing_files) + "\n\n", file=sys.stderr)
+        if len(missing_files) > 0:
+            print("The following expected file(s) could not be found:\n" +
+                  "\n".join(missing_files) + "\n\n", file=sys.stderr)
 
     if missing_fasta or len(missing_files) > 0:
         sys.exit("Error - missing at least one of the four reference files in "
                  "this specified directory: " + in_dir)
 
     return(path2return)
+
 
 def parse_jplace(jplace_in, jplace_out):
     '''Parse jplace file to retain only a single placement per ASV (with the
@@ -306,7 +311,7 @@ def parse_jplace(jplace_in, jplace_out):
         placement_names.append(datastore["placements"][i]["n"][0])
 
         asv_placements = datastore["placements"][i]["p"]
-        
+
         # For ASVs with multiple placements only retain a single placement.
         if len(asv_placements) == 1:
             next
@@ -337,12 +342,13 @@ def parse_jplace(jplace_in, jplace_out):
     with open(jplace_out, 'w') as f:
         json.dump(datastore, f, indent=4, sort_keys=False)
 
+
 def check_alignments(raw_seqs, aligned_seqs, min_align, verbose):
     '''Check that all study sequences are at least a high % of their original
     length in alignment. If not then remove sequences below this cut-off and
     throw detailed warning. Throw critical error if all sequences are below
     cut-off. This cut-off is specified by --min_align option. Also keep
-    track of input sequence lengths and report range of lengths (only if 
+    track of input sequence lengths and report range of lengths (only if
     verbose set).'''
 
     poorly_aligned = []
@@ -423,7 +429,7 @@ def run_sepp(tree: str, ref_msa_fastafile: str, study_msa_fastafile: str,
     # Give error if either reference or query FASTA gzipped.
     ref_fasta_basename = path.basename(ref_msa_fastafile)
     ref_fasta_ext = path.splitext(ref_fasta_basename)[1]
-    
+
     study_fasta_basename = path.basename(study_msa_fastafile)
     study_fasta_ext = path.splitext(study_fasta_basename)[1]
 
@@ -435,14 +441,14 @@ def run_sepp(tree: str, ref_msa_fastafile: str, study_msa_fastafile: str,
                   "decompressed. Please run gunzip on this reference file "
                   "before re-running: " + ref_msa_fastafile + "\n",
                   file=sys.stderr)
-        
+
         if study_fasta_ext == ".gz":
 
             print("\nTo place sequences with SEPP all input FASTAs must be "
                   "decompressed. Please run gunzip on the query FASTA file "
                   "before re-running: " + study_msa_fastafile + "\n",
                   file=sys.stderr)
-        
+
         sys.exit("\nStopped running due to at least one input FASTA being "
                  "gzipped (which SEPP does not allow).\n")
 
@@ -450,7 +456,7 @@ def run_sepp(tree: str, ref_msa_fastafile: str, study_msa_fastafile: str,
                       print_stdout=print_cmds, print_stderr=print_cmds)
 
 
-def check_fasta_headers(filename : str):
+def check_fasta_headers(filename: str):
     '''Check that headers of specified FASTA do not contain whitespace.'''
 
     if filename[-3:] == ".gz":
@@ -469,4 +475,3 @@ def check_fasta_headers(filename : str):
 
             if len(line.split()) > 1:
                 sys.exit("\nStopping - input FASTA file header lines should not contain whitespace. Please alter and re-run. \n\nHeader with whitespace:\n\n" + line + "\n")
-

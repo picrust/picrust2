@@ -14,11 +14,12 @@ parser = argparse.ArgumentParser(
                 "prediction with PICRUSt2. Requires unaligned FASTA of study "
                 "sequences. Users can specify a non-default reference files "
                 "if needed.",
-epilog='''
-Usage example:
-place_seqs.py -s study_seqs.fna -o placed_seqs.tre --processes 1 --intermediate placement_working
+    epilog='''
 
-''', formatter_class=argparse.RawDescriptionHelpFormatter)
+Usage example:
+place_seqs.py -s study_seqs.fna -o placed_seqs.tre --processes 1 --intermediate placement_working''',
+
+    formatter_class=argparse.RawDescriptionHelpFormatter)
 
 parser.add_argument('-s', '--study_fasta', metavar='PATH', required=True,
                     type=str, help='FASTA of unaligned study sequences. '
@@ -93,15 +94,15 @@ def main():
 
     else:
         with TemporaryDirectory() as temp_dir:
-                place_seqs_pipeline(study_fasta=args.study_fasta,
-                                    placement_tool=args.placement_tool,
-                                    ref_dir=args.ref_dir,
-                                    out_tree=args.out_tree,
-                                    threads=args.processes,
-                                    out_dir=temp_dir,
-                                    min_align=args.min_align,
-                                    chunk_size=args.chunk_size,
-                                    verbose=args.verbose)
+            place_seqs_pipeline(study_fasta=args.study_fasta,
+                                placement_tool=args.placement_tool,
+                                ref_dir=args.ref_dir,
+                                out_tree=args.out_tree,
+                                threads=args.processes,
+                                out_dir=temp_dir,
+                                min_align=args.min_align,
+                                chunk_size=args.chunk_size,
+                                verbose=args.verbose)
 
 
 if __name__ == "__main__":

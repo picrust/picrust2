@@ -391,7 +391,7 @@ def pathway_pipeline(inputfile,
                                                      gap_fill_on,
                                                      per_sequence_contrib,
                                                      verbose)
-                                                     for sample_id in samples)
+                                             for sample_id in samples)
 
     elif in_format == "strat":
 
@@ -406,7 +406,7 @@ def pathway_pipeline(inputfile,
                                                      gap_fill_on,
                                                      per_sequence_contrib,
                                                      verbose)
-                                                     for sample_id in samples)
+                                             for sample_id in samples)
 
     # Otherwise the data is in unstratified format, which is more straight-
     # forward to process.
@@ -422,7 +422,7 @@ def pathway_pipeline(inputfile,
                                                    coverage,
                                                    gap_fill_on,
                                                    verbose)
-                                               for sample_id in samples)
+                                             for sample_id in samples)
 
     # Prep output unstratified DataFrames.
     path_raw_abun_unstrat = []
@@ -528,7 +528,7 @@ def prep_pathway_df_out(in_tab, strat_index=False, num_digits=4):
 
         if not in_tab_df.empty:
             # Split stratified index into 2 new columns.
-            split_df = pd.DataFrame.from_records(list(in_tab_df.index.str.split(pat = '\\|\\|\\|', n = 1)), columns=['pathway', 'sequence'])
+            split_df = pd.DataFrame.from_records(list(in_tab_df.index.str.split(pat='\\|\\|\\|', n=1)), columns=['pathway', 'sequence'])
             in_tab_df.reset_index(inplace=True)
             in_tab_df[['pathway', 'sequence']] = split_df
 
@@ -775,7 +775,7 @@ def per_sequence_contrib_levels(sequence_abun, sequence_func,
                                                calc_coverage,
                                                gap_fill_on,
                                                print_opt)
-                                               for sequence in overlapping_sequence_ids)
+                                             for sequence in overlapping_sequence_ids)
 
     # Create dataframes from these outputted lists (series per sequence).
     # Prep output df. Then get stratified table with sample as columns
@@ -812,7 +812,7 @@ def per_sequence_contrib_levels(sequence_abun, sequence_func,
     if calc_coverage:
 
         path_cov_by_seq = prep_pathway_df_out(raw_cov,
-                                                  num_digits=10)
+                                              num_digits=10)
         path_cov_by_seq.columns = overlapping_sequence_ids
 
         # Convert study sequence abundances to be binary 1 and 0 for present
@@ -893,7 +893,7 @@ def contrib_format_pathway_levels(sample_id, contrib_input, minpath_map, out_dir
         reactions = pathway_db.find_reactions(pathway)
 
         # Get abundances of all of these reactions.
-        path_reaction_abun = {reaction_id: reaction_abun[reaction_id] \
+        path_reaction_abun = {reaction_id: reaction_abun[reaction_id]
                               for reaction_id in reactions}
 
         # Get pathway abundance and coverage
@@ -1299,7 +1299,10 @@ def compute_structured_pathway_abundance_or_coverage(structure,
             # If the item is a list then recursively determine that part of the
             # pathway's abundance.
             key_reaction_scores.append(compute_structured_pathway_abundance_or_coverage(item,
-                key_reactions, reaction_abun, calc_coverage, median_value))
+                                                                                        key_reactions,
+                                                                                        reaction_abun,
+                                                                                        calc_coverage,
+                                                                                        median_value))
         else:
             reaction_score = reaction_abun[item]
 

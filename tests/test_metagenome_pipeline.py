@@ -59,8 +59,8 @@ marker_predict_in = pd.read_csv(marker_predict, sep="\t",
 marker_predict_in.set_index('sequence', drop=True, inplace=True)
 
 exp_strat_simple_in = pd.read_csv(exp_strat_simple, sep="\t",
-                                       dtype={'sequence': str, 'taxon': str,
-                                              'function': str, 'sample': str})
+                                  dtype={'sequence': str, 'taxon': str,
+                                         'function': str, 'sample': str})
 
 exp_strat_simple_rare_in = pd.read_csv(exp_strat_simple_rare, sep="\t",
                                        dtype={'sequence': str, 'taxon': str,
@@ -264,13 +264,13 @@ class metagenome_pipeline_test(unittest.TestCase):
         pred_test_in = pd.read_csv(test_file, sep="\t", index_col="sequence")
 
         pred_test_in_filt, nsti_col = drop_tips_by_nsti(tab=pred_test_in,
-                                                     nsti_col="metadata_NSTI",
+                                                        nsti_col="metadata_NSTI",
                                                         max_nsti=0.003)
 
         expected_passing_seqs = set(['2571042249_cluster', '2593339006',
-                                 '2571042244', '2571042654', '2568526369',
-                                 '2574180429_cluster', '2593338844',
-                                 '2568526487_cluster', '2574180282_cluster'])
+                                     '2571042244', '2571042654', '2568526369',
+                                     '2574180429_cluster', '2593338844',
+                                     '2568526487_cluster', '2574180282_cluster'])
 
         self.assertSetEqual(expected_passing_seqs,
                             set(list(pred_test_in_filt.index)))
@@ -286,7 +286,7 @@ class metagenome_pipeline_test(unittest.TestCase):
 
         with self.assertRaises(SystemExit):
             pred_test_in_filt, nsti_col = drop_tips_by_nsti(tab=pred_test_in,
-                                                      nsti_col="metadata_NSTI",
+                                                            nsti_col="metadata_NSTI",
                                                             max_nsti=0.000001)
 
 

@@ -20,7 +20,7 @@ test_known_traits = path.join(test_dir_path, "test_data", "workflow",
                               "workflow_known_traits.tsv.gz")
 
 test_seq_abun_tsv = path.join(test_dir_path, "test_data", "workflow",
-                             "workflow_seq_abun.tsv.gz")
+                              "workflow_seq_abun.tsv.gz")
 
 test_seq_abun_biom = path.join(test_dir_path, "test_data", "workflow",
                                "workflow_seq_abun.biom")
@@ -168,6 +168,7 @@ class workflow_test(unittest.TestCase):
                               " --per_sequence_contrib" +
                               " --skip_norm" +
                               " --verbose")
+
 
 if __name__ == '__main__':
     unittest.main()

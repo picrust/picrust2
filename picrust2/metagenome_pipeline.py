@@ -2,7 +2,6 @@
 
 import sys
 import pandas as pd
-from joblib import Parallel, delayed
 import numpy as np
 from os import path
 from picrust2.util import (read_seqabun, make_output_dir, check_files_exist,
@@ -335,7 +334,7 @@ def metagenome_contributions(func_abun, sample_abun, rare_seqs=[],
             func_abun_subset_melt['taxon_rel_function_abun'] = func_abun_subset_melt['genome_function_count'] * func_abun_subset_melt['taxon_rel_abun']
 
             func_abun_subset_melt['norm_taxon_function_contrib'] = func_abun_subset_melt['taxon_function_abun'] / \
-                                                                   func_abun_subset_melt.groupby("function").sum(numeric_only = True)["taxon_function_abun"][func_abun_subset_melt["function"]].to_numpy()
+                                                                   func_abun_subset_melt.groupby("function").sum(numeric_only=True)["taxon_function_abun"][func_abun_subset_melt["function"]].to_numpy()
 
         # Collapse sequences identified as "rare" to the same category.
         rare_seqs = [r for r in rare_seqs if r in func_abun_subset_melt['taxon'].to_list()]
@@ -369,14 +368,13 @@ def metagenome_contributions(func_abun, sample_abun, rare_seqs=[],
             if func_abun_subset_melt['norm_taxon_function_contrib'].isna().sum() > 0:
                 sys.exit("Error - NaN values are present in the norm_taxon_function_contrib column, which indicates that the calculation failed.")
 
-
         if s_i == 0:
             metagenome_contrib_out = func_abun_subset_melt.copy()
             s_i += 1
         else:
             metagenome_contrib_out = pd.concat([metagenome_contrib_out,
                                                 func_abun_subset_melt],
-                                                axis=0)
+                                               axis=0)
 
     return(metagenome_contrib_out)
 

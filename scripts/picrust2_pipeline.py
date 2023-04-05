@@ -2,12 +2,11 @@
 
 import argparse
 from importlib.metadata import version
-from os import path
 import sys
 import time
-from picrust2.default import (default_ref_dir, default_tables, default_map,
+from picrust2.default import (default_ref_dir, default_tables,
                               default_regroup_map, default_pathway_map)
-from picrust2.util import make_output_dir, restricted_float
+from picrust2.util import restricted_float
 from picrust2.pipeline import full_pipeline
 
 HSP_METHODS = ['mp', 'emp_prob', 'pic', 'scp', 'subtree_average']
@@ -26,14 +25,15 @@ parser = argparse.ArgumentParser(
                 "KEGG Orthologs (KOs), and MetaCyc "
                 "pathway abundances. However, this script enables users to "
                 "use custom reference and trait tables to customize analyses.",
-epilog='''
+
+    epilog='''
 Run full default pipeline with 10 cores (only unstratified output):
 picrust2_pipeline.py -s study_seqs.fna -i seqabun.biom -o picrust2_out --processes 10
 
 Run full default pipeline with 10 cores with stratified output (including pathway stratified output based on per-sequence contributions):
-picrust2_pipeline.py -s study_seqs.fna -i seqabun.biom -o picrust2_out --processes 10 --stratified --per_sequence_contrib
+picrust2_pipeline.py -s study_seqs.fna -i seqabun.biom -o picrust2_out --processes 10 --stratified --per_sequence_contrib''',
 
-''', formatter_class=argparse.RawDescriptionHelpFormatter)
+    formatter_class=argparse.RawDescriptionHelpFormatter)
 
 parser.add_argument('-s', '--study_fasta', metavar='PATH', required=True,
                     type=str, help='FASTA of unaligned study sequences (e.g. '
@@ -82,7 +82,7 @@ parser.add_argument('--custom_trait_tables', type=str, metavar='PATH',
                          'command would be used with a custom marker gene '
                          'table (--marker_gene_table) as well.')
 
-parser.add_argument('--marker_gene_table', type=str, metavar='PATH', 
+parser.add_argument('--marker_gene_table', type=str, metavar='PATH',
                     default=default_tables["16S"],
                     help='Path to marker gene copy number table (16S copy '
                          'numbers by default).')
@@ -192,16 +192,16 @@ parser.add_argument('--coverage', default=False, action="store_true",
 parser.add_argument('--per_sequence_contrib', default=False,
                     action="store_true",
                     help='Flag to specify that MinPath is run on the genes '
-                        'contributed by each sequence (i.e. a predicted '
-                        'genome) individually. Note this will greatly '
-                        'increase the runtime. The output will be the '
-                        'predicted pathway abundance contributed by each '
-                        'individual sequence. This is in contrast to the '
-                        'default stratified output, which is the contribution '
-                        'to the community-wide pathway abundances. Pathway '
-                        'coverage stratified by contributing sequence will '
-                        'also be output when --coverage is set (default: '
-                        '%(default)s).')
+                         'contributed by each sequence (i.e. a predicted '
+                         'genome) individually. Note this will greatly '
+                         'increase the runtime. The output will be the '
+                         'predicted pathway abundance contributed by each '
+                         'individual sequence. This is in contrast to the '
+                         'default stratified output, which is the contribution '
+                         'to the community-wide pathway abundances. Pathway '
+                         'coverage stratified by contributing sequence will '
+                         'also be output when --coverage is set (default: '
+                         '%(default)s).')
 
 parser.add_argument('--wide_table', default=False, action='store_true',
                     help='Output wide-format stratified table of metagenome '

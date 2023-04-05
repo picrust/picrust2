@@ -1,11 +1,10 @@
 #!/usr/bin/env python
 
-from os import makedirs, chmod
+from os import makedirs
 from os.path import abspath, dirname, isdir, join, exists, splitext
 from collections import defaultdict
 from subprocess import call
 import argparse
-import stat
 import shutil as _shutil
 import weakref as _weakref
 import warnings as _warnings
@@ -340,8 +339,8 @@ def read_seqabun(infile):
     try:
         in_test = pd.read_csv(filepath_or_buffer=infile, sep="\t", nrows=1)
         in_test_col = list(in_test.columns.values)
-        if len(in_test_col) >= 4 and (in_test_col[0] == "label" and \
-                                      in_test_col[1] == "Group" and \
+        if len(in_test_col) >= 4 and (in_test_col[0] == "label" and
+                                      in_test_col[1] == "Group" and
                                       in_test_col[2] == "numOtus"):
             mothur_format = True
     except Exception:
@@ -373,8 +372,8 @@ def read_seqabun(infile):
                         first_line_flag = False
 
                     elif len(line.split("\t")) != first_num_field:
-                        sys.exit("Stopping - this line of the sequence abundance table has a differing number of fields from the first line after delimitting by tabs. This will need to be fixed.\n\n" +\
-                                 line +\
+                        sys.exit("Stopping - this line of the sequence abundance table has a differing number of fields from the first line after delimitting by tabs. This will need to be fixed.\n\n" +
+                                 line +
                                  "\n\nFor reference, this is what the first line looks like:\n" + first_line)
 
                     elif line[-2:].isspace():
@@ -388,8 +387,8 @@ def read_seqabun(infile):
                         first_line_flag = False
 
                     elif len(line.split("\t")) != first_num_field:
-                        sys.exit("Stopping - this line of the sequence abundance table has a differing number of fields from the first line after delimitting by tabs. This will need to be fixed.\n\n" +\
-                                 line +\
+                        sys.exit("Stopping - this line of the sequence abundance table has a differing number of fields from the first line after delimitting by tabs. This will need to be fixed.\n\n" +
+                                 line +
                                  "\n\nFor reference, this is what the first line looks like:\n" + first_line)
 
                     elif line[-2:].isspace():
@@ -463,7 +462,7 @@ def add_descrip_col(inputfile, mapfile, in_df=False):
     else:
         function_tab = pd.read_csv(inputfile, sep="\t", low_memory=False,
                                    dtype={'function': str, 'sequence': str})
-    
+
     map_tab = pd.read_csv(mapfile, sep="\t", index_col=0, header=None,
                           names=["function", "description"],
                           low_memory=False, dtype=object)
@@ -540,7 +539,7 @@ def convert_humann2_to_picrust2(infiles, outfile, stratified):
 
         original_col = list(humann2_combined.columns)
 
-        split_df = pd.DataFrame.from_records(list(humann2_combined.index.str.split(pat = '\\|', n = 1)), columns=[first_col, 'sequence'])
+        split_df = pd.DataFrame.from_records(list(humann2_combined.index.str.split(pat='\\|', n=1)), columns=[first_col, 'sequence'])
 
         humann2_combined.reset_index(inplace=True)
 
@@ -602,7 +601,6 @@ def convert_picrust2_to_humann2(infiles, outfolder, stratified):
             sys.exit('Stopping - exactly one stratified table should have been '
                      'input - found ' + str(strat_table_count) + '.')
 
-
         # Check that the first column labels are the same across both tables.
         if in_tab1.columns[0] != in_tab2.columns[0]:
             sys.exit('Stopping - label of first column does not match between '
@@ -657,12 +655,12 @@ def convert_picrust2_to_humann2(infiles, outfolder, stratified):
     # Write each sample to a different file in the output folder.
     for sample_id in in_tab.columns:
         outfile = join(outfolder, sample_id + "_humann2-format.tsv")
-        
+
         # Subset to this sample only and remove all rows that are 0.
         tab_subset = in_tab[[sample_id]]
         tab_subset = tab_subset.loc[~(tab_subset == 0).all(axis=1)]
 
-        tab_subset.to_csv(path_or_buf=outfile,  sep="\t",
+        tab_subset.to_csv(path_or_buf=outfile,  sep='\t',
                           index_label=first_col)
 
 
@@ -675,10 +673,10 @@ def convert_picrust2_to_humann2_merged(infiles, outfile):
 
     # List for keeping track name of first column in each file.
     infile_index_names = []
-        
+
     for infile in infiles:
 
-        in_table = pd.read_csv(infile, sep="\t", low_memory=False,
+        in_table = pd.read_csv(infile, sep='\t', low_memory=False,
                                dtype={'function': str, 'sequence': str})
 
         infile_index_names.append(in_table.columns[0])
@@ -741,18 +739,18 @@ def contrib_to_legacy(infiles, outfile, use_rel_abun=True):
         sys.exit('Stopping - only expected one input file when converting '
                  'contributional file to legacy format.')
 
-    contrib_df = pd.read_csv(infiles[0], sep="\t", low_memory=False,
+    contrib_df = pd.read_csv(infiles[0], sep='\t', low_memory=False,
                              dtype={'function': str, 'sequence': str,
                                     'sample': str, 'taxon': str})
 
-    contrib_df.rename(columns={'sample' : 'Sample',
-                               'function' : 'Gene',
-                               'taxon' : 'OTU',
-                               'genome_function_count' : 'GeneCountPerGenome'},
+    contrib_df.rename(columns={'sample': 'Sample',
+                               'function': 'Gene',
+                               'taxon': 'OTU',
+                               'genome_function_count': 'GeneCountPerGenome'},
                       inplace=True)
 
     if 'norm_taxon_function_contrib' in contrib_df:
-        contrib_df.rename(columns={'norm_taxon_function_contrib' : \
+        contrib_df.rename(columns={'norm_taxon_function_contrib':
                                    'ContributionPercentOfSample'},
                           inplace=True)
 
@@ -775,15 +773,15 @@ def contrib_to_legacy(infiles, outfile, use_rel_abun=True):
                  '\'taxon_rel_function_abun\'.')
     else:
         if use_rel_abun:
-            contrib_df.rename(columns={'taxon_rel_abun' : \
+            contrib_df.rename(columns={'taxon_rel_abun':
                                        'OTUAbundanceInSample',
-                                       'taxon_rel_function_abun' : \
+                                       'taxon_rel_function_abun':
                                        'CountContributedByOTU'}, inplace=True)
             contrib_df.drop(labels=['taxon_abun', 'taxon_function_abun'],
                             axis=1, inplace=True)
         else:
-            contrib_df.rename(columns={'taxon_abun' : 'OTUAbundanceInSample',
-                                       'taxon_function_abun' : \
+            contrib_df.rename(columns={'taxon_abun': 'OTUAbundanceInSample',
+                                       'taxon_function_abun':
                                        'CountContributedByOTU'}, inplace=True)
             contrib_df.drop(labels=['taxon_rel_abun',
                                     'taxon_rel_function_abun'],
@@ -795,7 +793,8 @@ def contrib_to_legacy(infiles, outfile, use_rel_abun=True):
                                  'ContributionPercentOfSample']]
 
     contrib_df.to_csv(path_or_buf=outfile, sep="\t", index=False,
-                              compression="gzip")
+                      compression="gzip")
+
 
 def restricted_float(in_arg):
     '''Custom argparse type to force an input float to be between 0 and 1.'''
@@ -878,6 +877,6 @@ def shuffle_predictions(input, outdir, rep, seed=None):
             outfile = join(outdir, input.replace(".tsv", "_shuf" + str(i) + ".tsv"))
         else:
             outfile = join(outdir, input + "_shuf" + str(i) + ".tsv.gz")
-        
+
         pred_table_shuffled.to_csv(path_or_buf=outfile, sep="\t", index=False,
                                    compression="infer")

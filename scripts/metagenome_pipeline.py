@@ -17,9 +17,11 @@ parser = argparse.ArgumentParser(
                 "metagenome table stratified by contributing ASVs can "
                 "optionally also be output.",
 
-    epilog='''Usage example:
-metagenome_pipeline.py -i seqabun.biom -f predicted_EC.tsv.gz -m predicted_16S.tsv.gz --max_nsti 2.0 -o metagenome_out
-''',
+    epilog='''
+
+Usage example:
+metagenome_pipeline.py -i seqabun.biom -f predicted_EC.tsv.gz -m predicted_16S.tsv.gz --max_nsti 2.0 -o metagenome_out''',
+
     formatter_class=argparse.RawDescriptionHelpFormatter)
 
 parser.add_argument('-i', '--input', metavar='PATH', required=True, type=str,

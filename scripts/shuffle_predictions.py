@@ -17,9 +17,9 @@ parser = argparse.ArgumentParser(
 
 Usage example:
 
-shuffle_predictions.py -i EC_predicted.tsv.gz -o EC_predicted_shuffled --rep 5
+shuffle_predictions.py -i EC_predicted.tsv.gz -o EC_predicted_shuffled --rep 5''',
 
-''', formatter_class=argparse.RawDescriptionHelpFormatter)
+    formatter_class=argparse.RawDescriptionHelpFormatter)
 
 parser.add_argument('-i', '--input', metavar='OUTPUT', required=True,
                     type=str,
@@ -52,6 +52,6 @@ def main():
     shuffle_predictions(input=args.input, outdir=args.outdir, rep=args.rep,
                         seed=args.seed)
 
+
 if __name__ == '__main__':
     main()
-

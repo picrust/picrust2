@@ -5,14 +5,7 @@ import pandas as pd
 from os import path
 from picrust2.util import TemporaryDirectory
 from picrust2.default import default_regroup_map, default_pathway_map
-from picrust2.pathway_pipeline import (minpath_wrapper,
-                                       pathway_pipeline,
-                                       read_metagenome_input,
-                                       unstrat_pathway_levels,
-                                       basic_strat_pathway_levels,
-                                       strat_to_unstrat_counts,
-                                       PathwaysDatabase,
-                                       regroup_func_ids)
+from picrust2.pathway_pipeline import pathway_pipeline
 
 # Path to test directory.
 test_dir_path = path.join(path.dirname(path.abspath(__file__)), "test_data",
@@ -79,8 +72,7 @@ class run_minpath_tests(unittest.TestCase):
                                        index_col="pathway")
 
         exp_cov_unstrat = pd.read_csv(exp_cov_unstrat_file, sep="\t",
-                                       index_col="pathway")
-
+                                      index_col="pathway")
 
         exp_abun_strat = pd.read_csv(exp_abun_strat_file, sep="\t")
 
@@ -101,7 +93,6 @@ class run_minpath_tests(unittest.TestCase):
 
         pd.testing.assert_frame_equal(exp_abun_strat, strat_pathabun,
                                       check_like=True, atol=1e-3)
-
 
     def test_unstrat_default_pipeline(self):
         '''Test running default pipeline on unstratified input table.'''
@@ -130,14 +121,13 @@ class run_minpath_tests(unittest.TestCase):
                                        index_col="pathway")
 
         exp_cov_unstrat = pd.read_csv(exp_cov_unstrat_file, sep="\t",
-                                       index_col="pathway")
+                                      index_col="pathway")
 
         pd.testing.assert_frame_equal(exp_abun_unstrat, unstrat_pathabun,
                                       check_like=True, atol=1e-3)
 
         pd.testing.assert_frame_equal(exp_cov_unstrat, unstrat_pathcov,
                                       check_like=True, atol=1e-3)
-
 
     def test_strat_per_genome_pipeline(self):
         '''Test running strat_minpath default pipeline. Make sure that
@@ -162,7 +152,6 @@ class run_minpath_tests(unittest.TestCase):
                                                             per_sequence_abun=in_per_seq_abun,
                                                             per_sequence_function=in_per_seq_func,
                                                             verbose=True)
-
 
         # Compare these predicted tables to expected tables.
         exp_abun_unstrat = pd.read_csv(exp_abun_unstrat_per_genome_file,
@@ -272,6 +261,7 @@ class run_minpath_tests(unittest.TestCase):
 
         pd.testing.assert_frame_equal(exp_cov_strat, strat_pathcov,
                                       check_like=True)
+
 
 if __name__ == '__main__':
     unittest.main()
