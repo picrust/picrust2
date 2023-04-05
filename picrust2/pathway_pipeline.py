@@ -636,8 +636,10 @@ def contributional_path_abun(reaction_abun, func_ids, total_sum, path_abun,
 
     # Get dataframe with sum of all genes per sequence.
     contrib_path = pd.pivot_table(data=reaction_abun,
-                                  index=["taxon", "taxon_abun",
-                                          "taxon_rel_abun"],
+                                  index=['sample',
+                                         'taxon',
+                                         'taxon_abun',
+                                         'taxon_rel_abun'],
                                   aggfunc=np.sum)
 
     contrib_path.reset_index(inplace=True)
@@ -647,7 +649,6 @@ def contributional_path_abun(reaction_abun, func_ids, total_sum, path_abun,
     # Get weighted pathway abundance
     contrib_path['taxon_function_abun'] = (contrib_path['taxon_function_abun'] / total_sum) * path_abun
     contrib_path['taxon_rel_function_abun'] = (contrib_path['taxon_rel_function_abun'] / total_sum) * path_abun
-
 
     # Remove rows that are all 0.
     contrib_path = contrib_path.loc[contrib_path['taxon_function_abun'] > 0, :]
@@ -1234,7 +1235,7 @@ def convert_func_ids(functions, in_df, func_map):
         new_ids = func_map[func]
 
         # Inititalize empty dataframe to add new rows.
-        new_df = pd.DataFrame(columns=in_df_subset.columns.values)
+        new_df = in_df_subset.reindex(columns=in_df_subset.columns, index=[])
 
         # For each new id to regroup by replace all original function ids with
         # this new id and add to new df.
