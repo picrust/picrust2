@@ -11,7 +11,8 @@ dependencies:
 - biom-format >=2.1.10
 - cython
 - epa-ng=0.3.8
-- gappa=0.8.0
+- dendropy=4.5.2
+- gappa >=0.8.0,<=0.8.5
 - glpk >=4.65
 - h5py >=2.10.0
 - hmmer >=3.1b2,<=3.2.1
@@ -21,8 +22,8 @@ dependencies:
 - pandas >=1.1.5
 - pytest >=4.4.1
 - pytest-cov >=2.6.1
-- python >=3.5,<3.9
+- python >=3.5
 - r-base >=3.5.1
 - r-castor >=1.7.2
 - scipy >=1.2.1
-- sepp=4.3.10
+- sepp=4.4.0

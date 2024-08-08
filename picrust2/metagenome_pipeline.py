@@ -153,7 +153,7 @@ def strat_funcs_by_samples(func_abun, sample_abun, rare_seqs=[],
 
     # Return dataframe and also unstratified dataframe if specified.
     if return_unstrat:
-        return(strat_func, strat_func.groupby(level='function', axis=0).sum())
+        return(strat_func, strat_func.groupby(level='function').sum())
     else:
         return(strat_func)
 
@@ -392,7 +392,7 @@ def contrib_to_unstrat(contrib_table, sample_order=None):
     contrib_table = pd.pivot_table(data=contrib_table, columns='sample',
                                    index='function',
                                    values='taxon_function_abun',
-                                   aggfunc=np.sum, fill_value=0)
+                                   aggfunc='sum', fill_value=0)
 
     contrib_table.index.name = None
     contrib_table.columns.name = None

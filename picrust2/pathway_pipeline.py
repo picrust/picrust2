@@ -605,7 +605,7 @@ def path_abun_weighted_by_seq(reaction_abun, func_ids, total_sum, path_abun,
 
     # Get dataframe with sum of all genes per sequence.
     seq_path_abun = pd.pivot_table(data=reaction_abun, index="sequence",
-                                   aggfunc=np.sum)
+                                   aggfunc='sum')
 
     # Get weighted pathway abundance.
     strat_path_abun = (seq_path_abun / total_sum) * path_abun
@@ -640,7 +640,7 @@ def contributional_path_abun(reaction_abun, func_ids, total_sum, path_abun,
                                          'taxon',
                                          'taxon_abun',
                                          'taxon_rel_abun'],
-                                  aggfunc=np.sum)
+                                  aggfunc='sum')
 
     contrib_path.reset_index(inplace=True)
 
@@ -859,7 +859,7 @@ def contrib_format_pathway_levels(sample_id, contrib_input, minpath_map, out_dir
     unstrat_input = contrib_to_unstrat(contrib_input)
 
     # Define dictionary for keeping track of reaction abundances.
-    reaction_abun = unstrat_input[sample_id].to_dict(defaultdict(int))
+    reaction_abun = unstrat_input[sample_id].to_dict(into=defaultdict(int))
 
     if run_minpath:
         pathways_present = minpath_wrapper(sample_id, unstrat_input,
@@ -961,7 +961,7 @@ def basic_strat_pathway_levels(sample_id, strat_input, minpath_map, out_dir,
     unstrat_input = strat_to_unstrat_counts(strat_input)
 
     # Define dictionary for keeping track of reaction abundances.
-    reaction_abun = unstrat_input[sample_id].to_dict(defaultdict(int))
+    reaction_abun = unstrat_input[sample_id].to_dict(into=defaultdict(int))
 
     if run_minpath:
 
@@ -1043,7 +1043,7 @@ def unstrat_pathway_levels(sample_id, unstrat_input, minpath_map, out_dir,
     unstrat_input.set_index("function", drop=True, inplace=True)
 
     # Define dictionary for keeping track of reaction abundances.
-    reaction_abun = unstrat_input[sample_id].to_dict(defaultdict(int))
+    reaction_abun = unstrat_input[sample_id].to_dict(into=defaultdict(int))
 
     if run_minpath:
 
@@ -1193,16 +1193,16 @@ def regroup_func_ids(in_df, in_format, mapfile, proc):
                                          index=['sample', 'function', 'taxon',
                                                 'taxon_abun',
                                                 'taxon_rel_abun'],
-                                         aggfunc=np.sum)
+                                         aggfunc='sum')
 
     elif in_format == "strat":
         regrouped_table = pd.pivot_table(raw_new_ids_combined,
                                          index=["function", "sequence"],
-                                         aggfunc=np.sum)
+                                         aggfunc='sum')
     elif in_format == "unstrat":
         regrouped_table = pd.pivot_table(raw_new_ids_combined,
                                          index="function",
-                                         aggfunc=np.sum)
+                                         aggfunc='sum')
 
     regrouped_table.reset_index(inplace=True)
     regrouped_table.columns.name = None
@@ -1427,4 +1427,4 @@ def strat_to_unstrat_counts(strat_df, func_col="function"):
 
     strat_df = strat_df.drop(["sequence"], axis=1)
 
-    return(pd.pivot_table(data=strat_df, index=func_col, aggfunc=np.sum))
+    return(pd.pivot_table(data=strat_df, index=func_col, aggfunc='sum'))
