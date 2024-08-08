@@ -25,4 +25,4 @@ dependencies:
 - r-base >=3.5.1
 - r-castor >=1.7.2
 - scipy >=1.2.1
-- sepp >=4.3.10
+- sepp=4.4.0
