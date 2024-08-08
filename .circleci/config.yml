@@ -19,5 +19,5 @@ jobs:
             conda init bash
             source ~/.bashrc
             conda activate picrust2
-            pip install --editable .
+            pip install --use-pep517 --config-settings editable_mode=compat -e .
             pytest -v
