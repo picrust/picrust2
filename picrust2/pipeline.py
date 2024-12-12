@@ -6,7 +6,7 @@ from picrust2.default import (default_tables, default_pathway_map,
                               default_ref_dir)
 from picrust2.place_seqs import identify_ref_files
 from picrust2.util import (make_output_dir, check_files_exist, read_fasta,
-                           system_call_check, read_seqabun)
+                           read_fasta_ids, system_call_check, read_seqabun)
 
 
 def full_pipeline(study_fasta,
@@ -114,6 +114,9 @@ def full_pipeline(study_fasta,
 
     # Check that sequence names in FASTA overlap with input table.
     check_overlapping_seqs(study_fasta, input_table, verbose)
+    
+    # Check that there are no duplicated sequence names in the FASTA.
+    check_duplicated_seqnames(study_fasta, verbose)
 
     if path.exists(output_folder):
         sys.exit("Stopping since output directory " + output_folder +
@@ -381,4 +384,23 @@ def check_overlapping_seqs(in_seq, in_tab, verbose):
     if verbose:
         print(str(num_ASV_overlap) + " of " + str(len(table_ASVs)) +
               " sequence ids overlap between input table and FASTA.\n",
+              file=sys.stderr)
+              
+def check_duplicated_seqnames(in_seq, verbose):
+    '''Check that ASV ids are not duplicated in the input FASTA.
+    Will throw an error if any of the ids are duplicated, and will otherwise
+    print number of ids to STDERR.'''
+    
+    FASTA_ASVs = read_fasta_ids(in_seq)
+    
+    unique_ids = set(FASTA_ASVs)
+    
+    duplicated_ids = [i for i in unique_ids if FASTA_ASVs.count(i) > 1]
+    
+    if len(FASTA_ASVs) != len(set(FASTA_ASVs)):
+      sys.exit("Stopping - there are duplicated ASV ids in the input FASTA.\n" +
+              "These are the duplicated IDs: " + ", ".join(duplicated_ids))
+    
+    if verbose:
+        print(str(len(FASTA_ASVs)) + " ASVs in the input FASTA. None of the sequence ids are duplicated.\n",
               file=sys.stderr)
