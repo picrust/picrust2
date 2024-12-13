@@ -14,6 +14,7 @@ import biom
 import tempfile
 import gzip
 import sys
+from ete3 import Tree
 
 
 def read_fasta(filename, cut_header=False):
@@ -65,6 +66,7 @@ def read_fasta(filename, cut_header=False):
     fasta_in.close()
 
     return seq
+  
   
 def read_fasta_ids(filename, cut_header=False):
     '''Read in FASTA file (gzipped or not) and return dictionary with each
@@ -484,6 +486,31 @@ def check_files_exist(filepaths):
         sys.exit("\n\nStopping - this input file was not found: " + missing_files[0])
     elif num_nonexist > 1:
         sys.exit("\n\nStopping - these input files were not found: " + ", ".join(missing_files))
+        
+        
+def prune_tree(names, tree_file, save_name):
+    '''Read in tree file and prune it to only the names given. Save it as save_name.'''
+    
+    tree = Tree(tree_file, format=1, quoted_node_names=True)
+    
+    tree.prune(names)
+    
+    tree.write(outfile=save_name, format=1)
+    
+    return
+
+
+def get_tree_nodes(tree_file):
+    '''Read in tree file and return the names of the nodes within it.'''
+  
+    tree = Tree(tree_file, format=1, quoted_node_names=True)
+    
+    names = []
+    
+    for node in tree.traverse("postorder"):
+        names.append(node.name)
+    
+    return(names)
 
 
 def add_descrip_col(inputfile, mapfile, in_df=False):
