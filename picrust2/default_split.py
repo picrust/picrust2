@@ -37,7 +37,7 @@ default_pathway_map = path.join(project_dir, "default_files",
                                 "metacyc_pathways_structured_filtered_v24_subreactions.txt")
 
 #fungi_pathway_map = path.join(project_dir, "default_files", "pathway_mapfiles",
-                              "metacyc_path2rxn_struc_filt_fungi.txt")
+#                              "metacyc_path2rxn_struc_filt_fungi.txt")
 
 # Inititalize default trait table files for hsp.py.
 bacteria_dir = path.join(project_dir, "default_files", "bacteria")
@@ -54,7 +54,7 @@ default_tables_bac = {"16S": path.join(bacteria_dir, "16S.txt.gz"),
 
                   "BIGG": path.join(bacteria_dir, "bigg_reaction.txt.gz"),
 
-                  "CAZy": path.join(bacteria_dir, "cazy.txt.gz"),
+                  "CAZY": path.join(bacteria_dir, "cazy.txt.gz"),
 
                   "GENE_NAMES": path.join(bacteria_dir, "preferred_name.txt.gz")}
 
@@ -72,7 +72,7 @@ default_tables_arc = {"16S": path.join(archaea_dir, "16S.txt.gz"),
 
                   "BIGG": path.join(archaea_dir, "bigg_reaction.txt.gz"),
 
-                  "CAZy": path.join(archaea_dir, "cazy.txt.gz"),
+                  "CAZY": path.join(archaea_dir, "cazy.txt.gz"),
 
                   "GENE_NAMES": path.join(archaea_dir, "preferred_name.txt.gz")}
 

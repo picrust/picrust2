@@ -57,8 +57,8 @@ def get_lowest_nsti(nsti_table_dom1_path,
     nsti_dom2 = nsti_dom2.loc[nsti_lowest[nsti_lowest['best_domain'] == dom2_name].index.values, :]
     
     if verbose:
-        print(str(len(nsti_dom1.shape[0])) + " sequences were kept for " + dom1_name +
-              "\n"+str(len(nsti_dom2.shape[0])) + " sequences were kept for " + dom2_name, file=sys.stderr)
+        print(str(nsti_dom1.shape[0]) + " sequences were kept for " + dom1_name +
+              "\n"+str(nsti_dom2.shape[0]) + " sequences were kept for " + dom2_name, file=sys.stderr)
     
     return(nsti_lowest, nsti_dom1, nsti_dom2)
   
