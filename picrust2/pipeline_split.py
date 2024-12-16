@@ -368,7 +368,7 @@ def full_pipeline_split(study_fasta,
                   combining.append(pred)
         
         if len(combining) == 1:
-            predicted_funcs[combining[0]] = predicted_funcs_split[combining[0]]
+            predicted_funcs[func] = predicted_funcs_split[combining[0]]
             print("Warning: There was only one file for the function: "+ func + "\n"
                   "Maybe that's fine if you used custom traits or there were no sequences "
                   "matching one of the domains.", file=sys.stderr)
