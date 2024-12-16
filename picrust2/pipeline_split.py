@@ -274,9 +274,27 @@ def full_pipeline_split(study_fasta,
     nsti_dom2_df.to_csv(path_or_buf=path.join(output_folder, name_ref2 + "_reduced_marker_predicted_and_nsti.tsv.gz"), sep="\t")
     nsti_lowest_df.to_csv(path_or_buf=path.join(output_folder, "combined_marker_predicted_and_nsti.tsv.gz"), sep="\t")
     
-    # Update the predicted_funcs_split dictionary
-    predicted_funcs_split[name_ref1 + "_marker"] = path.join(output_folder, name_ref1 + "_reduced_marker_predicted_and_nsti.tsv.gz")
-    predicted_funcs_split[name_ref2 + "_marker"] = path.join(output_folder, name_ref2 + "_reduced_marker_predicted_and_nsti.tsv.gz")
+    # Check whether we still have both domains present still
+    if nsti_dom1_df.shape[0] == 0:
+        if verbose:
+            print("Don't have any " + name_ref1 + " in the study sequences. Continuing with only " + name_ref2,
+                  file=sys.stderr)
+        
+        # Update the predicted_funcs_split dictionary
+        predicted_funcs_split[name_ref1 + "_marker"] = ""
+        predicted_funcs_split[name_ref2 + "_marker"] = path.join(output_folder, name_ref2 + "_reduced_marker_predicted_and_nsti.tsv.gz")
+    elif nsti_dom2_df.shape[0] == 0:
+        if verbose:
+            print("Don't have any " + name_ref2 + " in the study sequences. Continuing with only " + name_ref1,
+                  file=sys.stderr)
+        
+        # Update the predicted_funcs_split dictionary
+        predicted_funcs_split[name_ref1 + "_marker"] = path.join(output_folder, name_ref1 + "_reduced_marker_predicted_and_nsti.tsv.gz")
+        predicted_funcs_split[name_ref2 + "_marker"] = ""
+    else:
+        # Update the predicted_funcs_split dictionary
+        predicted_funcs_split[name_ref1 + "_marker"] = path.join(output_folder, name_ref1 + "_reduced_marker_predicted_and_nsti.tsv.gz")
+        predicted_funcs_split[name_ref2 + "_marker"] = path.join(output_folder, name_ref2 + "_reduced_marker_predicted_and_nsti.tsv.gz")
     
     # Now prune the trees to contain only the sequences of interest for each domain
     out_tree_ref1_red = path.join(output_folder, name_ref1 + "_reduced.tre")
@@ -284,6 +302,7 @@ def full_pipeline_split(study_fasta,
     
     ref_d1_seqs = read_fasta_ids(ref_msa_ref1)
     ref_d2_seqs = read_fasta_ids(ref_msa_ref2)
+    
     prune_tree(list(nsti_dom1_df.index.values)+ref_d1_seqs, out_tree_ref1, out_tree_ref1_red)
     prune_tree(list(nsti_dom2_df.index.values)+ref_d2_seqs, out_tree_ref2, out_tree_ref2_red)
     
@@ -293,13 +312,16 @@ def full_pipeline_split(study_fasta,
               file=sys.stderr)
     
     # Run hsp.py for each function database for each of the reference sets
-    reference_sets = [[name_ref1, funcs_ref1, out_tree_ref1_red, func_tables_ref1], [name_ref2, funcs_ref2, out_tree_ref2_red, func_tables_ref2]]
+    reference_sets = [[name_ref1, funcs_ref1, out_tree_ref1_red, func_tables_ref1, nsti_dom1_df], [name_ref2, funcs_ref2, out_tree_ref2_red, func_tables_ref2, nsti_dom2_df]]
     for ref in reference_sets:
         # First get the files we'll be using
         name = ref[0]
         funcs = ref[1]
         out_tree = ref[2]
         func_tables = ref[3]
+        nsti = ref[4]
+        if nsti.shape[0] == 0: 
+            continue
         
         for func in funcs:
             hsp_outfile = path.join(output_folder, name + "_" + func + "_predicted.tsv.gz")
@@ -348,7 +370,8 @@ def full_pipeline_split(study_fasta,
         if len(combining) == 1:
             predicted_funcs[combining[0]] = predicted_funcs_split[combining[0]]
             print("Warning: There was only one file for the function: "+ func + "\n"
-                  "Maybe that's fine if you used custom traits.", file=sys.stderr)
+                  "Maybe that's fine if you used custom traits or there were no sequences "
+                  "matching one of the domains.", file=sys.stderr)
         
         elif len(combining) > 2:
             sys.exit("More than two files were available for the function: " + func +"\n"
