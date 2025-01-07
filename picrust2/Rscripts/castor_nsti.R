@@ -29,8 +29,7 @@ nsti_values <- find_nearest_tips(full_tree,
 nsti_genomes <- find_nearest_tips(full_tree,
                                  target_tips=known_tip_range,
                                  check_input=TRUE)$nearest_tip_per_tip[unknown_tips_index]
-print(known_tips, nsti_genomes)
-nsti_genomes = known_tips[nsti_genomes]
+nsti_genomes = full_tree$tip.label[nsti_genomes]
 
 # Make dataframe of study sequences (unknown tips) and nsti values as 2nd column.
 write.table(x = data.frame("sequence" = unknown_tips, "metadata_NSTI" = nsti_values, "closest_reference_genome" = nsti_genomes),
