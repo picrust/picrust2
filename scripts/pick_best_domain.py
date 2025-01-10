@@ -4,8 +4,10 @@ import argparse
 from importlib.metadata import version
 from picrust2.split_domains import get_lowest_nsti
 from picrust2.util import get_tree_nodes, prune_tree, check_files_exist, read_fasta_ids
+from picrust2.default_split import default_ref_dir_bac, default_ref_dir_arc
 import sys
 import pandas as pd
+from os import path
 
 parser = argparse.ArgumentParser(
 
@@ -19,35 +21,28 @@ parser = argparse.ArgumentParser(
     epilog='''
 Usage example:
 pick_best_domain.py \ \n
+              -n1 bacteria \ \n
+              -n2 archaea \ \n
               --tree_dom1 bac_out.tre \ \n
               --tree_dom2 arc_out.tre \ \n
-              --ref_fasta_dom1 default_files/bacteria/bac_ref/bac_ref.fna \ \n
-              --ref_fasta_dom2 default_files/archaea/arc_ref/arc_ref.fna \ \n
-              --tree_out_dom1 bac_best_out.tre \ \n
-              --tree_out_dom2 arc_best_out.tre \ \n
+              --tree_out_dom1 bac_reduced_out.tre \ \n
+              --tree_out_dom2 arc_reduced_out.tre \ \n
               --nsti_table_dom1 bac_marker_nsti_predicted.tsv.gz \ \n
               --nsti_table_dom2 arc_marker_nsti_predicted.tsv.gz \ \n
               --nsti_table_out_dom1 bac_best_marker_nsti_predicted.tsv.gz \ \n
               --nsti_table_out_dom2 arc_best_marker_nsti_predicted.tsv.gz \ \n
-              --nsti_table_out_combined combined_marker_nsti_predicted.tsv.gz \ \n
-              -n1 'bacteria' \ \n
-              -n2 'archaea'
+              --nsti_table_out_combined combined_marker_nsti_predicted.tsv.gz \
+
 ''', formatter_class=argparse.RawDescriptionHelpFormatter)
-
-parser.add_argument('--tree_dom1', metavar='PATH', required=True, type=str,
-                    help='The full reference tree for the first domain in newick format containing '
+                         
+parser.add_argument('--tree_dom1', metavar='PATH', type=str, default=None,
+                    help='The full tree for the first domain in newick format containing '
                          'both study sequences (i.e. ASVs or OTUs) and reference sequences.')
 
-parser.add_argument('--tree_dom2', metavar='PATH', required=True, type=str,
-                    help='The full reference tree for the second domain in newick format containing '
+parser.add_argument('--tree_dom2', metavar='PATH', type=str, default=None,
+                    help='The full tree for the second domain in newick format containing '
                          'both study sequences (i.e. ASVs or OTUs) and reference sequences.')
-                         
-parser.add_argument('--ref_fasta_dom1', metavar='PATH', required=True, type=str,
-                    help='The reference FASTA file for the first domain.')
-                    
-parser.add_argument('--ref_fasta_dom2', metavar='PATH', required=True, type=str,
-                    help='The reference FASTA file for the second domain.')
-                         
+
 parser.add_argument('--tree_out_dom1', metavar='PATH', required=True, type=str,
                     help='Output reference tree for the first domain in newick format containing '
                          'both study sequences (i.e. ASVs or OTUs) and reference sequences. Only '
@@ -78,12 +73,18 @@ parser.add_argument('--nsti_table_out_combined', metavar='PATH', required=True, 
                     help='Output table with predicted NSTI, marker gene copy numbers and best '
                          'domain match per study sequence in input tree. If the extension \".gz\" '
                          'is added the table will automatically be gzipped.')
+                         
+parser.add_argument('--ref_fasta_dom1', metavar='PATH', type=str, default=None,
+                    help='The reference FASTA file for the first domain.')
+                    
+parser.add_argument('--ref_fasta_dom2', metavar='PATH', type=str, default=None,
+                    help='The reference FASTA file for the second domain.')
 
-parser.add_argument('-n1', '--name_dom1', type=str, default="domain1",
+parser.add_argument('-n1', '--name_dom1', type=str, default="bacteria",
                     help='Name of the domain associated with the first tree and NSTI table. '
                     '(default: %(default)s).')
 
-parser.add_argument('-n2', '--name_dom2', type=str, default="domain2",
+parser.add_argument('-n2', '--name_dom2', type=str, default="archaea",
                     help='Name of the domain associated with the second tree and NSTI table. '
                     '(default: %(default)s).')
                     
@@ -93,11 +94,32 @@ parser.add_argument('--check', default=True, action='store_true',
 parser.add_argument('--verbose', default=False, action='store_true',
                     help='If specified, print out wrapped commands and other '
                          'details to screen.')
-                         
+
 
 def main():
 
     args = parser.parse_args()
+    
+    if args.name_dom1 in ['bac', 'bacteria', 'arc', 'archaea'] and args.name_dom2 in ['bac', 'bacteria', 'arc', 'archaea']:
+        if args.name_dom1 == args.name_dom2:
+            sys.exit("Stopping - gave the same name for --name_dom1 and --name_dom2.")
+        if args.ref_fasta_dom1 is None and args.ref_fasta_dom2 is None:
+            if args.name_dom1 in ['bac', 'bacteria']:
+                ref_dir_dom1 = default_ref_dir_bac
+            elif args.name_dom1 in ['arc', 'archaea']:
+                ref_dir_dom1 = default_ref_dir_bac
+            if args.name_dom2 in ['bac', 'bacteria']:
+                ref_dir_dom2 = default_ref_dir_bac
+            elif args.name_dom2 in ['arc', 'archaea']:
+                ref_dir_dom2 = default_ref_dir_arc
+                
+            in_dir_dom1, in_dir_dom2 = ref_dir_dom1.rstrip('/'), ref_dir_dom2.rstrip('/')
+            base_path_dom1, base_path_dom2 = path.basename(in_dir_dom1), path.basename(in_dir_dom2)
+                
+            args.ref_fasta_dom1, args.ref_fasta_dom2 = path.join(in_dir_dom1, base_path_dom1 + ".fna"), path.join(in_dir_dom2, base_path_dom2 + ".fna")
+        
+        else:
+            sys.exit("You gave a reference fasta file for only one of the domains. Please give one for both or neither.")
     
     # Check that input filenames exist.
     check_files_exist([args.tree_dom1, args.tree_dom2, args.nsti_table_dom1, args.nsti_table_dom2])
