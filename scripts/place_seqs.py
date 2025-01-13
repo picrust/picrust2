@@ -3,7 +3,7 @@
 import argparse
 from importlib.metadata import version
 from picrust2.place_seqs import place_seqs_pipeline
-from picrust2.default_oldIMG import default_ref_dir
+from picrust2.default import default_ref_dir
 from picrust2.util import make_output_dir, TemporaryDirectory, restricted_float
 
 parser = argparse.ArgumentParser(

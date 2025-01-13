@@ -5,7 +5,7 @@ from importlib.metadata import version
 from picrust2.pathway_pipeline import pathway_pipeline
 from picrust2.util import (make_output_dir, check_files_exist,
                            TemporaryDirectory)
-from picrust2.default_oldIMG import default_regroup_map, default_pathway_map
+from picrust2.default import default_regroup_map, default_pathway_map
 from os import path
 
 parser = argparse.ArgumentParser(

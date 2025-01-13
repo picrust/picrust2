@@ -2,7 +2,7 @@
 
 from os import path
 import sys
-from picrust2.default_oldIMG import (default_tables, default_pathway_map,
+from picrust2.default import (default_tables, default_pathway_map,
                               default_ref_dir)
 from picrust2.place_seqs import identify_ref_files
 from picrust2.util import (make_output_dir, check_files_exist, read_fasta,

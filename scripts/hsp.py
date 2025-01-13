@@ -4,7 +4,7 @@ import argparse
 from importlib.metadata import version
 from picrust2.wrap_hsp import castor_hsp_workflow
 from picrust2.util import make_output_dir_for_file, check_files_exist
-from picrust2.default_oldIMG import default_tables
+from picrust2.default import default_tables
 
 HSP_METHODS = ['mp', 'emp_prob', 'pic', 'scp', 'subtree_average']
 
