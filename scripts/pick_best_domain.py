@@ -4,7 +4,7 @@ import argparse
 from importlib.metadata import version
 from picrust2.split_domains import get_lowest_nsti
 from picrust2.util import get_tree_nodes, prune_tree, check_files_exist, read_fasta_ids
-from picrust2.default_split import default_ref_dir_bac, default_ref_dir_arc
+from picrust2.default import default_ref_dir_bac, default_ref_dir_arc
 import sys
 import pandas as pd
 from os import path

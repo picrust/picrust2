@@ -5,8 +5,10 @@ from importlib.metadata import version
 from picrust2.pathway_pipeline import pathway_pipeline
 from picrust2.util import (make_output_dir, check_files_exist,
                            TemporaryDirectory)
-from picrust2.default import default_regroup_map, default_pathway_map
 from os import path
+from picrust2.default_oldIMG import default_regroup_map, default_pathway_map
+default_regroup_map_old, default_pathway_map_old = default_regroup_map, default_pathway_map
+from picrust2.default import default_regroup_map, default_pathway_map
 
 parser = argparse.ArgumentParser(
 
@@ -54,6 +56,9 @@ parser.add_argument('-i', '--input', metavar='IN_TABLE', required=True,
 
 parser.add_argument('-o', '--out_dir', metavar='DIRECTORY', required=True,
                     type=str, help='Output folder for pathway abundance output.')
+                    
+parser.add_argument('-db', '--database',type=str, default = 'MPGA',
+                    help='Database that is being used for the pathway calculations. Set this to oldIMG if you want to run this script with the old IMG database.')
 
 parser.add_argument('-m', '--map', metavar='MAP', type=str,
                     default=default_pathway_map,
@@ -154,6 +159,15 @@ def main():
     gap_fill_opt = not args.no_gap_fill
 
     run_minpath_opt = not args.skip_minpath
+    
+    if args.database != 'MPGA':
+      if args.database == 'oldIMG':
+          if args.verbose:
+              print('-db is set to old so the old pathway files are being used.')
+          args.regroup_map, args.map = default_regroup_map_old, default_pathway_map_old
+      else:
+          if args.verbose:
+              print('Unknown option set for -db. Ignoring it.')
 
     # If intermediate output directory set then create and output there.
     # Otherwise make a temporary directory for the intermediate files.

@@ -4,40 +4,27 @@ import argparse
 from importlib.metadata import version
 import sys
 import time
-from picrust2.default_split import (default_ref_dir_bac, default_ref_dir_arc, default_tables_bac,
-                              default_tables_arc, default_regroup_map, default_pathway_map)
+from picrust2.default_oldIMG import (default_ref_dir, default_tables,
+                              default_regroup_map, default_pathway_map)
 from picrust2.util import restricted_float
-from picrust2.pipeline_split import full_pipeline_split
+from picrust2.pipeline_oldIMG import full_pipeline
 
 HSP_METHODS = ['mp', 'emp_prob', 'pic', 'scp', 'subtree_average']
 
 parser = argparse.ArgumentParser(
 
-    description="Wrapper for full PICRUSt2 pipeline to be run with two different "
-                "domains. This is intended for use with the new separate bacteria "
-                "and archaea trees and reference trait tables. Run sequence placement "
+    description="Wrapper for full PICRUSt2 pipeline. Run sequence placement "
                 "with EPA-NG and GAPPA to place study sequences (i.e. OTUs "
                 "and ASVs) into a reference tree. Then runs hidden-state "
-                "prediction with the castor R package to predict NSTI and "
-                "marker gene copy number for each study sequence. The domain that "
-                "best fits each study sequence will then be chosen and hidden-state "
-                "prediction with the castor R package will be used to predict traits "
-                "for each genome. Predicted traits for all genomes are combined "
-                "for both domains Metagenome profiles are then generated, "
+                "prediction with the castor R package to predict genome for "
+                "each study sequence. Metagenome profiles are then generated, "
                 "which can be optionally stratified by the contributing "
                 "sequence. Finally, pathway abundances are predicted based on "
                 "metagenome profiles. By default, output files include "
                 "predictions for Enzyme Commission (EC) numbers, "
                 "KEGG Orthologs (KOs), and MetaCyc "
                 "pathway abundances. However, this script enables users to "
-                "use custom reference and trait tables to customize analyses. "
-                "If you wish to run the previous version of PICRUSt2 (i.e. a single "
-                "reference for all prokaryotes, please use the picrust2_pipeline.py "
-                "script. This version was designed for running the separate bacterial "
-                "and archaeal trees, but could be used for any two domains. If you know "
-                "that your study sequences only contain bacteria, or only contain archaea, "
-                "you may wish to run the picrust2_pipeline.py script but specifying "
-                "bacteria/archaea as the reference database to use.",
+                "use custom reference and trait tables to customize analyses.",
 
     epilog='''
 Run full default pipeline with 10 cores (only unstratified output):
@@ -69,15 +56,8 @@ parser.add_argument('-t', '--placement_tool', metavar='epa-ng|sepp',
                          'reference tree. One of \"epa-ng\" or \"sepp\" '
                          'must be input (default: %(default)s)')
 
-parser.add_argument('-r1', '--ref_dir1', metavar='PATH', type=str,
-                    default=default_ref_dir_bac,
-                    help='Directory containing reference sequence files '
-                         '(default: %(default)s). Please see the online '
-                         'documentation for how to name the files in this '
-                         'directory.')
-
-parser.add_argument('-r2', '--ref_dir2', metavar='PATH', type=str,
-                    default=default_ref_dir_arc,
+parser.add_argument('-r', '--ref_dir', metavar='PATH', type=str,
+                    default=default_ref_dir,
                     help='Directory containing reference sequence files '
                          '(default: %(default)s). Please see the online '
                          'documentation for how to name the files in this '
@@ -85,27 +65,15 @@ parser.add_argument('-r2', '--ref_dir2', metavar='PATH', type=str,
 
 parser.add_argument('--in_traits', type=str.upper, default='EC,KO',
                     help='Comma-delimited list (with no spaces) of which gene '
-                         'families to predict from this set: EC, KO, GO, '
-                         'PFAM, BIGG, CAZY, GENE_NAMES. Note that EC numbers will '
-                         'always be predicted unless --no_pathways is set '
+                         'families to predict from this set: COG, EC, KO, '
+                         'PFAM, TIGRFAM. Note that EC numbers will always '
+                         'be predicted unless --no_pathways is set '
                          '(default: %(default)s).')
 
-parser.add_argument('--custom_trait_tables_ref1', type=str, metavar='PATH',
+parser.add_argument('--custom_trait_tables', type=str, metavar='PATH',
                     default=None,
-                    help='Optional path to custom trait tables for domain 1 with '
-                         'gene families as columns and genomes as rows (overrides '
-                         '--in_traits setting) to be used for hidden-state '
-                         'prediction. Multiple tables can be specified by '
-                         'delimiting filenames by commas. Importantly, the '
-                         'first custom table specified will be used for '
-                         'inferring pathway abundances. Typically this '
-                         'command would be used with a custom marker gene '
-                         'table (--marker_gene_table) as well.')
-                         
-parser.add_argument('--custom_trait_tables_ref2', type=str, metavar='PATH',
-                    default=None,
-                    help='Optional path to custom trait tables for domain 2 with '
-                         'gene families as columns and genomes as rows (overrides '
+                    help='Optional path to custom trait tables with gene '
+                         'families as columns and genomes as rows (overrides '
                          '--in_traits setting) to be used for hidden-state '
                          'prediction. Multiple tables can be specified by '
                          'delimiting filenames by commas. Importantly, the '
@@ -114,15 +82,10 @@ parser.add_argument('--custom_trait_tables_ref2', type=str, metavar='PATH',
                          'command would be used with a custom marker gene '
                          'table (--marker_gene_table) as well.')
 
-parser.add_argument('--marker_gene_table_ref1', type=str, metavar='PATH',
-                    default=default_tables_bac["16S"],
-                    help='Path to marker gene copy number table for domain 2 '
-                          '(16S copy numbers for bacteria by default).')
-                         
-parser.add_argument('--marker_gene_table_ref2', type=str, metavar='PATH',
-                    default=default_tables_arc["16S"],
-                    help='Path to marker gene copy number table for domain 2 '
-                          '(16S copy numbers for archaea by default).')
+parser.add_argument('--marker_gene_table', type=str, metavar='PATH',
+                    default=default_tables["16S"],
+                    help='Path to marker gene copy number table (16S copy '
+                         'numbers by default).')
 
 parser.add_argument('--pathway_map', metavar='MAP', type=str,
                     default=default_pathway_map,
@@ -208,6 +171,10 @@ parser.add_argument('--min_align', type=restricted_float, default=0.8,
                          'be excluded from the placement and all subsequent '
                          'steps. (default: %(default)d).')
 
+parser.add_argument('--skip_nsti', default=False, action='store_true',
+                    help='Do not calculate nearest-sequenced taxon index '
+                    '(NSTI).')
+
 parser.add_argument('--skip_minpath', default=False, action="store_true",
                     help='Do not run MinPath to identify which pathways are '
                          'present as a first pass (on by default).')
@@ -269,18 +236,15 @@ def main():
 
     args = parser.parse_args()
 
-    func_outfiles, pathway_outfiles = full_pipeline_split(study_fasta=args.study_fasta,
+    func_outfiles, pathway_outfiles = full_pipeline(study_fasta=args.study_fasta,
                                                     input_table=args.input,
                                                     output_folder=args.output,
                                                     processes=args.processes,
                                                     placement_tool=args.placement_tool,
-                                                    ref_dir1=args.ref_dir1,
-                                                    ref_dir2=args.ref_dir2,
+                                                    ref_dir=args.ref_dir,
                                                     in_traits=args.in_traits,
-                                                    custom_trait_tables_ref1=args.custom_trait_tables_ref1,
-                                                    custom_trait_tables_ref2=args.custom_trait_tables_ref2,
-                                                    marker_gene_table_ref1=args.marker_gene_table_ref1,
-                                                    marker_gene_table_ref2=args.marker_gene_table_ref2,
+                                                    custom_trait_tables=args.custom_trait_tables,
+                                                    marker_gene_table=args.marker_gene_table,
                                                     pathway_map=args.pathway_map,
                                                     rxn_func=args.reaction_func,
                                                     no_pathways=args.no_pathways,
@@ -295,6 +259,7 @@ def main():
                                                     hsp_method=args.hsp_method,
                                                     edge_exponent=args.edge_exponent,
                                                     min_align=args.min_align,
+                                                    skip_nsti=args.skip_nsti,
                                                     no_gap_fill=args.no_gap_fill,
                                                     per_sequence_contrib=args.per_sequence_contrib,
                                                     wide_table=args.wide_table,
