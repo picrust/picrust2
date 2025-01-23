@@ -1,0 +1,72 @@
+
+
+Using BFGS method to optimize GTR rate parameters, to disable this specify "--no-bfgs" 
+
+
+
+This is RAxML version 8.2.12 released by Alexandros Stamatakis on May 2018.
+
+With greatly appreciated code contributions by:
+Andre Aberer      (HITS)
+Simon Berger      (HITS)
+Alexey Kozlov     (HITS)
+Kassian Kobert    (HITS)
+David Dao         (KIT and HITS)
+Sarah Lutteropp   (KIT and HITS)
+Nick Pattengale   (Sandia)
+Wayne Pfeiffer    (SDSC)
+Akifumi S. Tanabe (NRIFS)
+Charlie Taylor    (UF)
+
+
+Alignment has 1340 distinct alignment patterns
+
+Proportion of gaps and completely undetermined characters in this alignment: 2.86%
+
+RAxML rapid hill-climbing mode
+
+Using 1 distinct models/data partitions with joint branch length optimization
+
+
+Executing 1 inferences on the original alignment using 1 user-specified trees
+
+All free model parameters will be estimated by RAxML
+GAMMA model of rate heterogeneity, ML estimate of alpha-parameter
+
+GAMMA Model parameters will be estimated up to an accuracy of 0.1000000000 Log Likelihood units
+
+Partition: 0
+Alignment Patterns: 1340
+Name: No Name Provided
+DataType: DNA
+Substitution Matrix: GTR
+
+
+
+
+RAxML was called as follows:
+
+raxmlHPC-SSE3 -g archaea_16S_centroids_ssu_align_best_reduced_0.8_fixed.tre -s archaea_0.8_raxml-check.raxml.reduced_dna.fna -m GTRGAMMA -n archaea_16S_centroids_ssu_align_best_reduced_0.8_fixed_SSE3 -p 13 
+
+
+Partition: 0 with name: No Name Provided
+Base frequencies: 0.232 0.255 0.328 0.185 
+
+Inference[0]: Time 69.721592 GAMMA-based likelihood -216481.655393, best rearrangement setting 5
+alpha[0]: 0.506866 rates[0] ac ag at cg ct gt: 1.017623 3.556422 1.909222 0.804002 6.343155 1.000000 
+
+
+Conducting final model optimizations on all 1 trees under GAMMA-based models ....
+
+Inference[0] final GAMMA-based Likelihood: -216481.652930 tree written to file /bigpool/robyn/picrust2_database/gtdb_picrust_files/RAxML_result.archaea_16S_centroids_ssu_align_best_reduced_0.8_fixed_SSE3
+
+
+Starting final GAMMA-based thorough Optimization on tree 0 likelihood -216481.652930 .... 
+
+Final GAMMA-based Score of best tree -216481.652930
+
+Program execution info written to /bigpool/robyn/picrust2_database/gtdb_picrust_files/RAxML_info.archaea_16S_centroids_ssu_align_best_reduced_0.8_fixed_SSE3
+Best-scoring ML tree written to: /bigpool/robyn/picrust2_database/gtdb_picrust_files/RAxML_bestTree.archaea_16S_centroids_ssu_align_best_reduced_0.8_fixed_SSE3
+
+Overall execution time: 76.060636 secs or 0.021128 hours or 0.000880 days
+
