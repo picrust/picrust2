@@ -49,7 +49,6 @@ RAxML was called as follows:
 raxmlHPC-SSE3 -g archaea_16S_centroids_ssu_align_best_reduced_0.8_fixed.tre -s archaea_0.8_raxml-check.raxml.reduced_dna.fna -m GTRGAMMA -n archaea_16S_centroids_ssu_align_best_reduced_0.8_fixed_SSE3 -p 13 
 
 
-Partition: 0 with name: No Name Provided
 Base frequencies: 0.232 0.255 0.328 0.185 
 
 Inference[0]: Time 69.721592 GAMMA-based likelihood -216481.655393, best rearrangement setting 5
