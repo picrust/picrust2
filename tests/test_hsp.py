@@ -5,7 +5,7 @@ from os import path
 import pandas as pd
 import hashlib
 import gzip
-from picrust2.default_oldIMG import default_tables
+from picrust2.default_oldIMG import default_tables 
 from picrust2.wrap_hsp import (castor_hsp_workflow,
                                castor_nsti)
 
