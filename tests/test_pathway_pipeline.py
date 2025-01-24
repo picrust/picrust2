@@ -4,7 +4,7 @@ import unittest
 import pandas as pd
 from os import path
 from picrust2.util import TemporaryDirectory
-from picrust2.default import default_regroup_map, default_pathway_map
+from picrust2.default_oldIMG import default_regroup_map, default_pathway_map
 from picrust2.pathway_pipeline import pathway_pipeline
 
 # Path to test directory.

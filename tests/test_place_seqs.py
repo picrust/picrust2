@@ -4,7 +4,7 @@ import unittest
 import hashlib
 from os import path
 from picrust2.util import read_fasta, TemporaryDirectory
-from picrust2.default import (default_ref_dir,
+from picrust2.default_oldIMG import (default_ref_dir,
                               default_fasta,
                               default_tree,
                               default_hmm,
