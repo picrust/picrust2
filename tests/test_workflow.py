@@ -85,7 +85,7 @@ class workflow_test(unittest.TestCase):
                                            "pred_metagenome_unstrat.tsv.gz")
 
             system_call_check("pathway_pipeline.py -i " + metagenome_outfile +
-                              " -o " + temp_dir)
+                              " -o " + temp_dir + " -db oldIMG")
 
     def test_picrust2_pipeline_script(self):
         '''Test that full pipeline can be run successfully with

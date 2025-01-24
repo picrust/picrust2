@@ -132,7 +132,7 @@ class castor_hsp_workflow_tests(unittest.TestCase):
                                verbose=True)
         
         # Drop the best_domain column that was added for PICRUSt2-v2.6.0 so that the file still matches the old one
-        nsti_out = nsti_out.drop('best_domain', axis=1)
+        nsti_out = nsti_out.drop('closest_reference_genome', axis=1)
 
         # Only compare NSTI column.
         hsp_mp_pred_in_nsti_subset = hsp_mp_pred_in_nsti.loc[:, ["metadata_NSTI"]]
