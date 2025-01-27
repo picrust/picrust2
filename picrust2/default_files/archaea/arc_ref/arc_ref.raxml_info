@@ -1,1 +1,27 @@
-This is RAxML version 7.7.2 released by Alexandros Stamatakis on July 31 2013.This is a RAxML_info file from an --evaluate run, manually reformattedPartition: 0Alignment Patterns: 1340Name: No Name ProvidedDataType: DNASubstitution Matrix: GTRRAxML-NG was called at 04-Dec-2024 09:15:27 as follows:raxml-ng --evaluate --msa archaea_0.8_raxml-check.raxml.reduced.phy --tree archaea_16S_centroids_ssu_align_best_reduced_0.8_fixed.tre --prefix archaea_0.8_raxml --model GTR+G <E2><80><94>threads 24Base frequencies: 0.224411 0.252166 0.284495 0.238928Inference[0]: Time 69.721592 CAT-based likelihood -0000, best rearrangement setting 5alpha[0]: 1.000000 rates[0] ac ag at cg ct gt: 1.166108 4.368360 1.832145 1.019301 5.962743 1.000000NOT conducting any final model optimizations on all 1 trees under CAT-basedmodel ....Final GAMMA  likelihood: -216263.676941
+
+
+This is RAxML version 7.7.2 released by Alexandros Stamatakis on July 31 2013.
+
+This is a RAxML_info file from an --evaluate run, manually reformatted
+
+Partition: 0
+Alignment Patterns: 1340
+Name: No Name Provided
+DataType: DNA
+Substitution Matrix: GTR
+
+RAxML-NG was called at 04-Dec-2024 09:15:27 as follows:
+
+raxml-ng --evaluate --msa archaea_0.8_raxml-check.raxml.reduced.phy --tree archaea_16S_centroids_ssu_align_best_reduced_0.8_fixed.tre --p
+refix archaea_0.8_raxml --model GTR+G <E2><80><94>threads 24
+
+Base frequencies: 0.224411 0.252166 0.284495 0.238928
+
+Inference[0]: Time 69.721592 CAT-based likelihood -0000, best rearrangement setting 5
+alpha[0]: 1.000000 rates[0] ac ag at cg ct gt: 1.166108 4.368360 1.832145 1.019301 5.962743 1.000000
+
+
+NOT conducting any final model optimizations on all 1 trees under CAT-based
+model ....
+
+Final GAMMA  likelihood: -216263.676941
