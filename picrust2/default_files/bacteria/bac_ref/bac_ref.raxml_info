@@ -1,4 +1,26 @@
-This is RAxML version 7.7.2 released by Alexandros Stamatakis on July 31 2013.This is a RAxML_info file from an --evaluate run, manually reformattedPartition: 0Alignment Patterns: 1577Name: No Name ProvidedDataType: DNASubstitution Matrix: GTRRAxML-NG was called at 04-Dec-2024 09:16:05 as follows:
 
-raxml-ng --evaluate --msa bacteria_0.8_raxml-check.raxml.reduced.phy --tree bacteria_16S_centroids_ssu_align_best_reduced_0.8_fixed.tre -
--prefix bacteria_0.8_raxml --model GTR+G <E2><80><94>threads 24Base frequencies: 0.209289 0.232667 0.311531 0.246513 Inference[0]: Time 896.452 CAT-based likelihood -0000, best rearrangement setting 5alpha[0]: 1.000000 rates[0] ac ag at cg ct gt: 1.048719 2.928148 1.638867 0.831209 3.689522 1.000000 NOT conducting any final model optimizations on all 1 trees under CAT-basedmodel ....Final GAMMA  likelihood: -4679887.038556
+
+This is RAxML version 7.7.2 released by Alexandros Stamatakis on July 31 2013.
+
+This is a RAxML_info file from an --evaluate run, manually reformatted
+
+Partition: 0
+Alignment Patterns: 1577
+Name: No Name Provided
+DataType: DNA
+Substitution Matrix: GTR
+
+RAxML-NG was called at 04-Dec-2024 09:16:05 as follows:
+
+raxml-ng --evaluate --msa bacteria_0.8_raxml-check.raxml.reduced.phy --tree bacteria_16S_centroids_ssu_align_best_reduced_0.8_fixed.tre --prefix bacteria_0.8_raxml --model GTR+G --threads 24
+
+Base frequencies: 0.209289 0.232667 0.311531 0.246513 
+
+Inference[0]: Time 896.452 CAT-based likelihood -0000, best rearrangement setting 5
+alpha[0]: 1.000000 rates[0] ac ag at cg ct gt: 1.048719 2.928148 1.638867 0.831209 3.689522 1.000000 
+
+
+NOT conducting any final model optimizations on all 1 trees under CAT-based
+model ....
+
+Final GAMMA  likelihood: -4679887.038556
