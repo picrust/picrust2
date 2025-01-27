@@ -6,3 +6,4 @@ tests/__pycache__/
 picrust2/default_files/prokaryotic/untracked/
 picrust2/default_files/prokaryotic/pro_ref/pro_ref.fna.COPY
 tests/test_data/pathway_pipeline/per_seq_contrib/humann2_run/*
+.DS_Store
