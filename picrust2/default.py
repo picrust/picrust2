@@ -26,7 +26,9 @@ default_model_bac = path.join(default_ref_dir_bac, "bac_ref.model")
 
 default_model_arc = path.join(default_ref_dir_arc, "arc_ref.model")
 
-#default_raxml_info = path.join(default_ref_dir, "pro_ref.raxml_info")
+default_raxml_info_bac = path.join(default_ref_dir_bac, "bac_ref.raxml_info")
+
+default_raxml_info_arc = path.join(default_ref_dir_arc, "arc_ref.raxml_info")
 
 default_regroup_map = path.join(project_dir, "default_files",
                                 "pathway_mapfiles",
