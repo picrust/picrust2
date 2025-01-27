@@ -7,6 +7,7 @@ Args <- commandArgs(TRUE)
 
 # Read in command-line arguments.
 full_tree <- read_tree(file=Args[1], check_label_uniqueness = TRUE)
+full_tree$edge.length[which(full_tree$edge.length == 0)] <- 0.00001
 trait_values <- read.delim(Args[2], check.names=FALSE, row.names=1)
 hsp_method <- Args[3]
 edge_exponent_set <- as.numeric(Args[4])

@@ -3,7 +3,8 @@
 import argparse
 from importlib.metadata import version
 from picrust2.place_seqs import place_seqs_pipeline
-from picrust2.default import default_ref_dir
+from picrust2.default_oldIMG import default_ref_dir
+from picrust2.default import default_ref_dir_bac, default_ref_dir_arc
 from picrust2.util import make_output_dir, TemporaryDirectory, restricted_float
 
 parser = argparse.ArgumentParser(
@@ -33,7 +34,7 @@ parser.add_argument('-t', '--placement_tool', metavar='epa-ng|sepp',
                          'must be input (default: %(default)s)')
 
 parser.add_argument('-r', '--ref_dir', metavar='PATH', type=str,
-                    default=default_ref_dir,
+                    default='bac',
                     help='Directory containing reference sequence files '
                          '(default: %(default)s). Please see the online '
                          'documentation for how to name the files in this '
@@ -76,6 +77,13 @@ def main():
 
     args = parser.parse_args()
 
+    # If the ref_dir option is set to 'bac'/'bacteria', 'arc'/'archaea', or 'oldIMG' then use those default directories.
+    # Otherwise, use the file path provided.
+    if args.ref_dir in ['bac', 'bacteria']: ref_dir = default_ref_dir_bac
+    elif args.ref_dir in ['arc', 'archaea']: ref_dir = default_ref_dir_arc
+    elif args.ref_dir == 'oldIMG': ref_dir = default_ref_dir
+    else: ref_dir = args.ref_dir
+
     # If intermediate output directory set then create and output there.
     # Otherwise make a temporary directory for the intermediate files.
     if args.intermediate:
@@ -84,7 +92,7 @@ def main():
 
         place_seqs_pipeline(study_fasta=args.study_fasta,
                             placement_tool=args.placement_tool,
-                            ref_dir=args.ref_dir,
+                            ref_dir=ref_dir,
                             out_tree=args.out_tree,
                             threads=args.processes,
                             out_dir=args.intermediate,
@@ -96,7 +104,7 @@ def main():
         with TemporaryDirectory() as temp_dir:
             place_seqs_pipeline(study_fasta=args.study_fasta,
                                 placement_tool=args.placement_tool,
-                                ref_dir=args.ref_dir,
+                                ref_dir=ref_dir,
                                 out_tree=args.out_tree,
                                 threads=args.processes,
                                 out_dir=temp_dir,

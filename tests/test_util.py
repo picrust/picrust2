@@ -18,7 +18,7 @@ from picrust2.util import (write_fasta,
                            read_seqabun,
                            TemporaryDirectory)
 
-from picrust2.default import default_map
+from picrust2.default_oldIMG import default_map
 
 metagenome_pipeline_test_dir_path = path.join(path.dirname(path.abspath(__file__)),
                                               "test_data",
@@ -34,7 +34,7 @@ descrip_test_dir_path = path.join(path.dirname(path.abspath(__file__)),
 
 descrip_test_dir_out_path = path.join(descrip_test_dir_path, "output")
 
-# Set paths to test input and output files for add_descriptions.py tests.
+# Set paths to test input and output files for add_descriptions_oldIMG.py tests.
 ec_unstrat_in = path.join(descrip_test_dir_path, "ec_unstrat_test.txt.gz")
 ec_unstrat_exp = path.join(descrip_test_dir_out_path, "ec_unstrat_exp.txt.gz")
 

@@ -38,6 +38,7 @@ def run_metagenome_pipeline(input_seqabun,
 
     pred_function = pd.read_csv(function, sep="\t", dtype={'sequence': str})
     pred_function.set_index('sequence', drop=True, inplace=True)
+    if 'closest_reference_genome' in pred_function.columns: pred_function.drop('closest_reference_genome', axis=1, inplace=True)
 
     # If NSTI column present then remove all rows with value above specified
     # max value. Also, remove NSTI column (in both dataframes).

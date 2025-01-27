@@ -6,7 +6,7 @@ from picrust2.default import default_map
 from picrust2.util import add_descrip_col, make_output_dir_for_file
 import sys
 
-TRAIT_OPTIONS = ['METACYC', 'COG', 'EC', 'KO', 'PFAM', 'TIGRFAM']
+TRAIT_OPTIONS = ['METACYC', 'EC', 'KO', 'PFAM', 'GO']
 
 parser = argparse.ArgumentParser(
 

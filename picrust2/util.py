@@ -14,6 +14,7 @@ import biom
 import tempfile
 import gzip
 import sys
+from ete3 import Tree
 
 
 def read_fasta(filename, cut_header=False):
@@ -65,6 +66,46 @@ def read_fasta(filename, cut_header=False):
     fasta_in.close()
 
     return seq
+  
+  
+def read_fasta_ids(filename, cut_header=False):
+    '''Read in FASTA file (gzipped or not) and return dictionary with each
+    independent sequence id as a key and the corresponding sequence string as
+    the value.'''
+
+    # Intitialize empty list.
+    seq_ids = []
+
+    # Read in FASTA line-by-line.
+    if filename[-3:] == ".gz":
+        fasta_in = gzip.open(filename, "rt")
+    else:
+        fasta_in = open(filename, "r")
+
+    for line in fasta_in:
+
+        line = line.rstrip()
+
+        if len(line) == 0:
+            continue
+
+        # Only take the line if it is a header-line. Define this as everything after the ">".
+        # If cut_header specified then take only the first field after splitting on whitespace.
+        if line[0] == ">":
+
+            if cut_header:
+                name = line.split()[0][1:]
+            else:
+                name = line[1:]
+
+            name = name.rstrip("\r\n")
+
+            # Add this id to the list of sequence ids.
+            seq_ids.append(name)
+
+    fasta_in.close()
+
+    return seq_ids
 
 
 def write_fasta(seq, outfile):
@@ -445,6 +486,31 @@ def check_files_exist(filepaths):
         sys.exit("\n\nStopping - this input file was not found: " + missing_files[0])
     elif num_nonexist > 1:
         sys.exit("\n\nStopping - these input files were not found: " + ", ".join(missing_files))
+        
+        
+def prune_tree(names, tree_file, save_name):
+    '''Read in tree file and prune it to only the names given. Save it as save_name.'''
+    
+    tree = Tree(tree_file, format=1, quoted_node_names=True)
+    
+    tree.prune(names)
+    
+    tree.write(outfile=save_name, format=1)
+    
+    return
+
+
+def get_tree_nodes(tree_file):
+    '''Read in tree file and return the names of the nodes within it.'''
+  
+    tree = Tree(tree_file, format=1, quoted_node_names=True)
+    
+    names = []
+    
+    for node in tree.traverse("postorder"):
+        names.append(node.name)
+    
+    return(names)
 
 
 def add_descrip_col(inputfile, mapfile, in_df=False):

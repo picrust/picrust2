@@ -4,11 +4,14 @@ import argparse
 from importlib.metadata import version
 from picrust2.wrap_hsp import castor_hsp_workflow
 from picrust2.util import make_output_dir_for_file, check_files_exist
-from picrust2.default import default_tables
+from picrust2.default_oldIMG import default_tables
+from picrust2.default import default_tables_bac, default_tables_arc
 
 HSP_METHODS = ['mp', 'emp_prob', 'pic', 'scp', 'subtree_average']
 
-TRAIT_OPTIONS = ['16S', 'COG', 'EC', 'KO', 'PFAM', 'TIGRFAM', 'PHENO']
+TRAIT_OPTIONS = ['16S', 'BIGG', 'CAZY', 'EC', 'GENE_NAMES', 'GO', 'KO', 'PFAM', 'COG', 'TIGRFAM', 'PHENO']
+TRAIT_OPTIONS_NEW = ['16S', 'BIGG', 'CAZY', 'EC', 'GENE_NAMES', 'GO', 'KO', 'PFAM']
+TRAIT_OPTIONS_OLD = ['16S', 'COG', 'EC', 'KO', 'PFAM', 'TIGRFAM', 'PHENO']
 
 parser = argparse.ArgumentParser(
 
@@ -38,6 +41,15 @@ parser.add_argument('-i', '--in_trait', type=str.upper, choices=TRAIT_OPTIONS,
                     help='Specifies which default trait table should be '
                           'used. Use the --observed_trait_table option '
                           'to input a non-default trait table.')
+                          
+parser.add_argument('-db', '--database', type=str, default = 'MPGA',
+                    help='Database that is being used for the pathway calculations. Set this to oldIMG if you want to run this script with the old IMG database.')
+                    
+parser.add_argument('-r', '--reference', type=str,
+                    default='bac',
+                    help='Which set of reference files to use '
+                         '(default: %(default)s). Included options are '
+                         'bac/bacteria and arc/archaea')
 
 parser.add_argument('--observed_trait_table', metavar='PATH', type=str,
                     help='The input trait table describing directly '
@@ -109,7 +121,27 @@ def main():
             "Only one of the arguments --in_trait and --observed_trait_table "
             "can be specified, but currently both are set.")
     elif args.in_trait:
-        trait_table = default_tables[args.in_trait]
+        if args.database != 'MPGA':
+            if args.database == 'oldIMG': 
+                if args.in_trait not in TRAIT_OPTIONS_OLD:
+                    RuntimeError(
+                      "You've chosen a train option that's not available for the oldIMG database. Available options are: "+','.join(TRAIT_OPTIONS_OLD))
+                trait_table = default_tables[args.in_trait]
+            else:
+                raise RuntimeError(
+                          "Unknown option set for -db/--database. Valid options are oldIMG or MPGA. See the help documentation on the wiki for further information.")
+        else:
+            if args.in_trait not in TRAIT_OPTIONS_NEW:
+                    RuntimeError(
+                      "You've chosen a train option that's not available for the new MPGA database. Available options are: "+','.join(TRAIT_OPTIONS_NEW))
+            if args.reference in ['bac', 'bacteria']:
+                trait_table = default_tables_bac[args.in_trait]
+            elif args.reference in ['arc', 'archaea']:
+                trait_table = default_tables_arc[args.in_trait]
+            else:
+              raise RuntimeError(
+                "--in_trait has been set but an unknown reference has been given. "
+                "Included options for -r are bacteria or archaea.")
     elif args.observed_trait_table:
         trait_table = args.observed_trait_table
     else:

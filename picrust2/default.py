@@ -4,60 +4,89 @@ from os import path
 
 project_dir = path.dirname(path.abspath(__file__))
 
-default_ref_dir = path.join(project_dir, "default_files", "prokaryotic",
-                            "pro_ref")
+default_ref_dir_bac = path.join(project_dir, "default_files", "bacteria",
+                            "bac_ref")
 
-default_fasta = path.join(default_ref_dir, "pro_ref.fna")
+default_ref_dir_arc = path.join(project_dir, "default_files", "archaea",
+                            "arc_ref")
 
-default_tree = path.join(default_ref_dir, "pro_ref.tre")
+default_fasta_bac = path.join(default_ref_dir_bac, "bac_ref.fna")
 
-default_hmm = path.join(default_ref_dir, "pro_ref.hmm")
+default_fasta_arc = path.join(default_ref_dir_arc, "arc_ref.fna")
 
-default_model = path.join(default_ref_dir, "pro_ref.model")
+default_tree_bac = path.join(default_ref_dir_bac, "bac_ref.tre")
 
-default_raxml_info = path.join(default_ref_dir, "pro_ref.raxml_info")
+default_tree_arc = path.join(default_ref_dir_arc, "arc_ref.tre")
+
+default_hmm_bac = path.join(default_ref_dir_bac, "bac_ref.hmm")
+
+default_hmm_arc = path.join(default_ref_dir_arc, "arc_ref.hmm")
+
+default_model_bac = path.join(default_ref_dir_bac, "bac_ref.model")
+
+default_model_arc = path.join(default_ref_dir_arc, "arc_ref.model")
+
+default_raxml_info_bac = path.join(default_ref_dir_bac, "bac_ref.raxml_info")
+
+default_raxml_info_arc = path.join(default_ref_dir_arc, "arc_ref.raxml_info")
 
 default_regroup_map = path.join(project_dir, "default_files",
                                 "pathway_mapfiles",
-                                "ec_level4_to_metacyc_rxn.tsv")
+                                "ec_level4_to_metacyc_rxn_new.tsv")
 
 default_pathway_map = path.join(project_dir, "default_files",
                                 "pathway_mapfiles",
-                                "metacyc_path2rxn_struc_filt_pro.txt")
+                                "metacyc_pathways_structured_filtered_v24_subreactions.txt")
 
-fungi_pathway_map = path.join(project_dir, "default_files", "pathway_mapfiles",
-                              "metacyc_path2rxn_struc_filt_fungi.txt")
+#fungi_pathway_map = path.join(project_dir, "default_files", "pathway_mapfiles",
+#                              "metacyc_path2rxn_struc_filt_fungi.txt")
 
 # Inititalize default trait table files for hsp.py.
-prokaryotic_dir = path.join(project_dir, "default_files", "prokaryotic")
+bacteria_dir = path.join(project_dir, "default_files", "bacteria")
 
-default_tables = {"16S": path.join(prokaryotic_dir, "16S.txt.gz"),
+default_tables_bac = {"16S": path.join(bacteria_dir, "16S.txt.gz"),
 
-                  "COG": path.join(prokaryotic_dir, "cog.txt.gz"),
+                  "EC": path.join(bacteria_dir, "ec.txt.gz"),
 
-                  "EC": path.join(prokaryotic_dir, "ec.txt.gz"),
+                  "KO": path.join(bacteria_dir, "ko.txt.gz"),
 
-                  "KO": path.join(prokaryotic_dir, "ko.txt.gz"),
+                  "GO": path.join(bacteria_dir, "go.txt.gz"),
 
-                  "PFAM": path.join(prokaryotic_dir, "pfam.txt.gz"),
+                  "PFAM": path.join(bacteria_dir, "pfam.txt.gz"),
 
-                  "TIGRFAM": path.join(prokaryotic_dir, "tigrfam.txt.gz"),
+                  "BIGG": path.join(bacteria_dir, "bigg_reaction.txt.gz"),
 
-                  "PHENO": path.join(prokaryotic_dir, "pheno.txt.gz")}
+                  "CAZY": path.join(bacteria_dir, "cazy.txt.gz"),
+
+                  "GENE_NAMES": path.join(bacteria_dir, "preferred_name.txt.gz")}
+
+archaea_dir = path.join(project_dir, "default_files", "archaea")
+
+default_tables_arc = {"16S": path.join(archaea_dir, "16S.txt.gz"),
+
+                  "EC": path.join(archaea_dir, "ec.txt.gz"),
+
+                  "KO": path.join(archaea_dir, "ko.txt.gz"),
+
+                  "GO": path.join(archaea_dir, "go.txt.gz"),
+
+                  "PFAM": path.join(archaea_dir, "pfam.txt.gz"),
+
+                  "BIGG": path.join(archaea_dir, "bigg_reaction.txt.gz"),
+
+                  "CAZY": path.join(archaea_dir, "cazy.txt.gz"),
+
+                  "GENE_NAMES": path.join(archaea_dir, "preferred_name.txt.gz")}
 
 
 # Initialize default mapfiles to be used with add_descriptions.py
 map_dir = path.join(project_dir, "default_files", "description_mapfiles")
 
 default_map = {"METACYC": path.join(map_dir,
-                                    "metacyc_pathways_info.txt.gz"),
+                                    "metacyc-pwy_name.txt.gz"),
 
-               "COG": path.join(map_dir, "cog_info.tsv.gz"),
+               "EC": path.join(map_dir, "ec_name.txt.gz"),
 
-               "EC": path.join(map_dir, "ec_level4_info.tsv.gz"),
+               "KO": path.join(map_dir, "ko_name.txt.gz"),
 
-               "KO": path.join(map_dir, "ko_info.tsv.gz"),
-
-               "PFAM": path.join(map_dir, "pfam_info.tsv.gz"),
-
-               "TIGRFAM": path.join(map_dir, "tigrfam_info.tsv.gz")}
+               "GO": path.join(map_dir, "map_go_name.txt.gz")}
