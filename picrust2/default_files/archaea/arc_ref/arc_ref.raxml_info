@@ -12,8 +12,7 @@ Substitution Matrix: GTR
 
 RAxML-NG was called at 04-Dec-2024 09:15:27 as follows:
 
-raxml-ng --evaluate --msa archaea_0.8_raxml-check.raxml.reduced.phy --tree archaea_16S_centroids_ssu_align_best_reduced_0.8_fixed.tre --p
-refix archaea_0.8_raxml --model GTR+G <E2><80><94>threads 24
+raxml-ng --evaluate --msa archaea_0.8_raxml-check.raxml.reduced.phy --tree archaea_16S_centroids_ssu_align_best_reduced_0.8_fixed.tre --prefix archaea_0.8_raxml --model GTR+G --threads 24
 
 Base frequencies: 0.224411 0.252166 0.284495 0.238928
 
