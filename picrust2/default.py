@@ -36,7 +36,7 @@ default_regroup_map = path.join(project_dir, "default_files",
 
 default_pathway_map = path.join(project_dir, "default_files",
                                 "pathway_mapfiles",
-                                "metacyc_pathways_structured_filtered_v24_subreactions.txt")
+                                "metacyc_pathways_structured_filtered_v24.txt")
 
 #fungi_pathway_map = path.join(project_dir, "default_files", "pathway_mapfiles",
 #                              "metacyc_path2rxn_struc_filt_fungi.txt")
