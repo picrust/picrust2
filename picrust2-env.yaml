@@ -2,12 +2,15 @@ name: picrust2
 
 channels:
 - conda-forge
+- etetoolkit
 - r
 - bioconda
 - anaconda
 - defaults
 
 dependencies:
+- python >=3.10
+- r-base >=3.5.1
 - biom-format >=2.1.10
 - cython
 - epa-ng =0.3.8
@@ -23,8 +26,7 @@ dependencies:
 - pandas >=1.1.5
 - pytest >=4.4.1
 - pytest-cov >=2.6.1
-- python >=3.5
-- r-base >=3.5.1
+- typeguard =4.4.2
 - r-castor >=1.7.2
 - scipy >=1.2.1
 - sepp =4.5.5
