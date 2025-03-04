@@ -42,7 +42,7 @@ parser.add_argument('-i', '--in_trait', type=str.upper, choices=TRAIT_OPTIONS,
                           'used. Use the --observed_trait_table option '
                           'to input a non-default trait table.')
                           
-parser.add_argument('-db', '--database', type=str, default = 'MPGA',
+parser.add_argument('-db', '--database', type=str, default = 'RV',
                     help='Database that is being used for the pathway calculations. Set this to oldIMG if you want to run this script with the old IMG database.')
                     
 parser.add_argument('-r', '--reference', type=str,
@@ -121,7 +121,7 @@ def main():
             "Only one of the arguments --in_trait and --observed_trait_table "
             "can be specified, but currently both are set.")
     elif args.in_trait:
-        if args.database != 'MPGA':
+        if args.database != 'RV':
             if args.database == 'oldIMG': 
                 if args.in_trait not in TRAIT_OPTIONS_OLD:
                     RuntimeError(
@@ -129,11 +129,11 @@ def main():
                 trait_table = default_tables[args.in_trait]
             else:
                 raise RuntimeError(
-                          "Unknown option set for -db/--database. Valid options are oldIMG or MPGA. See the help documentation on the wiki for further information.")
+                          "Unknown option set for -db/--database. Valid options are oldIMG or RV. See the help documentation on the wiki for further information.")
         else:
             if args.in_trait not in TRAIT_OPTIONS_NEW:
                     RuntimeError(
-                      "You've chosen a train option that's not available for the new MPGA database. Available options are: "+','.join(TRAIT_OPTIONS_NEW))
+                      "You've chosen a train option that's not available for the new RV database. Available options are: "+','.join(TRAIT_OPTIONS_NEW))
             if args.reference in ['bac', 'bacteria']:
                 trait_table = default_tables_bac[args.in_trait]
             elif args.reference in ['arc', 'archaea']:
