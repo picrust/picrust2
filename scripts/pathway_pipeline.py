@@ -57,7 +57,7 @@ parser.add_argument('-i', '--input', metavar='IN_TABLE', required=True,
 parser.add_argument('-o', '--out_dir', metavar='DIRECTORY', required=True,
                     type=str, help='Output folder for pathway abundance output.')
                     
-parser.add_argument('-db', '--database',type=str, default = 'RV',
+parser.add_argument('-db', '--database',type=str, default = 'SC',
                     help='Database that is being used for the pathway calculations. Set this to oldIMG if you want to run this script with the old IMG database.')
 
 parser.add_argument('-m', '--map', metavar='MAP', type=str,
@@ -160,7 +160,7 @@ def main():
 
     run_minpath_opt = not args.skip_minpath
     
-    if args.database != 'RV':
+    if args.database != 'SC':
       if args.database == 'oldIMG':
           if args.verbose:
               print('-db is set to old so the old pathway files are being used.')
