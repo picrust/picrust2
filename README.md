@@ -1,6 +1,6 @@
 # PICRUSt2
 
-Please see the [PICRUSt2 wiki](https://github.com/picrust/picrust2/wiki) for the documentation and tutorials.
+Please see the [PICRUSt2 wiki](https://github.com/picrust/picrust2/wiki) for the documentation and tutorials. There is a lot of information within this Wiki about how to install and run PICRUSt2 as well as how it works. *Please* read through this before asking questions. 
 
 Note that this repository contains the source code for MinPath, which is distributed under the GNU General Public License.
 
