@@ -39,7 +39,7 @@ class workflow_test(unittest.TestCase):
         system_call_check("convert_table.py -h")
         system_call_check("hsp.py -h")
         system_call_check("metagenome_pipeline.py -h")
-        system_call_check("picrust2_pipeline_oldIMG.py -h")
+        system_call_check("picrust2_pipeline_singleRef.py -h")
         system_call_check("place_seqs.py -h")
         system_call_check("pathway_pipeline.py -h")
         system_call_check("shuffle_predictions.py -h")
@@ -89,13 +89,13 @@ class workflow_test(unittest.TestCase):
 
     def test_picrust2_pipeline_script(self):
         '''Test that full pipeline can be run successfully with
-        picrust2_pipeline_oldIMG.py'''
+        picrust2_pipeline_singleRef.py'''
 
         with TemporaryDirectory() as temp_dir:
 
             out_dir = path.join(temp_dir, "pipeline_out")
 
-            system_call_check("picrust2_pipeline_oldIMG.py -s " + test_study_seqs +
+            system_call_check("picrust2_pipeline_singleRef.py -s " + test_study_seqs +
                               " -i " + test_seq_abun_tsv +
                               " -o " + out_dir +
                               " -r " + test_ref_dir +
@@ -114,14 +114,14 @@ class workflow_test(unittest.TestCase):
 
     def test_picrust2_pipeline_script_per_seq_contrib_strat(self):
         '''Test that full pipeline can be run successfully with
-        picrust2_pipeline_oldIMG.py with the --per_sequence_contrib and --stratified
+        picrust2_pipeline_singleRef.py with the --per_sequence_contrib and --stratified
         options.'''
 
         with TemporaryDirectory() as temp_dir:
 
             out_dir = path.join(temp_dir, "pipeline_out")
 
-            system_call_check("picrust2_pipeline_oldIMG.py -s " + test_study_seqs +
+            system_call_check("picrust2_pipeline_singleRef.py -s " + test_study_seqs +
                               " -i " + test_seq_abun_tsv +
                               " -o " + out_dir +
                               " -r " + test_ref_dir +
@@ -142,14 +142,14 @@ class workflow_test(unittest.TestCase):
 
     def test_picrust2_pipeline_script_per_seq_contrib_strat_skip_norm(self):
         '''Test that full pipeline can be run successfully with
-        picrust2_pipeline_oldIMG.py with the --per_sequence_contrib and --stratified
+        picrust2_pipeline_singleRef.py with the --per_sequence_contrib and --stratified
         options as well as --skip_norm.'''
 
         with TemporaryDirectory() as temp_dir:
 
             out_dir = path.join(temp_dir, "pipeline_out")
 
-            system_call_check("picrust2_pipeline_oldIMG.py -s " + test_study_seqs +
+            system_call_check("picrust2_pipeline_singleRef.py -s " + test_study_seqs +
                               " -i " + test_seq_abun_tsv +
                               " -o " + out_dir +
                               " -r " + test_ref_dir +

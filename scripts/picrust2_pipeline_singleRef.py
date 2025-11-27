@@ -7,7 +7,7 @@ import time
 from picrust2.default_oldIMG import (default_ref_dir, default_tables,
                               default_regroup_map, default_pathway_map)
 from picrust2.util import restricted_float
-from picrust2.pipeline_oldIMG import full_pipeline
+from picrust2.pipeline_singleRef import full_pipeline
 
 HSP_METHODS = ['mp', 'emp_prob', 'pic', 'scp', 'subtree_average']
 
