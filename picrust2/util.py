@@ -492,20 +492,20 @@ def check_empty_traits(filepaths):
     throw error describing which trait files are empty if applicable.'''
 
     num_nonexist = 0
-
+    
     empty_files = []
-
+    
     for filepath in filepaths:
 
-	traits_tab = pd.read_csv(filepath, sep="\t", low_memory=False, index_col=0, header=0)
-	
-	if len(list(traits_tab.columns)) == 0:
-            empty_files += [filepath]
-            num_nonexist += 1
-	elif sum(traits_tab.sum(axis=1)) == 0:
-            empty_files += [filepath]
-            num_nonexist += 1
+        traits_tab = pd.read_csv(filepath, sep="\t", low_memory=False, index_col=0, header=0)
 
+        if len(list(traits_tab.columns)) == 0:
+            empty_files += [filepath]
+            num_nonexist += 1
+        elif sum(traits_tab.sum(axis=1)) == 0:
+            empty_files += [filepath]
+            num_nonexist += 1
+	
     if num_nonexist == 0:
         pass
     elif num_nonexist == 1:
