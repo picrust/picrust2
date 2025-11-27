@@ -6,7 +6,8 @@ from picrust2.default import (default_ref_dir_bac, default_ref_dir_arc, default_
                               default_tables_arc, default_pathway_map)
 from picrust2.place_seqs import identify_ref_files
 from picrust2.util import (make_output_dir, check_files_exist, read_fasta,
-                           read_fasta_ids, system_call_check, read_seqabun, prune_tree)
+                           read_fasta_ids, system_call_check, read_seqabun, 
+                           prune_tree, check_empty_traits)
 from picrust2.split_domains import get_lowest_nsti, combine_domain_predictions
 
 
@@ -156,6 +157,9 @@ def full_pipeline_split(study_fasta,
 
     # This will throw an error if any input files are not found.
     check_files_exist(files2check)
+
+    # This will throw an error if any trait tables are entirely empty.
+    check_empty_traits(list(func_tables_ref1.values())  + list(func_tables_ref2.values()))
 
     # Check that sequence names in FASTA overlap with input table.
     check_overlapping_seqs(study_fasta, input_table, verbose)

@@ -89,4 +89,6 @@ default_map = {"METACYC": path.join(map_dir,
 
                "KO": path.join(map_dir, "ko_name.txt.gz"),
 
-               "GO": path.join(map_dir, "map_go_name.txt.gz")}
+               "GO": path.join(map_dir, "map_go_name.txt.gz"),
+		
+               "PFAM": path.join(map_dir, "pfam_name.txt.gz")}
