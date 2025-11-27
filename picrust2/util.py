@@ -498,7 +498,7 @@ def check_empty_traits(filepaths):
     for filepath in filepaths:
 
         traits_tab = pd.read_csv(filepath, sep="\t", low_memory=False, index_col=0, header=0)
-
+        
         if len(list(traits_tab.columns)) == 0:
             empty_files += [filepath]
             num_nonexist += 1
@@ -509,9 +509,9 @@ def check_empty_traits(filepaths):
     if num_nonexist == 0:
         pass
     elif num_nonexist == 1:
-        sys.exit("\n\nStopping - this input file was not found: " + empty_files[0])
+        sys.exit("\n\nStopping - this input file was empty or all counts sum to 0: " + empty_files[0])
     elif num_nonexist > 1:
-        sys.exit("\n\nStopping - these input files were not found: " + ", ".join(empty_files))
+        sys.exit("\n\nStopping - these input files were empty or all counts sum to 0: " + ", ".join(empty_files))
         
         
 def prune_tree(names, tree_file, save_name):
