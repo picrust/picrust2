@@ -157,6 +157,9 @@ def full_pipeline_split(study_fasta,
     # This will throw an error if any input files are not found.
     check_files_exist(files2check)
 
+    # This will throw an error if any trait tables are entirely empty.
+    check_files_exist(list(func_tables_ref1.values())  + list(func_tables_ref2.values()))
+
     # Check that sequence names in FASTA overlap with input table.
     check_overlapping_seqs(study_fasta, input_table, verbose)
     
