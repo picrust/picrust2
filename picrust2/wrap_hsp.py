@@ -166,7 +166,9 @@ def castor_nsti(tree_path,
         # Output known tip names to temp file
         # (note this object is a numpy.ndarray)
         known_tips_out = path.join(temp_dir, "known_tips.txt")
-        known_tips.tofile(known_tips_out, sep="\n")
+        #known_tips.tofile(known_tips_out, sep="\n")
+        with open(known_tips_out, "w") as f:
+            q = f.write("\n".join(known_tips))
 
         nsti_tmp_out = path.join(temp_dir, "nsti_out.txt")
 
