@@ -19,8 +19,8 @@ study_seqs = path.join(test_dir_path, "seqs.fna")
 exp_combined_marker_nsti = path.join(test_dir_path, "output", "combined_marker_predicted_and_nsti.tsv.gz")
 
 @unittest.skipIf(os.environ.get("CI"),
-                "Skip this one in Circle CI because the reference needs ~27 GB RAM. 
-                Still running it on other instances of pytest.")
+                "Skip this one in Circle CI because the reference needs ~27 GB RAM. "
+                "Still running it on other instances of pytest.")
 class split_domains_placement_test(unittest.TestCase):
     '''Check that the sequences in the test input file get assigned to the expected
     domain when they're placed in the bacteria and archaea reference trees.'''
