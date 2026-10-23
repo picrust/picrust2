@@ -22,6 +22,10 @@ def get_lowest_nsti(nsti_table_dom1_path,
     # First read in the data frames containing the NSTI values for each domain.
     nsti_dom1 = pd.read_csv(filepath_or_buffer=nsti_table_dom1_path, sep="\t", header=0, index_col=0)
     nsti_dom2 = pd.read_csv(filepath_or_buffer=nsti_table_dom2_path, sep="\t", header=0, index_col=0)
+
+    marker_name = nsti_dom1.columns[0]
+    if marker_name not in nsti_dom2.columns:
+        sys.exit("Stopping - the name or the marker gene column is not in both domains: "+marker_name+".\n")
     
     # Check that each file has an NSTI column
     if 'metadata_NSTI' not in nsti_dom1.columns or 'metadata_NSTI' not in nsti_dom2.columns:
@@ -31,26 +35,32 @@ def get_lowest_nsti(nsti_table_dom1_path,
     seqs = set(list(nsti_dom1.index.values)+list(nsti_dom2.index.values))
     
     # Make an empty dataframe for the lowest NSTI values, the marker gene copy number, and which of the domains was used for each sequence
-    nsti_lowest = pd.DataFrame.from_dict({seq:['', '', '', ''] for seq in seqs}, orient='index', columns=['16S_rRNA_Count', 'metadata_NSTI', 'best_domain', 'closest_reference_genome'])
-    nsti_lowest.index.name = 'sequence'
+    # nsti_lowest = pd.DataFrame.from_dict({seq:['', '', '', ''] for seq in seqs}, orient='index', columns=[marker_name, 'metadata_NSTI', 'best_domain', 'closest_reference_genome'])
+    # nsti_lowest.index.name = 'sequence'
+    lowest_rows = {}
     
     # For each of the sequences, go through and choose the best domain.
     # Note that if the NSTI values are the same for both, dom1 is taken by default.
     for seq in seqs:
         if seq not in nsti_dom1.index.values:
-          best, nsti_val, marker_copy_number, closest = dom2_name, nsti_dom2.loc[seq, 'metadata_NSTI'], nsti_dom2.loc[seq, '16S_rRNA_Count'], nsti_dom2.loc[seq, 'closest_reference_genome']
+          best, nsti_val, marker_copy_number, closest = dom2_name, nsti_dom2.loc[seq, 'metadata_NSTI'], nsti_dom2.loc[seq, marker_name], nsti_dom2.loc[seq, 'closest_reference_genome']
         elif seq not in nsti_dom2.index.values:
-          best, nsti_val, marker_copy_number, closest = dom1_name, nsti_dom1.loc[seq, 'metadata_NSTI'], nsti_dom1.loc[seq, '16S_rRNA_Count'], nsti_dom1.loc[seq, 'closest_reference_genome']
+          best, nsti_val, marker_copy_number, closest = dom1_name, nsti_dom1.loc[seq, 'metadata_NSTI'], nsti_dom1.loc[seq, marker_name], nsti_dom1.loc[seq, 'closest_reference_genome']
         elif nsti_dom1.loc[seq, 'metadata_NSTI'] == nsti_dom2.loc[seq, 'metadata_NSTI']:
           print("Both domains had exactly the same NSTI value for this sequence: "
               + seq + ". Using the first domain: " + dom1_name, file=sys.stderr)
-          best, nsti_val, marker_copy_number, closest = dom1_name, nsti_dom1.loc[seq, 'metadata_NSTI'], nsti_dom1.loc[seq, '16S_rRNA_Count'], nsti_dom1.loc[seq, 'closest_reference_genome']
+          best, nsti_val, marker_copy_number, closest = dom1_name, nsti_dom1.loc[seq, 'metadata_NSTI'], nsti_dom1.loc[seq, marker_name], nsti_dom1.loc[seq, 'closest_reference_genome']
         elif nsti_dom1.loc[seq, 'metadata_NSTI'] < nsti_dom2.loc[seq, 'metadata_NSTI']:
-          best, nsti_val, marker_copy_number, closest = dom1_name, nsti_dom1.loc[seq, 'metadata_NSTI'], nsti_dom1.loc[seq, '16S_rRNA_Count'], nsti_dom1.loc[seq, 'closest_reference_genome']
+          best, nsti_val, marker_copy_number, closest = dom1_name, nsti_dom1.loc[seq, 'metadata_NSTI'], nsti_dom1.loc[seq, marker_name], nsti_dom1.loc[seq, 'closest_reference_genome']
         elif nsti_dom2.loc[seq, 'metadata_NSTI'] < nsti_dom1.loc[seq, 'metadata_NSTI']:
-          best, nsti_val, marker_copy_number, closest = dom2_name, nsti_dom2.loc[seq, 'metadata_NSTI'], nsti_dom2.loc[seq, '16S_rRNA_Count'], nsti_dom2.loc[seq, 'closest_reference_genome']
+          best, nsti_val, marker_copy_number, closest = dom2_name, nsti_dom2.loc[seq, 'metadata_NSTI'], nsti_dom2.loc[seq, marker_name], nsti_dom2.loc[seq, 'closest_reference_genome']
         
-        nsti_lowest.loc[seq, :] = marker_copy_number, nsti_val, best, closest
+        # nsti_lowest.loc[seq, :] = marker_copy_number, nsti_val, best, closest
+        lowest_rows[seq] = [marker_copy_number, nsti_val, best, closest]
+
+    # Make a dataframe of the lowest NSTI values, the marker gene copy number, and which of the domains was used for each sequence
+    nsti_lowest = pd.DataFrame.from_dict(lowest_rows, orient='index', columns=[marker_name, 'metadata_NSTI', 'best_domain', 'closest_reference_genome'])
+    nsti_lowest.index.name = 'sequence'
     
     # Filter the original NSTI tables to only contain the sequences that fit best with each domain.
     nsti_dom1 = nsti_dom1.loc[nsti_lowest[nsti_lowest['best_domain'] == dom1_name].index.values, :]

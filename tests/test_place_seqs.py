@@ -4,12 +4,12 @@ import unittest
 import hashlib
 from os import path
 from picrust2.util import read_fasta, TemporaryDirectory
-from picrust2.default_oldIMG import (default_ref_dir,
-                              default_fasta,
-                              default_tree,
-                              default_hmm,
-                              default_model,
-                              default_raxml_info)
+from picrust2.default import (default_ref_dir_bac, default_fasta_bac,
+                                default_tree_bac, default_hmm_bac,
+                                default_model_bac, default_raxml_info_bac,
+                                default_ref_dir_arc, default_fasta_arc,
+                                default_tree_arc, default_hmm_arc,
+                                default_model_arc, default_raxml_info_arc)
 from picrust2.place_seqs import (place_seqs_pipeline,
                                  run_epa_ng,
                                  gappa_jplace_to_newick,
@@ -52,7 +52,7 @@ test_jplace2 = path.join(test_dir_path, "jplace_files", "epa_result2.jplace")
 class place_seqs_tests(unittest.TestCase):
     '''Tests for place seqs pipeline (functions in picrust2/place_seqs.py)'''
 
-    def test_default_md5sum(self):
+    def test_default_md5sum_bac(self):
         '''Test that default files match expected md5sum values.'''
 
         # Calculate md5sum for fasta and treefile respectively.
@@ -60,26 +60,67 @@ class place_seqs_tests(unittest.TestCase):
         tree_hash = hashlib.md5()
         hmm_hash = hashlib.md5()
         model_hash = hashlib.md5()
+        raxml_info_hash = hashlib.md5()
 
-        with open(default_fasta, 'rt') as fasta_in:
+        with open(default_fasta_bac, 'rt') as fasta_in:
             fasta_hash.update(fasta_in.read().encode())
 
-        with open(default_tree) as tree_in:
+        with open(default_tree_bac) as tree_in:
             tree_hash.update(tree_in.read().encode())
 
-        with open(default_hmm) as hmm_in:
+        with open(default_hmm_bac) as hmm_in:
             hmm_hash.update(hmm_in.read().encode())
 
-        with open(default_model) as model_in:
+        with open(default_model_bac) as model_in:
             model_hash.update(model_in.read().encode())
+
+        with open(default_raxml_info_bac) as raxml_info_in:
+            raxml_info_hash.update(raxml_info_in.read().encode())
 
         # Check that md5sum values match expected values.
         self.assertEqual([fasta_hash.hexdigest(), tree_hash.hexdigest(),
-                          hmm_hash.hexdigest(), model_hash.hexdigest()],
-                         ['a1675a5c0a2c1941ff2e71c63049a7b4',
-                          'f247071837f74c156dc530736cb6d453',
-                          'd50b0dac445b5243e86816dbdeadf898',
-                          '478b5011ea8aeb0c720e9bb68774fabd'])
+                          hmm_hash.hexdigest(), model_hash.hexdigest(),
+                          raxml_info_hash.hexdigest()],
+                         ["0903e782b6248d0528f6339cbe139477",
+                          "bb5ebff1d6c3631b3c5c231111c4c927",
+                          "4d733eafcdfb82015025c1307729be4b",
+                          "a526202df3b072403da6e22efed3ea5a",
+                          "7de76637bdffaed85267a8855a332805"])
+
+    def test_default_md5sum_arc(self):
+        '''Test that default files match expected md5sum values.'''
+
+        # Calculate md5sum for fasta and treefile respectively.
+        fasta_hash = hashlib.md5()
+        tree_hash = hashlib.md5()
+        hmm_hash = hashlib.md5()
+        model_hash = hashlib.md5()
+        raxml_info_hash = hashlib.md5()
+
+        with open(default_fasta_arc, 'rt') as fasta_in:
+            fasta_hash.update(fasta_in.read().encode())
+
+        with open(default_tree_arc) as tree_in:
+            tree_hash.update(tree_in.read().encode())
+
+        with open(default_hmm_arc) as hmm_in:
+            hmm_hash.update(hmm_in.read().encode())
+
+        with open(default_model_arc) as model_in:
+            model_hash.update(model_in.read().encode())
+        
+        with open(default_raxml_info_arc) as raxml_info_in:
+            raxml_info_hash.update(raxml_info_in.read().encode())
+
+        # Check that md5sum values match expected values.
+        self.assertEqual([fasta_hash.hexdigest(), tree_hash.hexdigest(),
+                          hmm_hash.hexdigest(), model_hash.hexdigest(),
+                          raxml_info_hash.hexdigest()],
+                         ["de8a9fd11a2753c068842a5ae576e981",
+                          "6081bbebf1e87fca1226c781ba3f07ac",
+                          "0d0174451eb8a12df1b972ea7c88d670",
+                          "3483e5d72ca2cd5bc9a74657beff780c",
+                          "e36342a4e2135110559b306626534791"])
 
     def test_jplace_parse(self):
         '''Test that jplace files are being parsed consistently.'''
@@ -158,7 +199,7 @@ class place_seqs_tests(unittest.TestCase):
             tmp_tree = path.join(temp_dir, "out.tre")
 
             place_seqs_pipeline(study_fasta=test_study_seqs,
-                                ref_dir=default_ref_dir,
+                                ref_dir=default_ref_dir_arc,
                                 placement_tool="sepp",
                                 out_tree=tmp_tree,
                                 threads=1,
@@ -167,23 +208,43 @@ class place_seqs_tests(unittest.TestCase):
                                 chunk_size=5000,
                                 verbose=True)
 
-    def test_identify_ref_files_epa_ng(self):
-        '''Test for reference files being identified correctly.'''
+    def test_identify_ref_files_epa_ng_bac(self):
+        '''Test for reference files being identified correctly for bacteria.'''
 
-        expected_files = [default_fasta, default_tree, default_hmm,
-                          default_model]
+        expected_files = [default_fasta_bac, default_tree_bac, default_hmm_bac,
+                          default_model_bac]
 
-        identified_files = identify_ref_files(default_ref_dir, "epa-ng")
+        identified_files = identify_ref_files(default_ref_dir_bac, "epa-ng")
 
         self.assertEqual(expected_files, identified_files)
 
-    def test_identify_ref_files_sepp(self):
-        '''Test for reference files being identified correctly.'''
+    def test_identify_ref_files_epa_ng_arc(self):
+        '''Test for reference files being identified correctly for archaea.'''
 
-        expected_files = [default_fasta, default_tree, default_hmm,
-                          default_raxml_info]
+        expected_files = [default_fasta_arc, default_tree_arc, default_hmm_arc,
+                          default_model_arc]
 
-        identified_files = identify_ref_files(default_ref_dir, "sepp")
+        identified_files = identify_ref_files(default_ref_dir_arc, "epa-ng")
+
+        self.assertEqual(expected_files, identified_files)
+
+    def test_identify_ref_files_sepp_bac(self):
+        '''Test for reference files being identified correctly for bacteria.'''
+
+        expected_files = [default_fasta_bac, default_tree_bac, default_hmm_bac,
+                          default_raxml_info_bac]
+
+        identified_files = identify_ref_files(default_ref_dir_bac, "sepp")
+
+        self.assertEqual(expected_files, identified_files)
+
+    def test_identify_ref_files_sepp_arc(self):
+        '''Test for reference files being identified correctly for archaea.'''
+
+        expected_files = [default_fasta_arc, default_tree_arc, default_hmm_arc,
+                          default_raxml_info_arc]
+
+        identified_files = identify_ref_files(default_ref_dir_arc, "sepp")
 
         self.assertEqual(expected_files, identified_files)
 

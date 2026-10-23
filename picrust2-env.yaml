@@ -1,8 +1,7 @@
-name: picrust2
+name: picrust2-v2.6.4
 
 channels:
 - conda-forge
-- etetoolkit
 - r
 - bioconda
 - anaconda
@@ -14,8 +13,7 @@ dependencies:
 - biom-format >=2.1.10
 - cython
 - epa-ng =0.3.8
-- ete3 =3.1.3
-- dendropy =5.0.1
+- dendropy =5.0.11
 - gappa >=0.8.0
 - glpk >=4.65
 - h5py >=2.10.0
@@ -26,7 +24,7 @@ dependencies:
 - pandas >=1.1.5
 - pytest >=4.4.1
 - pytest-cov >=2.6.1
-- typeguard =4.4.2
+- typeguard =4.5.2
 - r-castor >=1.7.2
 - scipy >=1.2.1
-- sepp =4.5.5
+- sepp =4.5.6

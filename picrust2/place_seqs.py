@@ -419,12 +419,16 @@ def run_sepp(tree: str, ref_msa_fastafile: str, study_msa_fastafile: str,
     '''Run SEPP on specified tree, reference MSA, and study sequence MSA.
     Will output a .jplace file in out_dir.'''
 
+    sepp_tmp = out_dir+"/sepp_tmp"
+    make_output_dir(sepp_tmp)
+
     sepp_command = ["run_sepp.py",
                     "--tree", tree,
                     "--raxml", raxml_model,
                     "--cpu", str(threads),
                     "--molecule", "dna",
                     "--outdir", out_dir,
+                    "--tempdir", sepp_tmp,
                     "-seed", str(set_seed),
                     "--alignment", ref_msa_fastafile,
                     "--fragment", study_msa_fastafile]

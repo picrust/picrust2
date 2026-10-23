@@ -208,6 +208,11 @@ parser.add_argument('--min_align', type=restricted_float, default=0.8,
                          'be excluded from the placement and all subsequent '
                          'steps. (default: %(default)d).')
 
+parser.add_argument('--chunk_size', type=int, default=5000,
+                      help='Number of query sequences to read in at once '
+                           'during EPA-ng placement. Lower values reduce '
+                           'memory usage (default: %(default)d).')
+
 parser.add_argument('--skip_minpath', default=False, action="store_true",
                     help='Do not run MinPath to identify which pathways are '
                          'present as a first pass (on by default).')
@@ -295,6 +300,7 @@ def main():
                                                     hsp_method=args.hsp_method,
                                                     edge_exponent=args.edge_exponent,
                                                     min_align=args.min_align,
+                                                    chunk_size=args.chunk_size,
                                                     no_gap_fill=args.no_gap_fill,
                                                     per_sequence_contrib=args.per_sequence_contrib,
                                                     wide_table=args.wide_table,

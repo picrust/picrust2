@@ -18,6 +18,6 @@ jobs:
             conda env create -f picrust2-env.yaml
             conda init bash
             source ~/.bashrc
-            conda activate picrust2
+            conda activate picrust2-v2.6.4
             pip install --use-pep517 --config-settings editable_mode=compat -e .
             pytest -v

@@ -14,7 +14,8 @@ import biom
 import tempfile
 import gzip
 import sys
-from ete3 import Tree
+import dendropy
+#from ete3 import Tree
 
 
 def read_fasta(filename, cut_header=False):
@@ -517,11 +518,17 @@ def check_empty_traits(filepaths):
 def prune_tree(names, tree_file, save_name):
     '''Read in tree file and prune it to only the names given. Save it as save_name.'''
     
-    tree = Tree(tree_file, format=1, quoted_node_names=True)
+    #tree = Tree(tree_file, format=1, quoted_node_names=True)
     
-    tree.prune(names)
+    #tree.prune(names)
     
-    tree.write(outfile=save_name, format=1)
+    #tree.write(outfile=save_name, format=1)
+
+    tree = dendropy.Tree.get(path=tree_file, schema="newick", preserve_underscores=True)
+
+    tree.retain_taxa_with_labels(names)
+
+    tree.write(path=save_name, schema="newick", suppress_rooting=True, unquoted_underscores=True)
     
     return
 
@@ -529,12 +536,22 @@ def prune_tree(names, tree_file, save_name):
 def get_tree_nodes(tree_file):
     '''Read in tree file and return the names of the nodes within it.'''
   
-    tree = Tree(tree_file, format=1, quoted_node_names=True)
+    #tree = Tree(tree_file, format=1, quoted_node_names=True)
     
+    #names = []
+    
+    #for node in tree.traverse("postorder"):
+    #    names.append(node.name)
+
+    tree = dendropy.Tree.get(path=tree_file, schema="newick", preserve_underscores=True, suppress_internal_node_taxa=True)
+
     names = []
-    
-    for node in tree.traverse("postorder"):
-        names.append(node.name)
+
+    for node in tree.postorder_node_iter():
+        if node.taxon is not None:
+            names.append(node.taxon.label)
+        else:
+            names.append(node.label)
     
     return(names)
 

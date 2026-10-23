@@ -35,14 +35,16 @@ class workflow_test(unittest.TestCase):
         '''Quick test that help commands can be run for all scripts, which
         is a check that there are no obvious argparse syntax errors.'''
 
-        system_call_check("add_descriptions_oldIMG.py -h")
+        system_call_check("add_descriptions.py -h")
         system_call_check("convert_table.py -h")
         system_call_check("hsp.py -h")
         system_call_check("metagenome_pipeline.py -h")
-        system_call_check("picrust2_pipeline_singleRef.py -h")
+        system_call_check("picrust2_pipeline.py -h")
         system_call_check("place_seqs.py -h")
         system_call_check("pathway_pipeline.py -h")
         system_call_check("shuffle_predictions.py -h")
+        system_call_check("combine_domains.py -h")
+        system_call_check("pick_best_domain.py -h")
 
     def test_full_pipeline_tsv(self):
         '''Test that full pipeline can be run without error with
@@ -85,23 +87,26 @@ class workflow_test(unittest.TestCase):
                                            "pred_metagenome_unstrat.tsv.gz")
 
             system_call_check("pathway_pipeline.py -i " + metagenome_outfile +
-                              " -o " + temp_dir + " -db oldIMG")
+                              " -o " + temp_dir)
 
     def test_picrust2_pipeline_script(self):
         '''Test that full pipeline can be run successfully with
-        picrust2_pipeline_singleRef.py'''
+        picrust2_pipeline.py'''
 
         with TemporaryDirectory() as temp_dir:
 
             out_dir = path.join(temp_dir, "pipeline_out")
 
-            system_call_check("picrust2_pipeline_singleRef.py -s " + test_study_seqs +
+            system_call_check("picrust2_pipeline.py -s " + test_study_seqs +
                               " -i " + test_seq_abun_tsv +
                               " -o " + out_dir +
-                              " -r " + test_ref_dir +
+                              " -r1 " + test_ref_dir +
+                              " -r2 " + test_ref_dir +
                               " -p 1" +
-                              " --custom_trait_tables " + test_known_traits +
-                              " --marker_gene_table " + test_known_marker +
+                              " --custom_trait_tables_ref1 " + test_known_traits +
+                              " --custom_trait_tables_ref2 " + test_known_traits +
+                              " --marker_gene_table_ref1 " + test_known_marker +
+                              " --marker_gene_table_ref2 " + test_known_marker +
                               " --reaction_func " + test_known_traits +
                               " --max_nsti 1.9" +
                               " --min_reads 2" +
@@ -114,20 +119,23 @@ class workflow_test(unittest.TestCase):
 
     def test_picrust2_pipeline_script_per_seq_contrib_strat(self):
         '''Test that full pipeline can be run successfully with
-        picrust2_pipeline_singleRef.py with the --per_sequence_contrib and --stratified
+        picrust2_pipeline.py with the --per_sequence_contrib and --stratified
         options.'''
 
         with TemporaryDirectory() as temp_dir:
 
             out_dir = path.join(temp_dir, "pipeline_out")
 
-            system_call_check("picrust2_pipeline_singleRef.py -s " + test_study_seqs +
+            system_call_check("picrust2_pipeline.py -s " + test_study_seqs +
                               " -i " + test_seq_abun_tsv +
                               " -o " + out_dir +
-                              " -r " + test_ref_dir +
+                              " -r1 " + test_ref_dir +
+                              " -r2 " + test_ref_dir +
                               " -p 1" +
-                              " --custom_trait_tables " + test_known_traits +
-                              " --marker_gene_table " + test_known_marker +
+                              " --custom_trait_tables_ref1 " + test_known_traits +
+                              " --custom_trait_tables_ref2 " + test_known_traits +
+                              " --marker_gene_table_ref1 " + test_known_marker +
+                              " --marker_gene_table_ref2 " + test_known_marker +
                               " --reaction_func " + test_known_traits +
                               " --max_nsti 1.9" +
                               " --min_reads 2" +
@@ -142,20 +150,23 @@ class workflow_test(unittest.TestCase):
 
     def test_picrust2_pipeline_script_per_seq_contrib_strat_skip_norm(self):
         '''Test that full pipeline can be run successfully with
-        picrust2_pipeline_singleRef.py with the --per_sequence_contrib and --stratified
+        picrust2_pipeline.py with the --per_sequence_contrib and --stratified
         options as well as --skip_norm.'''
 
         with TemporaryDirectory() as temp_dir:
 
             out_dir = path.join(temp_dir, "pipeline_out")
 
-            system_call_check("picrust2_pipeline_singleRef.py -s " + test_study_seqs +
+            system_call_check("picrust2_pipeline.py -s " + test_study_seqs +
                               " -i " + test_seq_abun_tsv +
                               " -o " + out_dir +
-                              " -r " + test_ref_dir +
+                              " -r1 " + test_ref_dir +
+                              " -r2 " + test_ref_dir +
                               " -p 1" +
-                              " --custom_trait_tables " + test_known_traits +
-                              " --marker_gene_table " + test_known_marker +
+                              " --custom_trait_tables_ref1 " + test_known_traits +
+                              " --custom_trait_tables_ref2 " + test_known_traits +
+                              " --marker_gene_table_ref1 " + test_known_marker +
+                              " --marker_gene_table_ref2 " + test_known_marker +
                               " --reaction_func " + test_known_traits +
                               " --max_nsti 1.9" +
                               " --min_reads 2" +

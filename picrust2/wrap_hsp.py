@@ -38,7 +38,7 @@ def castor_hsp_workflow(tree_path,
     # Create output directory for writing trait table subsets.
     with TemporaryDirectory() as temp_dir:
 
-        num_chunks = int(trait_tab.shape[1]) / (chunk_size + 1)
+        num_chunks = int(trait_tab.shape[1]) / chunk_size
 
         # Get all table subsets and write to file.
         # Also keep list of all temporary filenames.
@@ -166,7 +166,9 @@ def castor_nsti(tree_path,
         # Output known tip names to temp file
         # (note this object is a numpy.ndarray)
         known_tips_out = path.join(temp_dir, "known_tips.txt")
-        known_tips.tofile(known_tips_out, sep="\n")
+        #known_tips.tofile(known_tips_out, sep="\n")
+        with open(known_tips_out, "w") as f:
+            q = f.write("\n".join(known_tips))
 
         nsti_tmp_out = path.join(temp_dir, "nsti_out.txt")
 
