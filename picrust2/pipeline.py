@@ -371,7 +371,8 @@ def full_pipeline_split(study_fasta,
         for pred in predicted_funcs_split:
             if func in pred:
                   combining.append(pred)
-        
+
+        out_file = path.join(output_folder, "combined_" + func + "_predicted.tsv.gz")
         if len(combining) == 1:
             predicted_funcs[func] = predicted_funcs_split[combining[0]]
             print("Warning: There was only one file for the function: "+ func + "\n"
@@ -387,7 +388,7 @@ def full_pipeline_split(study_fasta,
         
         else:
             print(combining, predicted_funcs_split)
-            out_file = path.join(output_folder, "combined_" + func + "_predicted.tsv.gz")
+            # out_file = path.join(output_folder, "combined_" + func + "_predicted.tsv.gz")
             combine_domain_predictions(predicted_funcs_split[combining[0]], 
                                        predicted_funcs_split[combining[1]], 
                                        out_file,
