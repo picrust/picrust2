@@ -35,8 +35,9 @@ def get_lowest_nsti(nsti_table_dom1_path,
     seqs = set(list(nsti_dom1.index.values)+list(nsti_dom2.index.values))
     
     # Make an empty dataframe for the lowest NSTI values, the marker gene copy number, and which of the domains was used for each sequence
-    nsti_lowest = pd.DataFrame.from_dict({seq:['', '', '', ''] for seq in seqs}, orient='index', columns=[marker_name, 'metadata_NSTI', 'best_domain', 'closest_reference_genome'])
-    nsti_lowest.index.name = 'sequence'
+    # nsti_lowest = pd.DataFrame.from_dict({seq:['', '', '', ''] for seq in seqs}, orient='index', columns=[marker_name, 'metadata_NSTI', 'best_domain', 'closest_reference_genome'])
+    # nsti_lowest.index.name = 'sequence'
+    lowest_rows = {}
     
     # For each of the sequences, go through and choose the best domain.
     # Note that if the NSTI values are the same for both, dom1 is taken by default.
@@ -54,7 +55,12 @@ def get_lowest_nsti(nsti_table_dom1_path,
         elif nsti_dom2.loc[seq, 'metadata_NSTI'] < nsti_dom1.loc[seq, 'metadata_NSTI']:
           best, nsti_val, marker_copy_number, closest = dom2_name, nsti_dom2.loc[seq, 'metadata_NSTI'], nsti_dom2.loc[seq, marker_name], nsti_dom2.loc[seq, 'closest_reference_genome']
         
-        nsti_lowest.loc[seq, :] = marker_copy_number, nsti_val, best, closest
+        # nsti_lowest.loc[seq, :] = marker_copy_number, nsti_val, best, closest
+        lowest_rows[seq] = [marker_copy_number, nsti_val, best, closest]
+
+    # Make a dataframe of the lowest NSTI values, the marker gene copy number, and which of the domains was used for each sequence
+    nsti_lowest = pd.DataFrame.from_dict(lowest_rows, orient='index', columns=[marker_name, 'metadata_NSTI', 'best_domain', 'closest_reference_genome'])
+    nsti_lowest.index.name = 'sequence'
     
     # Filter the original NSTI tables to only contain the sequences that fit best with each domain.
     nsti_dom1 = nsti_dom1.loc[nsti_lowest[nsti_lowest['best_domain'] == dom1_name].index.values, :]
