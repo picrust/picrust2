@@ -38,7 +38,7 @@ def castor_hsp_workflow(tree_path,
     # Create output directory for writing trait table subsets.
     with TemporaryDirectory() as temp_dir:
 
-        num_chunks = int(trait_tab.shape[1]) / (chunk_size + 1)
+        num_chunks = int(trait_tab.shape[1]) / chunk_size
 
         # Get all table subsets and write to file.
         # Also keep list of all temporary filenames.

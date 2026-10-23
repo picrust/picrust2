@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from os import path, symlink
+from os import path
 import sys
 from picrust2.default import (default_ref_dir_bac, default_ref_dir_arc, default_tables_bac,
                               default_tables_arc, default_pathway_map)
@@ -35,6 +35,7 @@ def full_pipeline_split(study_fasta,
                   hsp_method,
                   edge_exponent,
                   min_align,
+                  chunk_size,
                   skip_minpath,
                   no_gap_fill,
                   coverage,
@@ -197,7 +198,7 @@ def full_pipeline_split(study_fasta,
                       "--processes", str(processes),
                       "--intermediate", place_seqs_intermediate_ref1,
                       "--min_align", str(min_align),
-                      "--chunk_size", str(5000),
+                      "--chunk_size", str(chunk_size),
                       "--placement_tool", placement_tool]
                       
     place_seqs_cmd_ref2 = ["place_seqs.py",
@@ -207,7 +208,7 @@ def full_pipeline_split(study_fasta,
                       "--processes", str(processes),
                       "--intermediate", place_seqs_intermediate_ref2,
                       "--min_align", str(min_align),
-                      "--chunk_size", str(5000),
+                      "--chunk_size", str(chunk_size),
                       "--placement_tool", placement_tool]
                       
 
@@ -370,15 +371,13 @@ def full_pipeline_split(study_fasta,
         for pred in predicted_funcs_split:
             if func in pred:
                   combining.append(pred)
-
-        out_file = path.join(output_folder, "combined_" + func + "_predicted.tsv.gz")        
+        
         if len(combining) == 1:
             predicted_funcs[func] = predicted_funcs_split[combining[0]]
             print("Warning: There was only one file for the function: "+ func + "\n"
                   "Maybe that's fine if you used custom traits or there were no sequences "
                   "matching one of the domains.", file=sys.stderr)
-            os.symlink(predicted_funcs[func], out_file)
-
+        
         elif len(combining) > 2:
             sys.exit("More than two files were available for the function: " + func +"\n"
                      "If you are using your own custom trait files, please check that you "
@@ -386,6 +385,7 @@ def full_pipeline_split(study_fasta,
         
         else:
             print(combining, predicted_funcs_split)
+            out_file = path.join(output_folder, "combined_" + func + "_predicted.tsv.gz")
             combine_domain_predictions(predicted_funcs_split[combining[0]], 
                                        predicted_funcs_split[combining[1]], 
                                        out_file,

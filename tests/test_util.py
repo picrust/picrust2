@@ -18,7 +18,7 @@ from picrust2.util import (write_fasta,
                            read_seqabun,
                            TemporaryDirectory)
 
-from picrust2.default_oldIMG import default_map
+from picrust2.default import default_map
 
 metagenome_pipeline_test_dir_path = path.join(path.dirname(path.abspath(__file__)),
                                               "test_data",
@@ -34,7 +34,7 @@ descrip_test_dir_path = path.join(path.dirname(path.abspath(__file__)),
 
 descrip_test_dir_out_path = path.join(descrip_test_dir_path, "output")
 
-# Set paths to test input and output files for add_descriptions_oldIMG.py tests.
+# Set paths to test input and output files for add_descriptions.py tests.
 ec_unstrat_in = path.join(descrip_test_dir_path, "ec_unstrat_test.txt.gz")
 ec_unstrat_exp = path.join(descrip_test_dir_out_path, "ec_unstrat_exp.txt.gz")
 
@@ -46,17 +46,14 @@ ec_nomatch_in = path.join(descrip_test_dir_path, "ec_nomatch_test.txt.gz")
 metacyc_unstrat_in = path.join(descrip_test_dir_path, "metacyc_unstrat_test.txt.gz")
 metacyc_unstrat_exp = path.join(descrip_test_dir_out_path, "metacyc_unstrat_exp.txt.gz")
 
-cog_unstrat_in = path.join(descrip_test_dir_path, "cog_unstrat_test.txt.gz")
-cog_unstrat_exp = path.join(descrip_test_dir_out_path, "cog_unstrat_exp.txt.gz")
-
 ko_unstrat_in = path.join(descrip_test_dir_path, "ko_unstrat_test.txt.gz")
 ko_unstrat_exp = path.join(descrip_test_dir_out_path, "ko_unstrat_exp.txt.gz")
 
 pfam_unstrat_in = path.join(descrip_test_dir_path, "pfam_unstrat_test.txt.gz")
 pfam_unstrat_exp = path.join(descrip_test_dir_out_path, "pfam_unstrat_exp.txt.gz")
 
-tigrfam_unstrat_in = path.join(descrip_test_dir_path, "tigrfam_unstrat_test.txt.gz")
-tigrfam_unstrat_exp = path.join(descrip_test_dir_out_path, "tigrfam_unstrat_exp.txt.gz")
+go_unstrat_in = path.join(descrip_test_dir_path, "go_unstrat_test.txt.gz")
+go_unstrat_exp = path.join(descrip_test_dir_out_path, "go_unstrat_exp.txt.gz")
 
 # Set paths to input and output files for convert_table.py tests.
 convert_test_dir_path = path.join(path.dirname(path.abspath(__file__)), "test_data",
@@ -229,16 +226,6 @@ class add_description_tests(unittest.TestCase):
 
         pd.testing.assert_frame_equal(obs_out, exp_out, check_like=True)
 
-    def test_cog_unstrat(self):
-        '''Test that correct descriptions added to table of COG abundances.'''
-
-        obs_out = add_descrip_col(cog_unstrat_in, default_map["COG"])
-
-        # Read in expected out.
-        exp_out = pd.read_csv(cog_unstrat_exp, sep='\t')
-
-        pd.testing.assert_frame_equal(obs_out, exp_out, check_like=True)
-
     def test_ko_unstrat(self):
         '''Test that correct descriptions added to table of KO abundances.'''
 
@@ -259,14 +246,13 @@ class add_description_tests(unittest.TestCase):
 
         pd.testing.assert_frame_equal(obs_out, exp_out, check_like=True)
 
-    def test_tigrfam_unstrat(self):
-        '''Test that correct descriptions added to table of TIGRFAM
-        abundances.'''
+    def test_go_unstrat(self):
+        '''Test that correct descriptions added to table of GO abundances.'''
 
-        obs_out = add_descrip_col(tigrfam_unstrat_in, default_map["TIGRFAM"])
+        obs_out = add_descrip_col(go_unstrat_in, default_map["GO"])
 
         # Read in expected out.
-        exp_out = pd.read_csv(tigrfam_unstrat_exp, sep='\t')
+        exp_out = pd.read_csv(go_unstrat_exp, sep='\t')
 
         pd.testing.assert_frame_equal(obs_out, exp_out, check_like=True)
 
@@ -275,9 +261,8 @@ class add_description_tests(unittest.TestCase):
 
         ec_hash = hashlib.md5()
         ko_hash = hashlib.md5()
-        cog_hash = hashlib.md5()
         pfam_hash = hashlib.md5()
-        tigrfam_hash = hashlib.md5()
+        go_hash = hashlib.md5()
         metacyc_hash = hashlib.md5()
 
         with gzip.open(default_map["EC"], 'rt') as ec_in:
@@ -286,28 +271,24 @@ class add_description_tests(unittest.TestCase):
         with gzip.open(default_map["KO"], 'rt') as ko_in:
             ko_hash.update(ko_in.read().encode())
 
-        with gzip.open(default_map["COG"], 'rt') as cog_in:
-            cog_hash.update(cog_in.read().encode())
-
         with gzip.open(default_map["PFAM"], 'rt') as pfam_in:
             pfam_hash.update(pfam_in.read().encode())
 
-        with gzip.open(default_map["TIGRFAM"], 'rt') as tigrfam_in:
-            tigrfam_hash.update(tigrfam_in.read().encode())
+        with gzip.open(default_map["GO"], 'rt') as go_in:
+            go_hash.update(go_in.read().encode())
 
         with gzip.open(default_map["METACYC"], 'rt') as metacyc_in:
             metacyc_hash.update(metacyc_in.read().encode())
 
         obs_hash = [ec_hash.hexdigest(), ko_hash.hexdigest(),
-                    cog_hash.hexdigest(), pfam_hash.hexdigest(),
-                    tigrfam_hash.hexdigest(), metacyc_hash.hexdigest()]
+                    pfam_hash.hexdigest(), go_hash.hexdigest(),
+                    metacyc_hash.hexdigest()]
 
-        exp_hash = ["61b2fcd300fd53124c4d7f4b8e97b281",
-                    "f1cc419051a23bb60d1015762d221deb",
-                    "6012eaf8b2f9e336a725cd97af8cf05d",
-                    "b24d1f3cae10efd452b964a8589963e1",
-                    "8115f710df156c46908d112bd80def4a",
-                    "240640c5e2be10855337197c5536009a"]
+        exp_hash = ["7b13c09a8fe62cd1d7e2d7c94d02c262",
+                    "e42005684f0e31cffb226ed105b2524a",
+                    "49119753656100288fb0f027b2a8a5ee",
+                    "afd3191ae2ca334400ff8b3d59f523cd",
+                    "8acf0fba2db56a574edf94394c8da84a"]
 
         # Check that md5sum values match expected values.
         self.assertEqual(obs_hash, exp_hash)

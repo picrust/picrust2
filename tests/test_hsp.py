@@ -5,7 +5,7 @@ from os import path
 import pandas as pd
 import hashlib
 import gzip
-from picrust2.default_oldIMG import default_tables 
+from picrust2.default import default_tables_bac, default_tables_arc
 from picrust2.wrap_hsp import (castor_hsp_workflow,
                                castor_nsti)
 
@@ -143,52 +143,124 @@ class castor_hsp_workflow_tests(unittest.TestCase):
 class table_mdf5sum_tests(unittest.TestCase):
     '''Check that md5sum values of default tables match expected values.'''
 
-    def test_default_table_md5sum(self):
+    def test_default_table_md5sum_bac(self):
 
         marker_16S_hash = hashlib.md5()
         ec_hash = hashlib.md5()
         ko_hash = hashlib.md5()
-        cog_hash = hashlib.md5()
+        go_hash = hashlib.md5()
         pfam_hash = hashlib.md5()
-        tigrfam_hash = hashlib.md5()
-        pheno_hash = hashlib.md5()
+        bigg_hash = hashlib.md5()
+        cazy_hash = hashlib.md5()
+        gene_names_hash = hashlib.md5()
 
-        with gzip.open(default_tables["16S"], 'rt') as marker_16S_in:
+        with gzip.open(default_tables_bac["16S"], 'rt') as marker_16S_in:
             marker_16S_hash.update(marker_16S_in.read().encode())
 
-        with gzip.open(default_tables["EC"], 'rt') as ec_in:
+        with gzip.open(default_tables_bac["EC"], 'rt') as ec_in:
             ec_hash.update(ec_in.read().encode())
 
-        with gzip.open(default_tables["KO"], 'rt') as ko_in:
+        with gzip.open(default_tables_bac["KO"], 'rt') as ko_in:
             ko_hash.update(ko_in.read().encode())
 
-        with gzip.open(default_tables["COG"], 'rt') as cog_in:
-            cog_hash.update(cog_in.read().encode())
+        with gzip.open(default_tables_bac["GO"], 'rt') as go_in:
+            go_hash.update(go_in.read().encode())
 
-        with gzip.open(default_tables["PFAM"], 'rt') as pfam_in:
+        with gzip.open(default_tables_bac["PFAM"], 'rt') as pfam_in:
             pfam_hash.update(pfam_in.read().encode())
 
-        with gzip.open(default_tables["TIGRFAM"], 'rt') as tigrfam_in:
-            tigrfam_hash.update(tigrfam_in.read().encode())
+        with gzip.open(default_tables_bac["BIGG"], 'rt') as bigg_in:
+            bigg_hash.update(bigg_in.read().encode())
 
-        with gzip.open(default_tables["PHENO"], 'rt') as pheno_in:
-            pheno_hash.update(pheno_in.read().encode())
+        with gzip.open(default_tables_bac["CAZY"], 'rt') as cazy_in:
+            cazy_hash.update(cazy_in.read().encode())
+
+        with gzip.open(default_tables_bac["GENE_NAMES"], 'rt') as gene_names_in:
+            gene_names_hash.update(gene_names_in.read().encode())        
 
         obs_hash = [marker_16S_hash.hexdigest(), ec_hash.hexdigest(),
-                    ko_hash.hexdigest(), cog_hash.hexdigest(),
-                    pfam_hash.hexdigest(), tigrfam_hash.hexdigest(),
-                    pheno_hash.hexdigest()]
+                    ko_hash.hexdigest(), go_hash.hexdigest(),
+                    pfam_hash.hexdigest(), bigg_hash.hexdigest(),
+                    cazy_hash.hexdigest(), gene_names_hash.hexdigest()]
 
-        exp_hash = ["a0acd4dbc3501b271ade941bf308643e",
-                    "85fcd6ac08ba324c6c14699fcee92725",
-                    "46540c1eb6e7f22feaa50893dc74a6d7",
-                    "c50eaa4565804b6fe880e81044d33276",
-                    "420605c3afe98a585f4f006f8aa8c4f3",
-                    "ca5871bac44593c009b5f7838efb2772",
-                    "8da3d7f5be4f02898f9fd24fdb75f20e"]
+        exp_hash = ["3e870a33486bb7800dbfe497a2d6db11",
+                    "96bc131933a661a192b8e0a1e0182254",
+                    "af7363ea3d67e96077a37d7d8bdafd89",
+                    "4ee72f88f84a3653d1d15abb27cb42b7",
+                    "a892738bd3e0cd1454c26f2a78decf6f",
+                    "b7e85755cf1016c3e55e0dbcdef56c39",
+                    "7f0520b27de9bb85cc7a1c3d37a4fec5",
+                    "17e8e23bb1f5b73ecfed2cb721e26449"]
 
         # Check that md5sum values match expected values.
         self.assertEqual(obs_hash, exp_hash)
+
+    def test_default_table_md5sum_arc(self):
+
+        marker_16S_hash = hashlib.md5()
+        ec_hash = hashlib.md5()
+        ko_hash = hashlib.md5()
+        go_hash = hashlib.md5()
+        pfam_hash = hashlib.md5()
+        bigg_hash = hashlib.md5()
+        cazy_hash = hashlib.md5()
+        gene_names_hash = hashlib.md5()
+
+        with gzip.open(default_tables_arc["16S"], 'rt') as marker_16S_in:
+            marker_16S_hash.update(marker_16S_in.read().encode())
+
+        with gzip.open(default_tables_arc["EC"], 'rt') as ec_in:
+            ec_hash.update(ec_in.read().encode())
+
+        with gzip.open(default_tables_arc["KO"], 'rt') as ko_in:
+            ko_hash.update(ko_in.read().encode())
+
+        with gzip.open(default_tables_arc["GO"], 'rt') as go_in:
+            go_hash.update(go_in.read().encode())
+
+        with gzip.open(default_tables_arc["PFAM"], 'rt') as pfam_in:
+            pfam_hash.update(pfam_in.read().encode())
+
+        with gzip.open(default_tables_arc["BIGG"], 'rt') as bigg_in:
+            bigg_hash.update(bigg_in.read().encode())
+
+        with gzip.open(default_tables_arc["CAZY"], 'rt') as cazy_in:
+            cazy_hash.update(cazy_in.read().encode())
+
+        with gzip.open(default_tables_arc["GENE_NAMES"], 'rt') as gene_names_in:
+            gene_names_hash.update(gene_names_in.read().encode())
+
+        obs_hash = [marker_16S_hash.hexdigest(), ec_hash.hexdigest(),
+                    ko_hash.hexdigest(), go_hash.hexdigest(),
+                    pfam_hash.hexdigest(), bigg_hash.hexdigest(),
+                    cazy_hash.hexdigest(), gene_names_hash.hexdigest()]
+
+        exp_hash = ["2a617a0c15d3aef4f849e12f38f6ef70",
+                    "7b13c586c3cb989257e30abeb5271abb",
+                    "f9e548b617672ff0028e0430e0c66e49",
+                    "b48906876606ac4a89f532156afde80c",
+                    "b3d5db008edc070e13f8736a1c25f10c",
+                    "4523a5256d2db24d6fb0d9605b9cfc75",
+                    "5d8208d7aedec81d054d429c735bf56d",
+                    "8c5f8eb084c7cc028174e89744d2b0b3"]
+
+        # Check that md5sum values match expected values.
+        self.assertEqual(obs_hash, exp_hash)
+
+class castor_hsp_chunk_tests(unittest.TestCase):
+    '''Check all trait columns are predicted even with small chunk size.'''
+
+    def test_all_traits_predicted_any_chunk_size(self):
+        exp_cols = set(pd.read_csv(in_traits1, sep="\t", index_col="assembly").columns)
+
+        for chunk_size in [1, 2, len(exp_cols), 500]:
+            predict_out, _ = castor_hsp_workflow(tree_path=in_tree1,
+                                                 trait_table_path=in_traits1,
+                                                 hsp_method="mp",
+                                                 chunk_size=chunk_size)
+
+            self.assertEqual(set(predict_out.columns), exp_cols, msg="chunk_size=" + str(chunk_size))
+
 
 
 if __name__ == '__main__':

@@ -32,7 +32,7 @@ default_raxml_info_arc = path.join(default_ref_dir_arc, "arc_ref.raxml_info")
 
 default_regroup_map = path.join(project_dir, "default_files",
                                 "pathway_mapfiles",
-                                "ec_level4_to_metacyc_rxn_new.tsv")
+                                "ec_level4_to_metacyc_rxn_v2.6.4.tsv")
 
 default_pathway_map = path.join(project_dir, "default_files",
                                 "pathway_mapfiles",
